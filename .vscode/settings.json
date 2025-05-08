@@ -3,5 +3,14 @@
     {
       "mode": "auto"
     }
+  ],
+  "recommendations": [
+    "streetsidesoftware.code-spell-checker",
+    "editorconfig.editorconfig",
+    "orta.vscode-jest",
+    "firsttris.vscode-jest-runner",
+    "esbenp.prettier-vscode",
+    "wayou.vscode-todo-highlight",
+    "davidanson.vscode-markdownlint"
   ]
 }
