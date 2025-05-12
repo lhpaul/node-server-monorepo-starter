@@ -3,18 +3,23 @@
   "private": true,
   "scripts": {
     "build": "turbo run build",
-    "dev": "turbo run dev",
-    "lint": "turbo run lint",
+    "check-types": "turbo run check-types",
+    "dev:rest-api": "turbo run dev --filter=rest-api",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "check-types": "turbo run check-types"
+    "lint": "turbo run lint --",
+    "pre-commit": "lint-staged",
+    "prepare": "node .husky/install.mjs",
+    "test": "turbo test"
   },
   "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^16.0.0",
     "prettier": "^3.5.3",
     "turbo": "^2.5.3",
     "typescript": "5.8.2"
   },
-  "packageManager": "pnpm@9.0.0",
+  "packageManager": "pnpm@10.10.0",
   "engines": {
-    "node": ">=18"
+    "node": "22"
   }
 }

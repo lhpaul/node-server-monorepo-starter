@@ -1,0 +1,48 @@
+{
+  "name": "@repo/shared",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "test:watch": "jest --watch"
+  },
+  "exports": {
+    "./definitions": {
+      "types": "./src/definitions/index.ts",
+      "default": "./dist/definitions/index.js"
+    },
+    "./domain": {
+      "types": "./src/domain/index.ts",
+      "default": "./dist/domain/index.js"
+    },
+    "./mocks": {
+      "types": "./src/mocks/index.ts",
+      "default": "./dist/mocks/index.js"
+    },
+    "./repositories": {
+      "types": "./src/repositories/index.ts",
+      "default": "./dist/repositories/index.js"
+    },
+    "./services": {
+      "types": "./src/services/index.ts",
+      "default": "./dist/services/index.js"
+    },
+    "./utils": {
+      "types": "./src/utils/index.ts",
+      "default": "./dist/utils/index.js"
+    }
+  },
+  "dependencies": {
+    "axios": "1.9.0",
+    "pino": "9.6.0"
+  },
+  "devDependencies": {
+    "@repo/configs": "workspace:*",
+    "@types/jest": "^29.5.14",
+    "@types/node": "^22.14.1",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.3.2",
+    "typescript": "5.8.2"
+  }
+}
