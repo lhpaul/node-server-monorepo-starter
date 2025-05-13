@@ -3,6 +3,8 @@ import helmet from '@fastify/helmet';
 import { RequestLogger } from '@repo/fastify';
 import fastify, { FastifyInstance } from 'fastify';
 
+import packageJson from '../package.json';
+
 import {
   COR_CONFIG,
   INTERNAL_ERROR_VALUES,
@@ -28,6 +30,17 @@ export const init = async function (): Promise<FastifyInstance> {
   server.register(helmet, { global: true });
 
   // Load routes
+  server.route({
+    method: 'GET',
+    url: '/',
+    handler: (_request, reply) => {
+      return reply.send({
+        name: packageJson.name,
+        version: packageJson.version,
+        now: new Date().toISOString(),
+      });
+    },
+  });
   routes.forEach((route) => {
     server.route(route);
   });
