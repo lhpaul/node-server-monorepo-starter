@@ -5,14 +5,13 @@
     "build": "turbo run build",
     "check-types": "turbo run check-types",
     "dev:rest-api": "turbo run dev --filter=rest-api",
+    "dev:mcp-api": "turbo run dev --filter=mcp-api",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "lint": "turbo run lint --",
+    "lint": "turbo run lint --filter=rest-api --filter=mcp-api",
     "pre-commit": "lint-staged",
-    "prepare": "node .husky/install.mjs",
     "test": "turbo test"
   },
   "devDependencies": {
-    "husky": "^9.1.7",
     "lint-staged": "^16.0.0",
     "prettier": "^3.5.3",
     "turbo": "^2.5.3",
