@@ -5,19 +5,14 @@ import {
   TransactionsRepository,
 } from '@repo/shared/repositories';
 
-import { BAD_REQUEST_ERROR_RESPONSES } from '../../../transactions.endpoints.constants';
+import { ERROR_RESPONSES } from '../../../transactions.endpoints.constants';
 import { STEPS } from '../transactions.delete.constants';
 import { deleteTransactionHandler } from '../transactions.delete.handler';
 
 jest.mock('@repo/shared/repositories', () => ({
-  DeleteTransactionError: jest.requireActual('@repo/shared/repositories')
-    .DeleteTransactionError,
-  DeleteTransactionErrorCode: jest.requireActual('@repo/shared/repositories')
-    .DeleteTransactionErrorCode,
+  ...jest.requireActual('@repo/shared/repositories'),
   TransactionsRepository: {
-    getInstance: jest.fn().mockReturnValue({
-      deleteTransaction: jest.fn(),
-    }),
+    getInstance: jest.fn(),
   },
 }));
 
@@ -108,7 +103,7 @@ describe(deleteTransactionHandler.name, () => {
     );
     expect(mockReply.code).toHaveBeenCalledWith(404);
     expect(mockReply.send).toHaveBeenCalledWith(
-      BAD_REQUEST_ERROR_RESPONSES.TRANSACTION_NOT_FOUND,
+      ERROR_RESPONSES.TRANSACTION_NOT_FOUND,
     );
   });
 

@@ -28,6 +28,7 @@ export const QUERY_STRING_JSON_SCHEMA = {
       'le',
       'lt',
     ]),
+    companyId: { type: 'string' },
     ...buildSchemaForQueryParamsProperty('date', 'string', [
       'eq',
       'ge',

@@ -3,6 +3,7 @@ import { Transaction, TransactionType } from '../transaction.model';
 describe(Transaction.name, () => {
   const initialValues = {
     amount: 100,
+    companyId: '0',
     date: '2024-03-20',
     id: 'txn-123',
     type: TransactionType.DEBIT,
@@ -20,6 +21,7 @@ describe(Transaction.name, () => {
 
     it('should initialize with correct values', () => {
       expect(transaction.amount).toBe(initialValues.amount);
+      expect(transaction.companyId).toBe(initialValues.companyId);
       expect(transaction.date).toBe(initialValues.date);
       expect(transaction.id).toBe(initialValues.id);
       expect(transaction.type).toBe(initialValues.type);
@@ -31,6 +33,12 @@ describe(Transaction.name, () => {
       const testAmount = 100.5;
       transaction.amount = testAmount;
       expect(transaction.amount).toBe(testAmount);
+    });
+
+    it('should assign and retrieve companyId correctly', () => {
+      const testCompanyId = 'test-company-id';
+      transaction.companyId = testCompanyId;
+      expect(transaction.companyId).toBe(testCompanyId);
     });
 
     it('should assign and retrieve date correctly', () => {

@@ -21,18 +21,21 @@ describe(listTransactionsHandler.name, () => {
   const mockTransactions = [
     {
       id: '1',
+      companyId: '1',
       date: '2024-01-01',
       amount: 100,
       type: TransactionType.CREDIT,
     },
     {
       id: '2',
+      companyId: '2',
       date: '2024-01-02',
       amount: 200,
       type: TransactionType.DEBIT,
     },
     {
       id: '3',
+      companyId: '3',
       date: '2024-01-03',
       amount: 300,
       type: TransactionType.CREDIT,

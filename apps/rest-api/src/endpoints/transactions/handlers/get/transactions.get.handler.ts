@@ -1,7 +1,7 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { TransactionsRepository } from '@repo/shared/repositories';
 
-import { BAD_REQUEST_ERROR_RESPONSES } from '../../transactions.endpoints.constants';
+import { ERROR_RESPONSES } from '../../transactions.endpoints.constants';
 import { STEPS } from './transactions.get.constants';
 import { GetTransactionParams } from './transactions.get.interfaces';
 export const getTransactionHandler = async (
@@ -19,9 +19,7 @@ export const getTransactionHandler = async (
     .getTransactionById(id, { logger })
     .finally(() => logger.endStep(STEPS.GET_TRANSACTION.id));
   if (!transaction) {
-    return reply
-      .code(404)
-      .send(BAD_REQUEST_ERROR_RESPONSES.TRANSACTION_NOT_FOUND);
+    return reply.code(404).send(ERROR_RESPONSES.TRANSACTION_NOT_FOUND);
   }
   return reply.code(200).send(transaction);
 };

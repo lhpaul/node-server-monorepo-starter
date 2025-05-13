@@ -15,6 +15,7 @@ describe(TransactionsRepository.name, () => {
   let repository: TransactionsRepository;
   const transactionToAdd = {
     amount: 150,
+    companyId: '1',
     date: '2020-01-01',
     type: TransactionType.DEBIT,
   };
@@ -131,6 +132,7 @@ describe(TransactionsRepository.name, () => {
     it('should update a transaction', async () => {
       const transaction = await repository.createTransaction({
         amount: 100,
+        companyId: '1',
         date: '2021-01-01',
         type: TransactionType.CREDIT,
       });

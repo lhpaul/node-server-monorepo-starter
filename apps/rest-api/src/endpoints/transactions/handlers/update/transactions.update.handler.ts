@@ -4,7 +4,7 @@ import {
 } from '@repo/shared/repositories';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
-import { BAD_REQUEST_ERROR_RESPONSES } from '../../transactions.endpoints.constants';
+import { ERROR_RESPONSES } from '../../transactions.endpoints.constants';
 import { STEPS } from './transactions.update.constants';
 import {
   UpdateTransactionBody,
@@ -24,15 +24,13 @@ export const updateTransactionHandler = async (
       STEPS.UPDATE_TRANSACTION.id,
       STEPS.UPDATE_TRANSACTION.obfuscatedId,
     );
-    await repository.updateTransaction(id, body);
+    await repository.updateTransaction(id, body, { logger });
     logger.endStep(STEPS.UPDATE_TRANSACTION.id);
     return reply.code(204).send();
   } catch (error) {
     logger.endStep(STEPS.UPDATE_TRANSACTION.id);
     if (error instanceof UpdateTransactionError) {
-      return reply
-        .code(404)
-        .send(BAD_REQUEST_ERROR_RESPONSES.TRANSACTION_NOT_FOUND);
+      return reply.code(404).send(ERROR_RESPONSES.TRANSACTION_NOT_FOUND);
     }
     throw error;
   }

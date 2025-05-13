@@ -4,7 +4,8 @@ import { ChildLoggerOptions } from 'fastify/types/logger';
 
 import { RequestLogger } from '../request-logger.class';
 import { LOGS } from '../request-logger.class.constants';
-describe('RequestLogger', () => {
+
+describe(RequestLogger.name, () => {
   let mockLogger: jest.Mocked<FastifyBaseLogger>;
   let requestLogger: RequestLogger;
   const BASE_TIME = 1234567890;
@@ -40,6 +41,15 @@ describe('RequestLogger', () => {
     it('should set the initTime on creation', () => {
       requestLogger = new RequestLogger({ logger: mockLogger });
       expect(requestLogger.initTime).toBe(BASE_TIME);
+    });
+
+    it('should initialize with parent logger if provided', () => {
+      const parentLogger = new RequestLogger({ logger: mockLogger });
+      requestLogger = new RequestLogger({
+        logger: mockLogger,
+        parent: parentLogger,
+      });
+      expect(requestLogger).toBeInstanceOf(RequestLogger);
     });
   });
 
@@ -105,8 +115,14 @@ describe('RequestLogger', () => {
   });
 
   describe('Step Management', () => {
+    let parentLogger: RequestLogger;
+
     beforeEach(() => {
-      requestLogger = new RequestLogger({ logger: mockLogger });
+      parentLogger = new RequestLogger({ logger: mockLogger });
+      requestLogger = new RequestLogger({
+        logger: mockLogger,
+        parent: parentLogger,
+      });
     });
 
     it('should start a step and update currentStep', () => {
@@ -121,6 +137,13 @@ describe('RequestLogger', () => {
           totalElapsedTime: 0,
         }),
       );
+    });
+
+    it('should start a step silently when config.silent is true', () => {
+      const step = { id: 'test-step', obfuscatedId: '01' };
+      requestLogger.startStep(step.id, step.obfuscatedId, { silent: true });
+      expect(requestLogger.lastStep).toEqual(step);
+      expect(mockLogger.info).not.toHaveBeenCalled();
     });
 
     it('should end a step and log the elapsed time', () => {
@@ -142,9 +165,34 @@ describe('RequestLogger', () => {
       );
     });
 
+    it('should end a step silently when config.silent is true', () => {
+      const step = { id: 'test-step', obfuscatedId: '01' };
+      requestLogger.startStep(step.id, step.obfuscatedId, { silent: true });
+      jest.useFakeTimers().setSystemTime(new Date(BASE_TIME + 100));
+      requestLogger.endStep(step.id, { silent: true });
+      expect(mockLogger.info).not.toHaveBeenCalled();
+    });
+
     it('should handle ending a non-existent step gracefully', () => {
       const stepLabel = 'non-existent-step';
       expect(() => requestLogger.endStep(stepLabel)).not.toThrow();
+    });
+
+    it('should propagate step start to parent logger silently', () => {
+      const step = { id: 'test-step', obfuscatedId: '01' };
+      requestLogger.startStep(step.id, step.obfuscatedId);
+      expect(parentLogger.lastStep).toEqual(step);
+      // Verify parent logger was called with silent config
+      expect(mockLogger.info).toHaveBeenCalledTimes(1); // Only called once for child logger
+    });
+
+    it('should propagate step end to parent logger silently', () => {
+      const step = { id: 'test-step', obfuscatedId: '01' };
+      requestLogger.startStep(step.id, step.obfuscatedId);
+      jest.useFakeTimers().setSystemTime(new Date(BASE_TIME + 100));
+      requestLogger.endStep(step.id);
+      // Verify parent logger was called with silent config
+      expect(mockLogger.info).toHaveBeenCalledTimes(2); // Only called twice for child logger
     });
   });
 

@@ -1,7 +1,7 @@
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 import { TransactionsRepository } from '@repo/shared/repositories';
 
-import { BAD_REQUEST_ERROR_RESPONSES } from '../../../transactions.endpoints.constants';
+import { ERROR_RESPONSES } from '../../../transactions.endpoints.constants';
 import { STEPS } from '../transactions.get.constants';
 import { getTransactionHandler } from '../transactions.get.handler';
 
@@ -97,7 +97,7 @@ describe(getTransactionHandler.name, () => {
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION.id);
     expect(mockReply.code).toHaveBeenCalledWith(404);
     expect(mockReply.send).toHaveBeenCalledWith(
-      BAD_REQUEST_ERROR_RESPONSES.TRANSACTION_NOT_FOUND,
+      ERROR_RESPONSES.TRANSACTION_NOT_FOUND,
     );
   });
 

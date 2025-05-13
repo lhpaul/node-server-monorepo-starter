@@ -5,7 +5,7 @@ import {
   UpdateTransactionErrorCode,
 } from '@repo/shared/repositories';
 
-import { BAD_REQUEST_ERROR_RESPONSES } from '../../../transactions.endpoints.constants';
+import { ERROR_RESPONSES } from '../../../transactions.endpoints.constants';
 import { STEPS } from '../transactions.update.constants';
 import { updateTransactionHandler } from '../transactions.update.handler';
 
@@ -72,6 +72,7 @@ describe(updateTransactionHandler.name, () => {
     expect(mockRepository.updateTransaction).toHaveBeenCalledWith(
       '123',
       mockRequest.body,
+      { logger: mockLogger },
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(
       STEPS.UPDATE_TRANSACTION.id,
@@ -100,13 +101,14 @@ describe(updateTransactionHandler.name, () => {
     expect(mockRepository.updateTransaction).toHaveBeenCalledWith(
       '123',
       mockRequest.body,
+      { logger: mockLogger },
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(
       STEPS.UPDATE_TRANSACTION.id,
     );
     expect(mockReply.code).toHaveBeenCalledWith(404);
     expect(mockReply.send).toHaveBeenCalledWith(
-      BAD_REQUEST_ERROR_RESPONSES.TRANSACTION_NOT_FOUND,
+      ERROR_RESPONSES.TRANSACTION_NOT_FOUND,
     );
   });
 
@@ -128,6 +130,7 @@ describe(updateTransactionHandler.name, () => {
     expect(mockRepository.updateTransaction).toHaveBeenCalledWith(
       '123',
       mockRequest.body,
+      { logger: mockLogger },
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(
       STEPS.UPDATE_TRANSACTION.id,

@@ -7,18 +7,21 @@ import { UpdateTransactionErrorCode } from './transactions.repository.errors';
 export const MOCK_TRANSACTIONS: Transaction[] = [
   {
     amount: 100,
+    companyId: '1',
     date: '2021-01-01',
     id: '0',
     type: TransactionType.CREDIT,
   },
   {
     amount: 200,
+    companyId: '1',
     date: '2021-01-02',
     id: '1',
     type: TransactionType.DEBIT,
   },
   {
     amount: 300,
+    companyId: '1',
     date: '2021-01-03',
     id: '2',
     type: TransactionType.CREDIT,

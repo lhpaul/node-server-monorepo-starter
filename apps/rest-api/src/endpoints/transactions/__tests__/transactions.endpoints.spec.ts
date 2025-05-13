@@ -60,6 +60,7 @@ describe('transactionsEndpointsBuilder', () => {
             'amount[gt]': { type: 'number' },
             'amount[le]': { type: 'number' },
             'amount[lt]': { type: 'number' },
+            companyId: { type: 'string' },
             date: { type: 'string' },
             'date[ge]': { type: 'string' },
             'date[gt]': { type: 'string' },
