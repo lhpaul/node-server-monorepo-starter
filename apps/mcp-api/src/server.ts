@@ -43,6 +43,7 @@ export const init = async function (): Promise<FastifyInstance> {
         capabilities: {
           resources: {}, // Enable resources
         },
+        
       });
       const resources = getMcpResources(server.log);
       resources.forEach((resource) => {

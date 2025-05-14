@@ -6,8 +6,8 @@ import {
   CREATE_TRANSACTION_BODY_JSON_SCHEMA,
   TRANSACTION_ENDPOINTS_PARAMS_JSON_SCHEMA,
   UPDATE_TRANSACTION_BODY_JSON_SCHEMA,
-  URL,
-  URL_WITH_ID,
+  URL_V1,
+  URL_WITH_ID_V1,
 } from './transactions.endpoints.constants';
 import {
   createTransactionHandler,
@@ -44,7 +44,7 @@ export function transactionsEndpointsBuilder() {
   return [
     createEndpoint({
       method: ['POST'],
-      url: URL,
+      url: URL_V1,
       handler: createTransactionHandler,
       schema: {
         body: CREATE_TRANSACTION_BODY_JSON_SCHEMA,
@@ -52,7 +52,7 @@ export function transactionsEndpointsBuilder() {
     }),
     createEndpoint({
       method: ['GET'],
-      url: URL,
+      url: URL_V1,
       handler: listTransactionsHandler,
       schema: {
         querystring: QUERY_STRING_JSON_SCHEMA,
@@ -60,7 +60,7 @@ export function transactionsEndpointsBuilder() {
     }),
     createEndpoint({
       method: ['GET'],
-      url: URL_WITH_ID,
+      url: URL_WITH_ID_V1,
       handler: getTransactionHandler,
       schema: {
         params: TRANSACTION_ENDPOINTS_PARAMS_JSON_SCHEMA,
@@ -68,7 +68,7 @@ export function transactionsEndpointsBuilder() {
     }),
     createEndpoint({
       method: ['PATCH'],
-      url: URL_WITH_ID,
+      url: URL_WITH_ID_V1,
       handler: updateTransactionHandler,
       schema: {
         body: UPDATE_TRANSACTION_BODY_JSON_SCHEMA,
@@ -77,7 +77,7 @@ export function transactionsEndpointsBuilder() {
     }),
     createEndpoint({
       method: ['DELETE'],
-      url: URL_WITH_ID,
+      url: URL_WITH_ID_V1,
       handler: deleteTransactionHandler,
       schema: {
         params: TRANSACTION_ENDPOINTS_PARAMS_JSON_SCHEMA,

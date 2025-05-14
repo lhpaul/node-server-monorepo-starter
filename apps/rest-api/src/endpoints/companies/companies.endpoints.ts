@@ -6,8 +6,8 @@ import {
   CREATE_COMPANY_BODY_JSON_SCHEMA,
   COMPANY_ENDPOINTS_PARAMS_JSON_SCHEMA,
   UPDATE_COMPANY_BODY_JSON_SCHEMA,
-  URL,
-  URL_WITH_ID,
+  URL_V1,
+  URL_WITH_ID_V1,
 } from './companies.endpoints.constants';
 import {
   createCompanyHandler,
@@ -34,7 +34,7 @@ export function companiesEndpointsBuilder() {
   return [
     createEndpoint({
       method: ['POST'],
-      url: URL,
+      url: URL_V1,
       handler: createCompanyHandler,
       schema: {
         body: CREATE_COMPANY_BODY_JSON_SCHEMA,
@@ -42,7 +42,7 @@ export function companiesEndpointsBuilder() {
     }),
     createEndpoint({
       method: ['GET'],
-      url: URL,
+      url: URL_V1,
       handler: listCompaniesHandler,
       schema: {
         querystring: QUERY_STRING_JSON_SCHEMA,
@@ -50,7 +50,7 @@ export function companiesEndpointsBuilder() {
     }),
     createEndpoint({
       method: ['GET'],
-      url: URL_WITH_ID,
+      url: URL_WITH_ID_V1,
       handler: getCompanyHandler,
       schema: {
         params: COMPANY_ENDPOINTS_PARAMS_JSON_SCHEMA,
@@ -58,7 +58,7 @@ export function companiesEndpointsBuilder() {
     }),
     createEndpoint({
       method: ['PATCH'],
-      url: URL_WITH_ID,
+      url: URL_WITH_ID_V1,
       handler: updateCompanyHandler,
       schema: {
         body: UPDATE_COMPANY_BODY_JSON_SCHEMA,
@@ -67,7 +67,7 @@ export function companiesEndpointsBuilder() {
     }),
     createEndpoint({
       method: ['DELETE'],
-      url: URL_WITH_ID,
+      url: URL_WITH_ID_V1,
       handler: deleteCompanyHandler,
       schema: {
         params: COMPANY_ENDPOINTS_PARAMS_JSON_SCHEMA,

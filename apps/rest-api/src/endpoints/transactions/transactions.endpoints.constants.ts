@@ -1,7 +1,7 @@
 import { TransactionType } from '@repo/shared/domain';
 
-export const URL = '/transactions';
-export const URL_WITH_ID = `${URL}/:id`;
+export const URL_V1 = '/v1/transactions';
+export const URL_WITH_ID_V1 = `${URL_V1}/:id`;
 
 export const ERROR_RESPONSES = {
   TRANSACTION_NOT_FOUND: {

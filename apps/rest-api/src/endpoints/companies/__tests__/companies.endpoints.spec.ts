@@ -3,8 +3,8 @@ import {
   CREATE_COMPANY_BODY_JSON_SCHEMA,
   COMPANY_ENDPOINTS_PARAMS_JSON_SCHEMA,
   UPDATE_COMPANY_BODY_JSON_SCHEMA,
-  URL,
-  URL_WITH_ID,
+  URL_V1,
+  URL_WITH_ID_V1,
 } from '../companies.endpoints.constants';
 import {
   createCompanyHandler,
@@ -37,7 +37,7 @@ describe(companiesEndpointsBuilder.name, () => {
   it('should create POST company endpoint with correct configuration', () => {
     expect(createEndpoint).toHaveBeenNthCalledWith(1, {
       method: ['POST'],
-      url: URL,
+      url: URL_V1,
       handler: createCompanyHandler,
       schema: {
         body: CREATE_COMPANY_BODY_JSON_SCHEMA,
@@ -48,7 +48,7 @@ describe(companiesEndpointsBuilder.name, () => {
   it('should create GET companies list endpoint with correct configuration', () => {
     expect(createEndpoint).toHaveBeenNthCalledWith(2, {
       method: ['GET'],
-      url: URL,
+      url: URL_V1,
       handler: listCompaniesHandler,
       schema: {
         querystring: {
@@ -68,7 +68,7 @@ describe(companiesEndpointsBuilder.name, () => {
   it('should create GET single company endpoint with correct configuration', () => {
     expect(createEndpoint).toHaveBeenNthCalledWith(3, {
       method: ['GET'],
-      url: URL_WITH_ID,
+      url: URL_WITH_ID_V1,
       handler: getCompanyHandler,
       schema: {
         params: COMPANY_ENDPOINTS_PARAMS_JSON_SCHEMA,
@@ -79,7 +79,7 @@ describe(companiesEndpointsBuilder.name, () => {
   it('should create PATCH company endpoint with correct configuration', () => {
     expect(createEndpoint).toHaveBeenNthCalledWith(4, {
       method: ['PATCH'],
-      url: URL_WITH_ID,
+      url: URL_WITH_ID_V1,
       handler: updateCompanyHandler,
       schema: {
         body: UPDATE_COMPANY_BODY_JSON_SCHEMA,
@@ -91,7 +91,7 @@ describe(companiesEndpointsBuilder.name, () => {
   it('should create DELETE company endpoint with correct configuration', () => {
     expect(createEndpoint).toHaveBeenNthCalledWith(5, {
       method: ['DELETE'],
-      url: URL_WITH_ID,
+      url: URL_WITH_ID_V1,
       handler: deleteCompanyHandler,
       schema: {
         params: COMPANY_ENDPOINTS_PARAMS_JSON_SCHEMA,

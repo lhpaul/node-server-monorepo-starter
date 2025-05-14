@@ -1,5 +1,5 @@
-export const URL = '/companies';
-export const URL_WITH_ID = '/companies/:id';
+export const URL_V1 = '/v1/companies';
+export const URL_WITH_ID_V1 = `${URL_V1}/:id`;
 
 export const ERROR_RESPONSES = {
   COMPANY_NOT_FOUND: {
