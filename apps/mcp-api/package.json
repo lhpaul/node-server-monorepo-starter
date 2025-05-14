@@ -18,15 +18,13 @@
     "@modelcontextprotocol/sdk": "1.11.2",
     "@repo/shared": "workspace:*",
     "@repo/fastify": "workspace:*",
-    "express": "5.1.0",
     "fastify": "5.3.2",
-    "fastify-express": "0.3.3",
+    "fastify-mcp": "2.0.0",
     "json-schema-to-ts": "3.1.1",
     "pino": "9.6.0"
   },
   "devDependencies": {
     "@repo/configs": "workspace:*",
-    "@types/express": "5.0.1",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.15.3",
     "jest": "^29.7.0",

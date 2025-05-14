@@ -1,46 +1,51 @@
-import {
-  McpServer,
-  ResourceTemplate,
-} from '@modelcontextprotocol/sdk/server/mcp.js';
-import { createMCPServer } from '../mcp.utils';
-import { MCP_SERVER_CONFIG } from '../../../constants/server.constants';
+import { FastifyBaseLogger } from 'fastify';
+import { ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { ReadResourceResult } from '@modelcontextprotocol/sdk/types.js';
 
-jest.mock('@modelcontextprotocol/sdk/server/mcp.js', () => ({
-  ...jest.requireActual('@modelcontextprotocol/sdk/server/mcp.js'),
-  McpServer: jest.fn().mockImplementation(() => ({
-    resource: jest.fn(),
-  })),
+import { McpResourceConfig } from '../../../interfaces/mcp.interfaces';
+import { getMcpResources } from '../mcp.utils';
+import { transactionsResourceBuilder } from '../../../mcp/resources/transactions/transactions.resource';
+
+// Mock the transactionsResourceBuilder
+jest.mock('../../../mcp/resources/transactions/transactions.resource', () => ({
+  transactionsResourceBuilder: jest.fn(),
 }));
 
-describe('MCP Utils', () => {
-  describe('createMCPServer', () => {
-    beforeEach(() => {
-      jest.clearAllMocks();
-    });
+describe(getMcpResources.name, () => {
+  let mockLogger: FastifyBaseLogger;
+  let mockTransactionsResource: McpResourceConfig;
 
-    it('should create an MCP server instance with correct configuration', () => {
-      const mockMcpServerMock = {
-        resource: jest.fn(),
-      };
-      jest.mocked(McpServer).mockImplementation(() => mockMcpServerMock as any);
-      const server = createMCPServer();
+  beforeEach(() => {
+    // Reset all mocks before each test
+    jest.clearAllMocks();
 
-      expect(McpServer).toHaveBeenCalledWith(MCP_SERVER_CONFIG, {
-        capabilities: {
-          resources: {},
-        },
-      });
-      expect(server).toBe(mockMcpServerMock);
-    });
+    // Setup mock logger
+    mockLogger = {
+      info: jest.fn(),
+      error: jest.fn(),
+      warn: jest.fn(),
+      debug: jest.fn(),
+      trace: jest.fn(),
+      fatal: jest.fn(),
+      child: jest.fn(),
+    } as unknown as FastifyBaseLogger;
 
-    it('should register company transactions resource', () => {
-      const server = createMCPServer();
+    // Setup mock transactions resource
+    mockTransactionsResource = {
+      name: 'transactions',
+      template: {} as ResourceTemplate,
+      handler: jest.fn().mockResolvedValue({} as ReadResourceResult),
+    };
 
-      expect(server.resource).toHaveBeenCalledWith(
-        'Company Transactions',
-        new ResourceTemplate('transactions://{companyId}', { list: undefined }),
-        expect.any(Function),
-      );
-    });
+    // Setup mock implementation
+    (transactionsResourceBuilder as jest.Mock).mockReturnValue(mockTransactionsResource);
+  });
+
+  it('should return an array containing the transactions resource', () => {
+    const result = getMcpResources(mockLogger);
+
+    expect(result).toEqual([mockTransactionsResource]);
+    expect(transactionsResourceBuilder).toHaveBeenCalledWith(mockLogger);
+    expect(transactionsResourceBuilder).toHaveBeenCalledTimes(1);
   });
 });

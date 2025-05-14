@@ -1,14 +1,16 @@
 import cors from '@fastify/cors';
-
 import helmet from '@fastify/helmet';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { RequestLogger } from '@repo/fastify';
 import fastify, { FastifyInstance } from 'fastify';
-import fastifyExpress from 'fastify-express';
-import express from 'express';
+import { Sessions, streamableHttp } from 'fastify-mcp';
+
 import packageJson from '../package.json';
 import {
   COR_CONFIG,
   INTERNAL_ERROR_VALUES,
+  MCP_SERVER_CONFIG,
   RESOURCE_NOT_FOUND_ERROR,
   SERVER_LOGGER_CONFIG,
   SERVER_START_VALUES,
@@ -16,7 +18,8 @@ import {
   UNCAUGHT_EXCEPTION_ERROR,
   UNHANDLED_REJECTION_ERROR,
 } from './constants/server.constants';
-import { fastifyRoutes, loadExpressRoutes } from './routes';
+import { fastifyRoutes } from './routes';
+import { getMcpResources } from './utils/mcp/mcp.utils';
 
 export let server: FastifyInstance;
 
@@ -30,11 +33,23 @@ export const init = async function (): Promise<FastifyInstance> {
   // Help secure the api by setting HTTP response headers
   server.register(helmet, { global: true });
 
-  // Add support to express in order to make it work with the MCP library
-  const router = express.Router();
-  loadExpressRoutes(router);
-  await server.register(fastifyExpress).after(async () => {
-    server.use(router);
+  // Enable MCP server
+  server.register(streamableHttp, {
+    stateful: true,
+    mcpEndpoint: '/mcp',
+    sessions: new Sessions<StreamableHTTPServerTransport>(),
+    createServer: () => {
+      const mcpServer = new McpServer(MCP_SERVER_CONFIG, {
+        capabilities: {
+          resources: {}, // Enable resources
+        },
+      });
+      const resources = getMcpResources(server.log);
+      resources.forEach((resource) => {
+        mcpServer.resource(resource.name, resource.template, resource.handler);
+      });
+      return mcpServer.server;
+    },
   });
 
   // Load fastify routes
