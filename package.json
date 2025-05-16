@@ -4,10 +4,10 @@
   "scripts": {
     "build": "turbo run build",
     "check-types": "turbo run check-types",
-    "dev:rest-api": "turbo run dev --filter=rest-api",
-    "dev:mcp-api": "turbo run dev --filter=mcp-api",
+    "dev:internal-api": "turbo run dev --filter=internal-api",
+    "dev:public-api": "turbo run dev --filter=public-api",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "lint": "turbo run lint --filter=rest-api --filter=mcp-api",
+    "lint": "turbo run lint --filter=internal-api --filter=public-api",
     "pre-commit": "lint-staged",
     "test": "turbo test"
   },
@@ -17,7 +17,7 @@
     "turbo": "^2.5.3",
     "typescript": "5.8.2"
   },
-  "packageManager": "pnpm@10.10.0",
+  "packageManager": "pnpm@10.11.0",
   "engines": {
     "node": "22"
   }

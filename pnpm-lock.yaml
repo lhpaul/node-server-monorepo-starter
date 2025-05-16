@@ -21,7 +21,7 @@ importers:
         specifier: 5.8.2
         version: 5.8.2
 
-  apps/mcp-api:
+  apps/internal-api:
     dependencies:
       '@fastify/cors':
         specifier: 11.0.1
@@ -79,7 +79,7 @@ importers:
         specifier: 5.8.2
         version: 5.8.2
 
-  apps/rest-api:
+  apps/public-api:
     dependencies:
       '@fastify/cors':
         specifier: 11.0.1

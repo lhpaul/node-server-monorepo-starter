@@ -7,12 +7,22 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Rest API",
+      "name": "Public API",
       "skipFiles": ["<node_internals>/**"],
       "runtimeExecutable": "turbo",
-      "runtimeArgs": ["dev", "--filter=rest-api"],
-      "outFiles": ["${workspaceFolder}/apps/rest-api/dist/**/*.js"],
-      "cwd": "${workspaceFolder}/apps/rest-api"
+      "runtimeArgs": ["dev", "--filter=public-api"],
+      "outFiles": ["${workspaceFolder}/apps/public-api/dist/**/*.js"],
+      "cwd": "${workspaceFolder}/apps/public-api"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Internal API",
+      "skipFiles": ["<node_internals>/**"],
+      "runtimeExecutable": "turbo",
+      "runtimeArgs": ["dev", "--filter=internal-api"],
+      "outFiles": ["${workspaceFolder}/apps/internal-api/dist/**/*.js"],
+      "cwd": "${workspaceFolder}/apps/internal-api"
     }
   ]
 }

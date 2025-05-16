@@ -33,7 +33,7 @@ Add the unit tests for the created file
 ## Creating a New API Endpoint
 
 ```markdown
-Implement a new "/transactions" endpoint in the "rest-api" application with full CRUD operations.
+Implement a new "/transactions" endpoint in the "public-api" application with full CRUD operations.
 Use the TransactionsRepository from the "shared" package.
 
 Use the "/companies" as guidance.

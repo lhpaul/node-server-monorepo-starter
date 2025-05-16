@@ -3,8 +3,8 @@ import {
   CREATE_TRANSACTION_BODY_JSON_SCHEMA,
   TRANSACTION_ENDPOINTS_PARAMS_JSON_SCHEMA,
   UPDATE_TRANSACTION_BODY_JSON_SCHEMA,
-  URL,
-  URL_WITH_ID,
+  URL_V1,
+  URL_WITH_ID_V1,
 } from '../transactions.endpoints.constants';
 import {
   createTransactionHandler,
@@ -76,7 +76,7 @@ describe('transactionsEndpointsBuilder', () => {
   it('should create GET single transaction endpoint with correct configuration', () => {
     expect(createEndpoint).toHaveBeenNthCalledWith(3, {
       method: ['GET'],
-      url: URL_WITH_ID,
+      url: URL_WITH_ID_V1,
       handler: getTransactionHandler,
       schema: {
         params: TRANSACTION_ENDPOINTS_PARAMS_JSON_SCHEMA,
@@ -87,7 +87,7 @@ describe('transactionsEndpointsBuilder', () => {
   it('should create PATCH transaction endpoint with correct configuration', () => {
     expect(createEndpoint).toHaveBeenNthCalledWith(4, {
       method: ['PATCH'],
-      url: URL_WITH_ID,
+      url: URL_WITH_ID_V1,
       handler: updateTransactionHandler,
       schema: {
         body: UPDATE_TRANSACTION_BODY_JSON_SCHEMA,
@@ -99,7 +99,7 @@ describe('transactionsEndpointsBuilder', () => {
   it('should create DELETE transaction endpoint with correct configuration', () => {
     expect(createEndpoint).toHaveBeenNthCalledWith(5, {
       method: ['DELETE'],
-      url: URL_WITH_ID,
+      url: URL_WITH_ID_V1,
       handler: deleteTransactionHandler,
       schema: {
         params: TRANSACTION_ENDPOINTS_PARAMS_JSON_SCHEMA,
