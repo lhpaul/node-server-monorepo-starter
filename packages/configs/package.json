@@ -2,6 +2,10 @@
   "name": "@repo/configs",
   "version": "1.0.0",
   "description": "Shared configuration files for ESLint, Jest, Prettierd and TypeScript",
+  "private": true,
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
     "@types/jest": "^29.5.14",
     "@typescript-eslint/eslint-plugin": "^8.32.0",
@@ -12,9 +16,5 @@
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "jest": "^29.7.0",
     "prettier": "^3.2.5"
-  },
-  "peerDependencies": {
-    "eslint": "^9.26.0",
-    "typescript": "^5.3.3"
   }
 }
