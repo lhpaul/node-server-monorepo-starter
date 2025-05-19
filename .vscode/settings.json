@@ -12,5 +12,15 @@
     "esbenp.prettier-vscode",
     "wayou.vscode-todo-highlight",
     "davidanson.vscode-markdownlint"
+  ],
+  "cSpell.words": [
+    "firestore",
+    "lintstagedrc",
+    "markdownlint",
+    "monorepo",
+    "pnpm",
+    "prettier",
+    "turbo",
+    "turborepo"
   ]
 }

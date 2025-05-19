@@ -22,10 +22,30 @@ This monorepo includes the following packages and applications:
 
 This monorepo comes pre-configured with essential development tools:
 
+- [PNPM](https://pnpm.io/) Fast, disk space efficient package manager.
 - [Turborepo](https://turborepo.com/) for efficient monorepo management and shared library handling.
 - [TypeScript](https://www.typescriptlang.org/) for robust type checking.
 - [ESLint](https://eslint.org/) for code quality and consistency.
 - [Prettier](https://prettier.io) for automated code formatting.
+
+## Project Structure
+
+```bash
+.vscode/                   # VS Code workspace settings and configurations
+apps/                      # Application source codes
+contexts/                  # Documentation for developers and vibe coding to be used as context.
+packages/                  # Shared packages and libraries
+.gitignore                 # Git ignore rules for the project
+.lintstagedrc.json         # Lint-staged configuration for pre-commit hooks
+.markdownlint.json         # Markdown linting rules
+.monorepo.code-workspace   # VS Code workspace configuration
+package.json               # Root package.json for workspace configuration
+pnpm-lock.yaml             # PNPM lock file for dependency versioning
+pnpm-workspace.yaml        # PNPM workspace configuration
+PROMPTS.md                 # AI prompt templates for development assistance
+TODOs.md                   # Project roadmap and pending tasks
+turbo.json                 # Turborepo configuration file
+```
 
 ## Getting Started
 
@@ -51,7 +71,7 @@ Install all repository dependencies by running:
 pnpm install
 ```
 
-#### Build
+### Build
 
 The build process will create optimized production bundles in the `dist` directory of each package.
 
@@ -74,19 +94,19 @@ cd apps/public-api
 pnpm run build
 ```
 
-#### Development
+### Development
 
 This project contains multiple applications that can be run independently. For development, we use development builds that support hot-reloading and provide better debugging capabilities.
 
 To start development, choose one of the following applications:
 
-##### Internal API
+#### Internal API
 
 ```bash
 pnpm run dev:internal-api
 ```
 
-##### Public API
+#### Public API
 
 ```bash
 pnpm run dev:public-api
@@ -94,11 +114,11 @@ pnpm run dev:public-api
 
 > **Note**: Each application runs on its own port and can be developed independently. Make sure you have all dependencies installed by running `pnpm install` before starting development.
 
-#### Testing
+### Testing
 
 The project uses Jest as the testing framework. Here's how to run tests:
 
-##### Running All Tests
+#### Running All Tests
 
 To run tests across all apps and packages from the root directory:
 
@@ -106,7 +126,7 @@ To run tests across all apps and packages from the root directory:
 pnpm run test
 ```
 
-##### Running Specific Tests
+#### Running Specific Tests
 
 To run tests for a specific app or package:
 
@@ -122,7 +142,7 @@ cd packages/shared  # or any other package/app directory
 pnpm run test
 ```
 
-##### Test Coverage
+#### Test Coverage
 
 Each package and app generates test coverage reports. To view detailed coverage information:
 

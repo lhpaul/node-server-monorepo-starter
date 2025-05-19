@@ -2,7 +2,7 @@ import { FastifyBaseLogger } from 'fastify';
 import { ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { ReadResourceResult } from '@modelcontextprotocol/sdk/types.js';
 
-import { McpResourceConfig } from '../../../interfaces/mcp.interfaces';
+import { McpResourceConfig } from '../../../definitions/mcp.interfaces';
 import { getMcpResources } from '../mcp.utils';
 import { transactionsResourceBuilder } from '../../../mcp/resources/transactions/transactions.resource';
 
