@@ -2,8 +2,10 @@ import { Company } from '../company.model';
 
 describe(Company.name, () => {
   const initialValues = {
+    createdAt: new Date(),
     id: 'comp-123',
     name: 'Test Company',
+    updatedAt: new Date(),
   };
   let company: Company;
 
@@ -17,28 +19,10 @@ describe(Company.name, () => {
     });
 
     it('should initialize with correct values', () => {
+      expect(company.createdAt).toBe(initialValues.createdAt);
       expect(company.id).toBe(initialValues.id);
       expect(company.name).toBe(initialValues.name);
-    });
-
-    it('should handle partial initialization', () => {
-      const partialCompany = new Company({ name: 'Partial Company' });
-      expect(partialCompany.name).toBe('Partial Company');
-      expect(partialCompany.id).toBeUndefined();
-    });
-  });
-
-  describe('Property Assignment', () => {
-    it('should assign and retrieve id correctly', () => {
-      const testId = 'comp-456';
-      company.id = testId;
-      expect(company.id).toBe(testId);
-    });
-
-    it('should assign and retrieve name correctly', () => {
-      const testName = 'Updated Company Name';
-      company.name = testName;
-      expect(company.name).toBe(testName);
+      expect(company.updatedAt).toBe(initialValues.updatedAt);
     });
   });
 });

@@ -39,6 +39,8 @@ export class CompaniesRepository {
       new Company({
         ...body,
         id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       }),
     );
     return Promise.resolve({ id });

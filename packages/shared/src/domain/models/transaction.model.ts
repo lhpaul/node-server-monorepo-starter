@@ -1,16 +1,20 @@
+import { DatabaseObject } from '../../definitions/database.interfaces';
+
 export enum TransactionType {
   CREDIT = 'credit',
   DEBIT = 'debit',
 }
 
-export class Transaction {
-  amount: number; // amount of the transaction
-  companyId: string; // id of the company
-  date: string; // date of the transaction
-  id: string; // id of the transaction
-  type: TransactionType; // type of the transaction
+export class Transaction implements DatabaseObject {
+  public readonly amount: number; // amount of the transaction
+  public readonly companyId: string; // id of the company
+  public readonly createdAt: Date; // date of creation
+  public readonly date: string; // date of the transaction
+  public readonly id: string; // id of the transaction
+  public readonly type: TransactionType; // type of the transaction
+  public readonly updatedAt: Date; // date of last update
 
-  constructor(transaction: Partial<Transaction>) {
+  constructor(transaction: Required<Transaction>) {
     Object.assign(this, transaction);
   }
 }

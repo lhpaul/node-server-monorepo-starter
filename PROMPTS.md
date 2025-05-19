@@ -2,7 +2,7 @@
 
 This document contains example prompts for common development tasks.
 
-## Creating a New Domain Entity
+## Create a New Domain Entity
 
 ```markdown
 Create a domain model and its corresponding repository for the "Transaction" entity in the "shared" package with the following attributes:
@@ -19,7 +19,7 @@ Use model "Company" as guidance.
 Do not make the unit tests.
 ```
 
-### Files as context:
+`Files as context:`
 
 - contexts/code.conventions.md
 - contexts/general.conventions.md
@@ -41,7 +41,7 @@ Use the "/companies" as guidance.
 Do not write the unit tests.
 ```
 
-### Files as context:
+### Files as context
 
 - contexts/code.conventions.md
 - contexts/endpoints.conventions.md
@@ -59,7 +59,7 @@ Add the unit tests for the created files. As before, use "/companies" endpoint a
 Write the unit tests for transactions.list.handler.ts file
 ```
 
-### Files as context:
+`Files as context:`
 
 - transactions.list.handler.spec.ts
 - contexts/code.conventions.md

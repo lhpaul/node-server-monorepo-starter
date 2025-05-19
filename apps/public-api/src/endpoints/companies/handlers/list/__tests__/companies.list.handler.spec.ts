@@ -18,9 +18,9 @@ describe(listCompaniesHandler.name, () => {
   let mockRepository: jest.Mocked<CompaniesRepository>;
   let mockLogger: any;
   const mockCompanies = [
-    { id: '1', name: 'Company 1' },
-    { id: '2', name: 'Company 2' },
-    { id: '3', name: 'Company 3' },
+    { id: '1', name: 'Company 1', createdAt: new Date(), updatedAt: new Date() },
+    { id: '2', name: 'Company 2', createdAt: new Date(), updatedAt: new Date() },
+    { id: '3', name: 'Company 3', createdAt: new Date(), updatedAt: new Date() },
   ];
 
   beforeEach(() => {

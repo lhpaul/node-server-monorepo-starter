@@ -60,7 +60,9 @@ describe(transactionsResourceBuilder.name, () => {
       amount: 100,
       companyId: 'company123',
       date: '2024-01-15',
-      type: TransactionType.CREDIT
+      type: TransactionType.CREDIT,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     }];
     mockTransactionsRepo.getTransactions.mockResolvedValue(mockTransactions);
 
@@ -105,7 +107,9 @@ describe(transactionsResourceBuilder.name, () => {
       amount: 100,
       companyId: 'company123',
       date: '2024-01-15',
-      type: TransactionType.CREDIT
+      type: TransactionType.CREDIT,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     }];
     mockTransactionsRepo.getTransactions.mockResolvedValue(mockTransactions);
     const variables = {
@@ -138,7 +142,9 @@ describe(transactionsResourceBuilder.name, () => {
       amount: 100,
       companyId: 'company123',
       date: '2024-01-15',
-      type: TransactionType.CREDIT
+      type: TransactionType.CREDIT,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     }];
     mockTransactionsRepo.getTransactions.mockResolvedValue(mockTransactions);
 
@@ -173,7 +179,9 @@ describe(transactionsResourceBuilder.name, () => {
       amount: 100,
       companyId: 'company123',
       date: '2024-01-15',
-      type: TransactionType.CREDIT
+      type: TransactionType.CREDIT,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     }];
     mockTransactionsRepo.getTransactions.mockResolvedValue(mockTransactions)
 

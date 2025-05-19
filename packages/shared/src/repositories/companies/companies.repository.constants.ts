@@ -1,9 +1,9 @@
 import { Company } from '../../domain/models/company.model';
 
 export const MOCK_COMPANIES: Company[] = [
-  new Company({ id: '1', name: 'Acme Corp' }),
-  new Company({ id: '2', name: 'TechStart Inc' }),
-  new Company({ id: '3', name: 'Global Solutions Ltd' }),
+  new Company({ createdAt: new Date(), id: '1', name: 'Acme Corp', updatedAt: new Date() }),
+  new Company({ createdAt: new Date(), id: '2', name: 'TechStart Inc', updatedAt: new Date() }),
+  new Company({ createdAt: new Date(), id: '3', name: 'Global Solutions Ltd', updatedAt: new Date() }),
 ];
 
 export const ERROR_MESSAGES = {

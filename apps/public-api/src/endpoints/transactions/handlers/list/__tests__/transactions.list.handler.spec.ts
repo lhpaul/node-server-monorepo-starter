@@ -25,6 +25,8 @@ describe(listTransactionsHandler.name, () => {
       date: '2024-01-01',
       amount: 100,
       type: TransactionType.CREDIT,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     },
     {
       id: '2',
@@ -32,6 +34,8 @@ describe(listTransactionsHandler.name, () => {
       date: '2024-01-02',
       amount: 200,
       type: TransactionType.DEBIT,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     },
     {
       id: '3',
@@ -39,6 +43,8 @@ describe(listTransactionsHandler.name, () => {
       date: '2024-01-03',
       amount: 300,
       type: TransactionType.CREDIT,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     },
   ];
 

@@ -35,10 +35,14 @@ export class TransactionsRepository {
     _context?: ExecutionContext,
   ): Promise<{ id: string }> {
     const id = MOCK_TRANSACTIONS.length.toString();
-    MOCK_TRANSACTIONS.push({
-      ...body,
-      id,
-    });
+    MOCK_TRANSACTIONS.push(
+      new Transaction({
+        ...body,
+        id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }),
+    );
     return Promise.resolve({ id });
   }
 
