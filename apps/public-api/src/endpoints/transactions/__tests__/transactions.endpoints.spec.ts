@@ -38,7 +38,7 @@ describe('transactionsEndpointsBuilder', () => {
   it('should create POST transaction endpoint with correct configuration', () => {
     expect(createEndpoint).toHaveBeenNthCalledWith(1, {
       method: ['POST'],
-      url: URL,
+      url: URL_V1,
       handler: createTransactionHandler,
       schema: {
         body: CREATE_TRANSACTION_BODY_JSON_SCHEMA,
@@ -49,7 +49,7 @@ describe('transactionsEndpointsBuilder', () => {
   it('should create GET transactions list endpoint with correct configuration', () => {
     expect(createEndpoint).toHaveBeenNthCalledWith(2, {
       method: ['GET'],
-      url: URL,
+      url: URL_V1,
       handler: listTransactionsHandler,
       schema: {
         querystring: {

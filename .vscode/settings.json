@@ -17,6 +17,7 @@
     "firestore",
     "lintstagedrc",
     "markdownlint",
+    "modelcontextprotocol",
     "monorepo",
     "pnpm",
     "prettier",
