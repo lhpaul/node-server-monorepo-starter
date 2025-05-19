@@ -1,6 +1,7 @@
 import { compareSync } from 'bcrypt';
 import { ApiKey } from '../../../domain/models/api-key.model';
 import { ApiKeysRepository } from '../../../repositories/api-keys/api-keys.repository';
+import { API_KEYS_CACHE_EXPIRATION } from '../api-keys.service.constants';
 import { ApiKeysService } from '../api-keys.service';
 
 jest.mock('bcrypt');
@@ -87,6 +88,68 @@ describe(ApiKeysService.name, () => {
         oauthClientId: [{ operator: '==', value: mockOauthClientId }],
       });
       expect(compareSync).not.toHaveBeenCalled();
+    });
+
+    describe('cache behavior', () => {
+      it('should fetch from repository on first request', async () => {
+        // Arrange
+        const mockApiKeys = [createMockApiKey(mockHash)];
+        getApiKeysMock.mockResolvedValue(mockApiKeys);
+        (compareSync as jest.Mock).mockReturnValue(true);
+
+        // Act
+        await service.validateApiKey(mockOauthClientId, mockApiKeyValue);
+
+        // Assert
+        expect(getApiKeysMock).toHaveBeenCalledTimes(1);
+      });
+
+      it('should use cache for subsequent requests within expiration time', async () => {
+        // Arrange
+        const mockApiKeys = [createMockApiKey(mockHash)];
+        getApiKeysMock.mockResolvedValue(mockApiKeys);
+        (compareSync as jest.Mock).mockReturnValue(true);
+
+        // Act
+        await service.validateApiKey(mockOauthClientId, mockApiKeyValue);
+        await service.validateApiKey(mockOauthClientId, mockApiKeyValue);
+
+        // Assert
+        expect(getApiKeysMock).toHaveBeenCalledTimes(1);
+      });
+
+      it('should refetch when cache is expired', async () => {
+        // Arrange
+        jest.useFakeTimers();
+        const mockApiKeys = [createMockApiKey(mockHash)];
+        getApiKeysMock.mockResolvedValue(mockApiKeys);
+        (compareSync as jest.Mock).mockReturnValue(true);
+
+        // Act
+        await service.validateApiKey(mockOauthClientId, mockApiKeyValue);
+        
+        // Move time forward past cache expiration
+        jest.advanceTimersByTime(API_KEYS_CACHE_EXPIRATION + 1000);
+        
+        await service.validateApiKey(mockOauthClientId, mockApiKeyValue);
+
+        // Assert
+        expect(getApiKeysMock).toHaveBeenCalledTimes(2);
+        jest.useRealTimers();
+      });
+
+      it('should refetch when cache is empty', async () => {
+        // Arrange
+        const mockApiKeys: ApiKey[] = [];
+        getApiKeysMock.mockResolvedValue(mockApiKeys);
+
+        // Act
+        await service.validateApiKey(mockOauthClientId, mockApiKeyValue);
+        await service.validateApiKey(mockOauthClientId, mockApiKeyValue);
+
+        // Assert
+        expect(getApiKeysMock).toHaveBeenCalledTimes(2);
+      });
     });
   });
 });
