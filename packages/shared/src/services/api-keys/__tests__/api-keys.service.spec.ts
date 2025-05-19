@@ -15,6 +15,14 @@ describe(ApiKeysService.name, () => {
     service = new ApiKeysService();
   });
 
+  describe(ApiKeysService.getInstance.name, () => {
+    it('should return the same instance', () => {
+      const instance1 = ApiKeysService.getInstance();
+      const instance2 = ApiKeysService.getInstance();
+      expect(instance1).toBe(instance2);
+    });
+  });
+
   describe(ApiKeysService.prototype.validateApiKey.name, () => {
     const mockOauthClientId = 'test-client-id';
     const mockApiKeyValue = 'test-api-key';

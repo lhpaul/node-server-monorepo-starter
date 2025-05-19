@@ -2,24 +2,24 @@ import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
-import { RequestLogger } from '@repo/fastify';
+import {
+  SERVER_LOGGER_CONFIG,
+  setServerErrorHandlers,
+  setServerHooks,
+  setServerProcessErrorHandlers,
+} from '@repo/fastify';
 import fastify, { FastifyInstance } from 'fastify';
 import { Sessions, streamableHttp } from 'fastify-mcp';
 
 import packageJson from '../package.json';
 import {
   COR_CONFIG,
-  INTERNAL_ERROR_VALUES,
   MCP_SERVER_CONFIG,
-  RESOURCE_NOT_FOUND_ERROR,
-  SERVER_LOGGER_CONFIG,
   SERVER_START_VALUES,
-  TIMEOUT_ERROR,
-  UNCAUGHT_EXCEPTION_ERROR,
-  UNHANDLED_REJECTION_ERROR,
 } from './constants/server.constants';
-import { fastifyRoutes } from './routes';
+import { routes } from './routes';
 import { getMcpResources } from './utils/mcp/mcp.utils';
+import { authenticateApiKey } from './utils/auth/auth.utils';
 
 export let server: FastifyInstance;
 
@@ -66,70 +66,16 @@ export const init = async function (): Promise<FastifyInstance> {
     },
   });
 
-  fastifyRoutes.forEach((route) => {
-    server.route(route);
-  });
-
-  // Handle 404 errors
-  server.setNotFoundHandler((request, reply) => {
-    request.log.warn(
-      {
-        logId: RESOURCE_NOT_FOUND_ERROR.logId,
-        requestId: request.id,
-        url: request.url,
-      },
-      RESOURCE_NOT_FOUND_ERROR.logMessage,
-    );
-    reply.status(404).send({
-      code: RESOURCE_NOT_FOUND_ERROR.responseCode,
-      message: RESOURCE_NOT_FOUND_ERROR.responseMessage,
+  routes.forEach((route) => {
+    server.route({
+      ...route,
+      preValidation: authenticateApiKey, // Add API key authentication
     });
   });
 
-  // Handle 500 errors
-  server.setErrorHandler((error, request, reply) => {
-    const lastStep = request.log.lastStep;
-    const errorCode = lastStep?.obfuscatedId ?? '-1';
-    request.log.error(
-      {
-        logId: INTERNAL_ERROR_VALUES.logId,
-        errorCode,
-        error,
-        step: lastStep ?? null,
-      },
-      INTERNAL_ERROR_VALUES.logMessage({ error, step: lastStep?.id ?? null }),
-    );
-    return reply.code(500).send({
-      code: errorCode,
-      message: INTERNAL_ERROR_VALUES.responseMessage,
-    });
-  });
-
-  // Wrap request logger
-  server.addHook('onRequest', (request, _reply, done) => {
-    request.log = new RequestLogger({
-      logger: request.log,
-    });
-    done();
-  });
-
-  server.addHook('onSend', (request, _reply, payload, done) => {
-    console.log('onSend', request.id);
-    console.log('payload', payload);
-    done();
-  });
-
-  // Add hook for timeout
-  server.addHook('onTimeout', (request, reply) => {
-    request.log.error(
-      {
-        logId: TIMEOUT_ERROR.logId,
-        requestId: request.id,
-        elapsedTime: reply.elapsedTime,
-      },
-      TIMEOUT_ERROR.logMessage({ reply }),
-    );
-  });
+  setServerErrorHandlers(server);
+  setServerHooks(server);
+  setServerProcessErrorHandlers(server);
   return server;
 };
 
@@ -147,27 +93,3 @@ export const start = async function (): Promise<void> {
     SERVER_START_VALUES.logMessage({ address }),
   );
 };
-
-process.on('unhandledRejection', (err: Error) => {
-  server.log.error(
-    {
-      logId: UNHANDLED_REJECTION_ERROR.logId,
-      error: err,
-    },
-    UNHANDLED_REJECTION_ERROR.logMessage({ err }),
-  );
-  console.error('unhandledRejection', err);
-  process.exit(1);
-});
-
-process.on('uncaughtException', (err: Error) => {
-  server.log.error(
-    {
-      logId: UNCAUGHT_EXCEPTION_ERROR.logId,
-      error: err,
-    },
-    UNCAUGHT_EXCEPTION_ERROR.logMessage({ err }),
-  );
-  console.error('uncaughtException', err);
-  process.exit(1);
-});

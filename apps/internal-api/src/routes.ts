@@ -1,3 +1,9 @@
 import { RouteOptions } from 'fastify';
 
-export const fastifyRoutes: RouteOptions[] = [];
+import { companiesEndpointsBuilder } from './endpoints/companies/companies.endpoints';
+import { transactionsEndpointsBuilder } from './endpoints/transactions/transactions.endpoints';
+
+export const routes: RouteOptions[] = [
+  ...companiesEndpointsBuilder(),
+  ...transactionsEndpointsBuilder(),
+];

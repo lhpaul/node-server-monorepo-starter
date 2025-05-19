@@ -3,7 +3,14 @@ import { ApiKeysRepository } from '../../repositories/api-keys/api-keys.reposito
 import { API_KEYS_CACHE_EXPIRATION } from './api-keys.service.constants';
 import { ApiKeyValidationResult, ClientCache } from './api-keys.service.interfaces';
 export class ApiKeysService {
+  private static instance: ApiKeysService;
   private cache: {[oauthClientId: string]: ClientCache} = {}; // to avoid fetching api keys from the database on each request
+  public static getInstance(): ApiKeysService {
+    if (!ApiKeysService.instance) {
+      ApiKeysService.instance = new ApiKeysService();
+    }
+    return ApiKeysService.instance;
+  }
   public async validateApiKey(oauthClientId: string, apiKeyValue: string): Promise<ApiKeyValidationResult> {
     if (!this.cache[oauthClientId] || this.cache[oauthClientId].fetchedAt < new Date(Date.now() - API_KEYS_CACHE_EXPIRATION) || this.cache[oauthClientId].apiKeys.length === 0) {
       this.cache[oauthClientId] = {

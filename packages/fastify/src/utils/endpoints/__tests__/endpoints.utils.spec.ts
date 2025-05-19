@@ -8,7 +8,7 @@ import {
   onSendHookHandler,
 } from 'fastify';
 
-import { createEndpoint, transformQueryParams } from '../endpoints.utils';
+import { buildSchemaForQueryParamsProperty, createEndpoint, transformQueryParams } from '../endpoints.utils';
 import { LOG_IDS } from '../endpoints.utils.constants';
 import { IEndpointOptions } from '../endpoints.utils.interfaces';
 
@@ -353,6 +353,32 @@ describe(createEndpoint.name, () => {
         ],
         type: [{ value: ['income', 'expense'], operator: 'in' }],
       });
+    });
+  });
+});
+
+describe(transformQueryParams.name, () => {
+  it('should transform query params', () => {
+    const queryParams = { amount: 100, date: '2021-01-01', type: 'income' };
+    const transformedQuery = transformQueryParams(queryParams);
+    expect(transformedQuery).toEqual({
+      amount: [{ value: queryParams.amount, operator: '==' }],
+      date: [{ value: queryParams.date, operator: '==' }],
+      type: [{ value: queryParams.type, operator: '==' }],
+    });
+  });
+});
+
+describe(buildSchemaForQueryParamsProperty.name, () => {
+  it('should build schema for query params property', () => {
+    const schema = buildSchemaForQueryParamsProperty('amount', 'number', ['eq', 'ne']);
+    expect(schema).toEqual({
+      amount: {
+        type: 'number', 
+      },
+      'amount[ne]': {
+        type: 'number',
+      },
     });
   });
 });
