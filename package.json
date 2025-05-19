@@ -7,8 +7,8 @@
     "dev:internal-api": "turbo run dev --filter=internal-api",
     "dev:public-api": "turbo run dev --filter=public-api",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "lint": "turbo run lint --filter=internal-api --filter=public-api",
-    "pre-commit": "lint-staged",
+    "lint": "turbo run lint",
+    "lint:staged": "lint-staged",
     "test": "turbo test"
   },
   "devDependencies": {
