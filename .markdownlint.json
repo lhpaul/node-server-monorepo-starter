@@ -1,0 +1,13 @@
+{
+  "comment": "Relaxed rules",
+
+  "default": true,
+  "fenced-code-language": false,
+  "first-line-h1": false,
+  "line_length": false,
+  "no-bare-urls": false,
+  "no-inline-html": false,
+  "ol-prefix": false,
+  "ul-indent": false,
+  "whitespace": false
+}

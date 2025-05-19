@@ -1,80 +1,141 @@
-# Turborepo starter
+# Monorepo Starter
 
-This Turborepo starter is maintained by the Turborepo core team.
+This repository provides a robust foundation for developing a server-side application with a well-structured domain architecture.
 
-## Using this example
+This starter template is designed to be cloud platform and database independent, giving you the flexibility to choose your preferred infrastructure. For specialized implementations tailored to specific cloud providers, explore these extensions:
 
-Run the following command:
+- [Google Cloud Platform (GCP)](https://github.com/lhpaul/node-server-monorepo-starter): A complete implementation leveraging [Firebase Authentication](https://firebase.google.com/docs/auth) for user authentication, [Cloud Firestore](https://firebase.google.com/docs/firestore) for data storage, and [Cloud Run](https://cloud.google.com/run) for serverless deployment.
 
-```sh
-npx create-turbo@latest
-```
+## What's Inside?
 
-## What's inside?
-
-This Turborepo includes the following packages/apps:
+This monorepo includes the following packages and applications:
 
 ### Apps and Packages
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+- `internal-api`: A [Fastify](https://fastify.dev/) application that provides a REST API and MCP server implementation. Designed for server-to-server communication with authentication via API keys or service accounts. Ideally it should be used in a internal network to ensure secure data transmission.
+- `public-api`: A [Fastify](https://fastify.dev/) application that provides a REST API implementation. Designed for secure internet-facing access with robust authentication and authorization protocols such as OIDC.
+- `@repo/configs`: Shared configuration files for ESLint, Jest, Prettier and TypeScript to ensure consistent code quality and style across all packages.
+- `@repo/fastify`: Shared Fastify utilities and plugins providing common server functionality, middleware, and helper methods.
+- `@repo/shared`: Shared business logic including domain models, services, interfaces and utilities used across all applications.
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+### Development Tools
 
-### Utilities
+This monorepo comes pre-configured with essential development tools:
 
-This Turborepo has some additional tools already setup for you:
+- [Turborepo](https://turborepo.com/) for efficient monorepo management and shared library handling.
+- [TypeScript](https://www.typescriptlang.org/) for robust type checking.
+- [ESLint](https://eslint.org/) for code quality and consistency.
+- [Prettier](https://prettier.io) for automated code formatting.
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+## Getting Started
 
-### Build
+### Setup
 
-To build all apps and packages, run the following command:
+#### Prerequisites
 
+Before you begin, ensure you have the following installed:
+
+1. Node.js version 22 (we recommend using [nvm](https://github.com/nvm-sh/nvm) for version management)
+2. [pnpm](https://pnpm.io/installation) package manager.
+3. Turborepo CLI globally installed:
+
+   ```bash
+   pnpm install turbo --global
+   ```
+
+#### Installation
+
+Install all repository dependencies by running:
+
+```bash
+pnpm install
 ```
-cd my-turborepo
+
+#### Build
+
+The build process will create optimized production bundles in the `dist` directory of each package.
+
+To build all applications and packages in the monorepo:
+
+```bash
+# Build for production (with optimizations)
 pnpm build
 ```
 
-### Develop
+You can also build individual packages or applications by navigating to their respective directories:
 
-To develop all apps and packages, run the following command:
+```bash
+# Example: Building a shared package
+cd packages/shared
+pnpm run build
 
-```
-cd my-turborepo
-pnpm dev
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-```
-cd my-turborepo
-npx turbo login
+# Example: Building a specific application
+cd apps/public-api
+pnpm run build
 ```
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+#### Development
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
+This project contains multiple applications that can be run independently. For development, we use development builds that support hot-reloading and provide better debugging capabilities.
 
+To start development, choose one of the following applications:
+
+##### Internal API
+
+```bash
+pnpm run dev:internal-api
 ```
-npx turbo link
+
+##### Public API
+
+```bash
+pnpm run dev:public-api
 ```
 
-## Useful Links
+> **Note**: Each application runs on its own port and can be developed independently. Make sure you have all dependencies installed by running `pnpm install` before starting development.
 
-Learn more about the power of Turborepo:
+#### Testing
+
+The project uses Jest as the testing framework. Here's how to run tests:
+
+##### Running All Tests
+
+To run tests across all apps and packages from the root directory:
+
+```bash
+pnpm run test
+```
+
+##### Running Specific Tests
+
+To run tests for a specific app or package:
+
+1. Navigate to the target directory:
+
+```bash
+cd packages/shared  # or any other package/app directory
+```
+
+2. Run the tests:
+
+```bash
+pnpm run test
+```
+
+##### Test Coverage
+
+Each package and app generates test coverage reports. To view detailed coverage information:
+
+1. Navigate to the package/app directory
+2. Open `coverage/lcov-report/index.html` in your browser
+
+## Project Conventions
+
+Before starting a new development, please review the [Project Conventions] documentation inside the `/contexts` folder. Following these guidelines helps ensure consistency, maintainability, and smoother code reviews during Pull Requests.
+
+## Additional Resources
+
+Explore more Turborepo features:
 
 - [Tasks](https://turborepo.com/docs/crafting-your-repository/running-tasks)
 - [Caching](https://turborepo.com/docs/crafting-your-repository/caching)
@@ -82,3 +143,19 @@ Learn more about the power of Turborepo:
 - [Filtering](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters)
 - [Configuration Options](https://turborepo.com/docs/reference/configuration)
 - [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/your-feature`).
+3. Commit your changes (`git commit -am 'Add new feature'`).
+4. Push to the branch (`git push origin feature/your-feature`).
+5. Open a pull request from your branch to `main`.
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
+
+## Contact
+
+For questions or feedback, please contact [lhpaul11@gmail.com](mailto:lhpaul11@gmail.com).

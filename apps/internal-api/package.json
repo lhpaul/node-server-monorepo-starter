@@ -2,7 +2,7 @@
   "name": "internal-api",
   "version": "0.0.1",
   "main": "dist/index.js",
-  "description": "Internal API. Made to be consumed through a internal network with server to server authentication such as API keys or service accounts.",
+  "description": "Internal API. Made to be consumed with server to server authentication such as API keys or service accounts. Ideally all communication is done through a internal network.",
   "scripts": {
     "build": "tsc",
     "clean": "rimraf dist",
