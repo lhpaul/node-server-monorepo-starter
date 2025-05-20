@@ -1,17 +1,17 @@
 import { QueryInput, QueryOptions } from '../../definitions/listing.interfaces';
 
-export interface CreateApiKeyBody {
+export interface CreatePrivateKeyBody {
   oauthClientId: string;
   label: string;
   hash: string;
 }
 
-export interface UpdateApiKeyBody {
+export interface UpdatePrivateKeyBody {
   label?: string;
   hash?: string;
 }
 
-export interface GetApiKeysQuery extends QueryInput {
+export interface GetPrivateKeysQuery extends QueryInput {
   oauthClientId?: QueryOptions<string>[];
   label?: QueryOptions<string>[];
 } 

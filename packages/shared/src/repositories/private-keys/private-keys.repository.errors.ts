@@ -1,20 +1,20 @@
-export enum UpdateApiKeyErrorCode {
+export enum UpdatePrivateKeyErrorCode {
   DOCUMENT_NOT_FOUND = 'DOCUMENT_NOT_FOUND',
 }
 
-export enum DeleteApiKeyErrorCode {
+export enum DeletePrivateKeyErrorCode {
   DOCUMENT_NOT_FOUND = 'DOCUMENT_NOT_FOUND',
 }
 
-export class UpdateApiKeyError extends Error {
-  code: UpdateApiKeyErrorCode;
+export class UpdatePrivateKeyError extends Error {
+  code: UpdatePrivateKeyErrorCode;
   message: string;
 
   constructor({
     code,
     message,
   }: {
-    code: UpdateApiKeyErrorCode;
+    code: UpdatePrivateKeyErrorCode;
     message: string;
   }) {
     super(message);
@@ -23,15 +23,15 @@ export class UpdateApiKeyError extends Error {
   }
 }
 
-export class DeleteApiKeyError extends Error {
-  code: DeleteApiKeyErrorCode;
+export class DeletePrivateKeyError extends Error {
+  code: DeletePrivateKeyErrorCode;
   message: string;
 
   constructor({
     code,
     message,
   }: {
-    code: DeleteApiKeyErrorCode;
+    code: DeletePrivateKeyErrorCode;
     message: string;
   }) {
     super(message);

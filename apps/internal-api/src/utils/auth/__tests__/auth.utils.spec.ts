@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { ApiKeysService } from '@repo/shared/services';
+import { PrivateKeysService } from '@repo/shared/services';
 import {
   API_KEY_HEADER,
   UNAUTHORIZED_ERROR,
@@ -30,7 +30,7 @@ describe(authenticateApiKey.name, () => {
   let mockRequest: Partial<FastifyRequest>;
   let mockReply: Partial<FastifyReply>;
   let mockDone: jest.Mock;
-  let mockApiKeysService: jest.Mocked<ApiKeysService>;
+  let mockApiKeysService: jest.Mocked<PrivateKeysService>;
   let mockLogger: jest.Mocked<RequestLogger>;
 
   const API_KEY_HEADER_MOCK = 'api-key';
@@ -60,9 +60,9 @@ describe(authenticateApiKey.name, () => {
     mockDone = jest.fn();
     mockApiKeysService = {
       validateApiKey: jest.fn(),
-    } as unknown as jest.Mocked<ApiKeysService>;
+    } as unknown as jest.Mocked<PrivateKeysService>;
 
-    (ApiKeysService.getInstance as jest.Mock).mockReturnValue(mockApiKeysService);
+    (PrivateKeysService.getInstance as jest.Mock).mockReturnValue(mockApiKeysService);
   });
 
   afterEach(() => {
@@ -105,11 +105,11 @@ describe(authenticateApiKey.name, () => {
       responseMessage: 'Forbidden request',
     };
     forbiddenErrorMock.mockReturnValue(FORBIDDEN_ERROR_MOCK);
-    mockApiKeysService.validateApiKey.mockResolvedValue({ isValid: false });
+    mockApiKeysService.validatePrivateKey.mockResolvedValue({ isValid: false });
 
     await authenticateApiKey(mockRequest as FastifyRequest, mockReply as FastifyReply, mockDone);
 
-    expect(mockApiKeysService.validateApiKey).toHaveBeenCalledWith(clientId, apiKeyValue);
+    expect(mockApiKeysService.validatePrivateKey).toHaveBeenCalledWith(clientId, apiKeyValue);
 
     expect(mockLogger.warn).toHaveBeenCalledWith(
       { logId: FORBIDDEN_ERROR.logId },
@@ -128,11 +128,11 @@ describe(authenticateApiKey.name, () => {
     mockRequest.headers = {
       [API_KEY_HEADER]: validApiKey,
     };
-    mockApiKeysService.validateApiKey.mockResolvedValue({ isValid: true });
+    mockApiKeysService.validatePrivateKey.mockResolvedValue({ isValid: true });
 
     await authenticateApiKey(mockRequest as FastifyRequest, mockReply as FastifyReply, mockDone);
 
-    expect(mockApiKeysService.validateApiKey).toHaveBeenCalledWith('clientId', 'validKey');
+    expect(mockApiKeysService.validatePrivateKey).toHaveBeenCalledWith('clientId', 'validKey');
     expect(mockLogger.warn).not.toHaveBeenCalled();
     expect(mockReply.code).not.toHaveBeenCalled();
     expect(mockReply.send).not.toHaveBeenCalled();

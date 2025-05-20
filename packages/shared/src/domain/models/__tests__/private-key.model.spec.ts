@@ -1,6 +1,6 @@
-import { ApiKey } from '../api-key.model';
+import { PrivateKey } from '../private-key.model';
 
-describe(ApiKey.name, () => {
+describe(PrivateKey.name, () => {
   const mockDate = new Date('2024-01-01T00:00:00.000Z');
   
   const mockApiKeyData = {
@@ -13,7 +13,7 @@ describe(ApiKey.name, () => {
   };
 
   it('should initialize with correct values', () => {
-    const apiKey = new ApiKey(mockApiKeyData);
+    const apiKey = new PrivateKey(mockApiKeyData);
 
     expect(apiKey.oauthClientId).toBe(mockApiKeyData.oauthClientId);
     expect(apiKey.createdAt).toBe(mockApiKeyData.createdAt);

@@ -5,7 +5,7 @@ import {
   FORBIDDEN_ERROR,
   FORBIDDEN_ERROR_STATUS_CODE,
 } from '@repo/fastify';
-import { ApiKeysService } from '@repo/shared/services';
+import { PrivateKeysService } from '@repo/shared/services';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 export async function authenticateApiKey(request: FastifyRequest, reply: FastifyReply, done: () => void) {
@@ -16,8 +16,8 @@ export async function authenticateApiKey(request: FastifyRequest, reply: Fastify
     }, UNAUTHORIZED_ERROR.logMessage);
     return reply.code(UNAUTHORIZED_ERROR_STATUS_CODE).send({ code: UNAUTHORIZED_ERROR.responseCode, message: UNAUTHORIZED_ERROR.responseMessage });
   }
-  const [oauthClientId, apiKeyValue] = Buffer.from(apiKey, 'base64').toString().split(':');
-  const { isValid } = await ApiKeysService.getInstance().validateApiKey(oauthClientId, apiKeyValue);
+  const [oauthClientId, privateKeyValue] = Buffer.from(apiKey, 'base64').toString().split(':');
+  const { isValid } = await PrivateKeysService.getInstance().validatePrivateKey(oauthClientId, privateKeyValue);
   if (!isValid) {
     request.log.warn({
       logId: FORBIDDEN_ERROR.logId
