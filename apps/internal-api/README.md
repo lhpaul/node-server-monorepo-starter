@@ -21,3 +21,26 @@ jest.config.ts        # Jest configuration file
 package.json          # Workspace configuration
 tsconfig.json         # Typescript configuration
 ```
+
+## Authentication
+
+This API uses API keys for authentication. To authenticate your requests:
+
+1. Include your API key in the `x-api-key` header
+2. API keys are composed of a client ID and private key, formatted as `clientId:privateKey`
+3. The combined string must be Base64 encoded
+
+### Example
+
+For testing purposes, you can use this pre-configured API key:
+
+- Client ID: `client-1`
+- Private Key: `private-key-1`
+- Base64 Encoded: `Y2xpZW50LTE6cHJpdmF0ZS1rZXktMQ==`
+
+Example request:
+
+```bash
+curl --location --request GET 'localhost:4001/v1/transactions?companyId=1' \
+--header 'x-api-key: Y2xpZW50LTE6cHJpdmF0ZS1rZXktMQ=='
+```
