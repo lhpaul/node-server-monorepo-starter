@@ -2,6 +2,8 @@ import {
   buildSchemaForQueryParamsProperty,
   createEndpoint,
 } from '@repo/fastify';
+import { TransactionType } from '@repo/shared/domain';
+import { RouteOptions } from 'fastify';
 import {
   CREATE_TRANSACTION_BODY_JSON_SCHEMA,
   TRANSACTION_ENDPOINTS_PARAMS_JSON_SCHEMA,
@@ -16,7 +18,6 @@ import {
   listTransactionsHandler,
   updateTransactionHandler,
 } from './handlers';
-import { TransactionType } from '@repo/shared/domain';
 
 export const QUERY_STRING_JSON_SCHEMA = {
   type: 'object',
@@ -40,7 +41,7 @@ export const QUERY_STRING_JSON_SCHEMA = {
   },
 } as const;
 
-export function transactionsEndpointsBuilder() {
+export function transactionsEndpointsBuilder(): RouteOptions[] {
   return [
     createEndpoint({
       method: ['POST'],

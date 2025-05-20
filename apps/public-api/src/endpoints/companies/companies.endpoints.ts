@@ -2,6 +2,7 @@ import {
   buildSchemaForQueryParamsProperty,
   createEndpoint,
 } from '@repo/fastify';
+import { RouteOptions } from 'fastify';
 import {
   CREATE_COMPANY_BODY_JSON_SCHEMA,
   COMPANY_ENDPOINTS_PARAMS_JSON_SCHEMA,
@@ -30,7 +31,7 @@ export const QUERY_STRING_JSON_SCHEMA = {
   },
 } as const;
 
-export function companiesEndpointsBuilder() {
+export function companiesEndpointsBuilder(): RouteOptions[] {
   return [
     createEndpoint({
       method: ['POST'],
