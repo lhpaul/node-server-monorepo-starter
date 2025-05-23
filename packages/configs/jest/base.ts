@@ -9,9 +9,10 @@ export const config = {
     "!src/**/*.constants.ts",
     "!src/**/*.mocks.ts",
     "!src/**/*.interfaces.ts",
+    "!src/**/*.types.ts"
   ],
   coverageDirectory: "coverage",
-  coverageProvider: "v8",
+  coverageProvider: "babel",
   extensionsToTreatAsEsm: [".ts"],
   moduleFileExtensions: ["js", "ts", "json"],
   moduleNameMapper: {
