@@ -3,9 +3,8 @@ import { PrivateKeysService } from '@repo/shared/services';
 import {
   API_KEY_HEADER,
   UNAUTHORIZED_ERROR,
-  UNAUTHORIZED_ERROR_STATUS_CODE,
   FORBIDDEN_ERROR,
-  FORBIDDEN_ERROR_STATUS_CODE,
+  STATUS_CODES,
   RequestLogger,
 } from '@repo/fastify';
 import { authenticateApiKey } from '../auth.utils';
@@ -22,14 +21,17 @@ jest.mock('@repo/fastify', () => ({
   },
   get FORBIDDEN_ERROR() {
     return forbiddenErrorMock();
-  }
+  },
+  STATUS_CODES: {
+    UNAUTHORIZED: 401,
+    FORBIDDEN: 403,
+  },
 }));
 jest.mock('@repo/shared/services');
 
 describe(authenticateApiKey.name, () => {
   let mockRequest: Partial<FastifyRequest>;
   let mockReply: Partial<FastifyReply>;
-  let mockDone: jest.Mock;
   let mockApiKeysService: jest.Mocked<PrivateKeysService>;
   let mockLogger: jest.Mocked<RequestLogger>;
 
@@ -57,9 +59,8 @@ describe(authenticateApiKey.name, () => {
       code: jest.fn().mockReturnThis(),
       send: jest.fn(),
     };
-    mockDone = jest.fn();
     mockApiKeysService = {
-      validateApiKey: jest.fn(),
+      validatePrivateKey: jest.fn(),
     } as unknown as jest.Mocked<PrivateKeysService>;
 
     (PrivateKeysService.getInstance as jest.Mock).mockReturnValue(mockApiKeysService);
@@ -77,18 +78,17 @@ describe(authenticateApiKey.name, () => {
       responseMessage: 'Unauthorized request',
     };
     unauthorizedErrorMock.mockReturnValue(UNAUTHORIZED_ERROR_MOCK);
-    await authenticateApiKey(mockRequest as FastifyRequest, mockReply as FastifyReply, mockDone);
+    await authenticateApiKey(mockRequest as FastifyRequest, mockReply as FastifyReply);
 
     expect(mockLogger.warn).toHaveBeenCalledWith(
       { logId: UNAUTHORIZED_ERROR.logId },
       UNAUTHORIZED_ERROR.logMessage
     );
-    expect(mockReply.code).toHaveBeenCalledWith(UNAUTHORIZED_ERROR_STATUS_CODE);
+    expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.UNAUTHORIZED);
     expect(mockReply.send).toHaveBeenCalledWith({
       code: UNAUTHORIZED_ERROR.responseCode,
       message: UNAUTHORIZED_ERROR.responseMessage,
     });
-    expect(mockDone).not.toHaveBeenCalled();
   });
 
   it('should return forbidden error when API key is invalid', async () => {
@@ -107,7 +107,7 @@ describe(authenticateApiKey.name, () => {
     forbiddenErrorMock.mockReturnValue(FORBIDDEN_ERROR_MOCK);
     mockApiKeysService.validatePrivateKey.mockResolvedValue({ isValid: false });
 
-    await authenticateApiKey(mockRequest as FastifyRequest, mockReply as FastifyReply, mockDone);
+    await authenticateApiKey(mockRequest as FastifyRequest, mockReply as FastifyReply);
 
     expect(mockApiKeysService.validatePrivateKey).toHaveBeenCalledWith(clientId, apiKeyValue);
 
@@ -115,12 +115,11 @@ describe(authenticateApiKey.name, () => {
       { logId: FORBIDDEN_ERROR.logId },
       FORBIDDEN_ERROR.logMessage
     );
-    expect(mockReply.code).toHaveBeenCalledWith(FORBIDDEN_ERROR_STATUS_CODE);
+    expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.FORBIDDEN);
     expect(mockReply.send).toHaveBeenCalledWith({
       code: FORBIDDEN_ERROR.responseCode,
       message: FORBIDDEN_ERROR.responseMessage,
     });
-    expect(mockDone).not.toHaveBeenCalled();
   });
 
   it('should call done when API key is valid', async () => {
@@ -130,12 +129,11 @@ describe(authenticateApiKey.name, () => {
     };
     mockApiKeysService.validatePrivateKey.mockResolvedValue({ isValid: true });
 
-    await authenticateApiKey(mockRequest as FastifyRequest, mockReply as FastifyReply, mockDone);
+    await authenticateApiKey(mockRequest as FastifyRequest, mockReply as FastifyReply);
 
     expect(mockApiKeysService.validatePrivateKey).toHaveBeenCalledWith('clientId', 'validKey');
     expect(mockLogger.warn).not.toHaveBeenCalled();
     expect(mockReply.code).not.toHaveBeenCalled();
     expect(mockReply.send).not.toHaveBeenCalled();
-    expect(mockDone).toHaveBeenCalled();
   });
 });

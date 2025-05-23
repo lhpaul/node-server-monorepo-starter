@@ -2,7 +2,7 @@ import {
   buildSchemaForQueryParamsProperty,
   createEndpoint,
 } from '@repo/fastify';
-import { RouteOptions } from 'fastify';
+import { FastifyInstance, RouteOptions } from 'fastify';
 import {
   CREATE_COMPANY_BODY_JSON_SCHEMA,
   COMPANY_ENDPOINTS_PARAMS_JSON_SCHEMA,
@@ -31,9 +31,9 @@ export const QUERY_STRING_JSON_SCHEMA = {
   },
 } as const;
 
-export function companiesEndpointsBuilder(): RouteOptions[] {
+export function companiesEndpointsBuilder(server: FastifyInstance): RouteOptions[] {
   return [
-    createEndpoint({
+    createEndpoint(server,{
       method: ['POST'],
       url: URL_V1,
       handler: createCompanyHandler,
@@ -41,7 +41,7 @@ export function companiesEndpointsBuilder(): RouteOptions[] {
         body: CREATE_COMPANY_BODY_JSON_SCHEMA,
       },
     }),
-    createEndpoint({
+    createEndpoint(server, {
       method: ['GET'],
       url: URL_V1,
       handler: listCompaniesHandler,
@@ -49,7 +49,7 @@ export function companiesEndpointsBuilder(): RouteOptions[] {
         querystring: QUERY_STRING_JSON_SCHEMA,
       },
     }),
-    createEndpoint({
+    createEndpoint(server, {
       method: ['GET'],
       url: URL_WITH_ID_V1,
       handler: getCompanyHandler,
@@ -57,7 +57,7 @@ export function companiesEndpointsBuilder(): RouteOptions[] {
         params: COMPANY_ENDPOINTS_PARAMS_JSON_SCHEMA,
       },
     }),
-    createEndpoint({
+    createEndpoint(server, {
       method: ['PATCH'],
       url: URL_WITH_ID_V1,
       handler: updateCompanyHandler,
@@ -66,7 +66,7 @@ export function companiesEndpointsBuilder(): RouteOptions[] {
         params: COMPANY_ENDPOINTS_PARAMS_JSON_SCHEMA,
       },
     }),
-    createEndpoint({
+    createEndpoint(server, {
       method: ['DELETE'],
       url: URL_WITH_ID_V1,
       handler: deleteCompanyHandler,

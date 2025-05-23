@@ -3,7 +3,7 @@ import {
   createEndpoint,
 } from '@repo/fastify';
 import { TransactionType } from '@repo/shared/domain';
-import { RouteOptions } from 'fastify';
+import { FastifyInstance, RouteOptions } from 'fastify';
 import {
   CREATE_TRANSACTION_BODY_JSON_SCHEMA,
   TRANSACTION_ENDPOINTS_PARAMS_JSON_SCHEMA,
@@ -41,9 +41,9 @@ export const QUERY_STRING_JSON_SCHEMA = {
   },
 } as const;
 
-export function transactionsEndpointsBuilder(): RouteOptions[] {
+export function transactionsEndpointsBuilder(server: FastifyInstance): RouteOptions[] {
   return [
-    createEndpoint({
+    createEndpoint(server,{
       method: ['POST'],
       url: URL_V1,
       handler: createTransactionHandler,
@@ -51,7 +51,7 @@ export function transactionsEndpointsBuilder(): RouteOptions[] {
         body: CREATE_TRANSACTION_BODY_JSON_SCHEMA,
       },
     }),
-    createEndpoint({
+    createEndpoint(server,{
       method: ['GET'],
       url: URL_V1,
       handler: listTransactionsHandler,
@@ -59,7 +59,7 @@ export function transactionsEndpointsBuilder(): RouteOptions[] {
         querystring: QUERY_STRING_JSON_SCHEMA,
       },
     }),
-    createEndpoint({
+    createEndpoint(server,{
       method: ['GET'],
       url: URL_WITH_ID_V1,
       handler: getTransactionHandler,
@@ -67,7 +67,7 @@ export function transactionsEndpointsBuilder(): RouteOptions[] {
         params: TRANSACTION_ENDPOINTS_PARAMS_JSON_SCHEMA,
       },
     }),
-    createEndpoint({
+    createEndpoint(server,{
       method: ['PATCH'],
       url: URL_WITH_ID_V1,
       handler: updateTransactionHandler,
@@ -76,7 +76,7 @@ export function transactionsEndpointsBuilder(): RouteOptions[] {
         params: TRANSACTION_ENDPOINTS_PARAMS_JSON_SCHEMA,
       },
     }),
-    createEndpoint({
+    createEndpoint(server,{
       method: ['DELETE'],
       url: URL_WITH_ID_V1,
       handler: deleteTransactionHandler,

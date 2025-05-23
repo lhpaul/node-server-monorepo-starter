@@ -1,4 +1,6 @@
 import { createEndpoint } from '@repo/fastify';
+import { TransactionType } from '@repo/shared/domain';
+import { FastifyInstance } from 'fastify';
 import {
   CREATE_TRANSACTION_BODY_JSON_SCHEMA,
   TRANSACTION_ENDPOINTS_PARAMS_JSON_SCHEMA,
@@ -14,7 +16,6 @@ import {
   updateTransactionHandler,
 } from '../handlers';
 import { transactionsEndpointsBuilder } from '../transactions.endpoints';
-import { TransactionType } from '@repo/shared/domain';
 
 jest.mock('@repo/fastify', () => ({
   createEndpoint: jest.fn(),
@@ -24,10 +25,13 @@ jest.mock('@repo/fastify', () => ({
 
 describe('transactionsEndpointsBuilder', () => {
   let transactionsEndpoints: ReturnType<typeof transactionsEndpointsBuilder>;
-
+  let mockServer: FastifyInstance;
   beforeEach(() => {
     jest.clearAllMocks();
-    transactionsEndpoints = transactionsEndpointsBuilder();
+    mockServer = {
+      authenticate: jest.fn(),
+    } as unknown as FastifyInstance;
+    transactionsEndpoints = transactionsEndpointsBuilder(mockServer);
   });
 
   it('should create all endpoints with correct configuration', () => {
@@ -36,7 +40,7 @@ describe('transactionsEndpointsBuilder', () => {
   });
 
   it('should create POST transaction endpoint with correct configuration', () => {
-    expect(createEndpoint).toHaveBeenNthCalledWith(1, {
+    expect(createEndpoint).toHaveBeenNthCalledWith(1, mockServer, {
       method: ['POST'],
       url: URL_V1,
       handler: createTransactionHandler,
@@ -47,7 +51,7 @@ describe('transactionsEndpointsBuilder', () => {
   });
 
   it('should create GET transactions list endpoint with correct configuration', () => {
-    expect(createEndpoint).toHaveBeenNthCalledWith(2, {
+    expect(createEndpoint).toHaveBeenNthCalledWith(2, mockServer, {
       method: ['GET'],
       url: URL_V1,
       handler: listTransactionsHandler,
@@ -74,7 +78,7 @@ describe('transactionsEndpointsBuilder', () => {
   });
 
   it('should create GET single transaction endpoint with correct configuration', () => {
-    expect(createEndpoint).toHaveBeenNthCalledWith(3, {
+    expect(createEndpoint).toHaveBeenNthCalledWith(3, mockServer, {
       method: ['GET'],
       url: URL_WITH_ID_V1,
       handler: getTransactionHandler,
@@ -85,7 +89,7 @@ describe('transactionsEndpointsBuilder', () => {
   });
 
   it('should create PATCH transaction endpoint with correct configuration', () => {
-    expect(createEndpoint).toHaveBeenNthCalledWith(4, {
+    expect(createEndpoint).toHaveBeenNthCalledWith(4, mockServer, {
       method: ['PATCH'],
       url: URL_WITH_ID_V1,
       handler: updateTransactionHandler,
@@ -97,7 +101,7 @@ describe('transactionsEndpointsBuilder', () => {
   });
 
   it('should create DELETE transaction endpoint with correct configuration', () => {
-    expect(createEndpoint).toHaveBeenNthCalledWith(5, {
+    expect(createEndpoint).toHaveBeenNthCalledWith(5, mockServer, {
       method: ['DELETE'],
       url: URL_WITH_ID_V1,
       handler: deleteTransactionHandler,

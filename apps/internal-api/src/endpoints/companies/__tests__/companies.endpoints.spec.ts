@@ -1,4 +1,5 @@
 import { createEndpoint } from '@repo/fastify';
+import { FastifyInstance } from 'fastify';
 import {
   CREATE_COMPANY_BODY_JSON_SCHEMA,
   COMPANY_ENDPOINTS_PARAMS_JSON_SCHEMA,
@@ -23,10 +24,13 @@ jest.mock('@repo/fastify', () => ({
 
 describe(companiesEndpointsBuilder.name, () => {
   let companiesEndpoints: ReturnType<typeof companiesEndpointsBuilder>;
-
+  let mockServer: FastifyInstance;
   beforeEach(() => {
     jest.clearAllMocks();
-    companiesEndpoints = companiesEndpointsBuilder();
+    mockServer = {
+      authenticate: jest.fn(),
+    } as unknown as FastifyInstance;
+    companiesEndpoints = companiesEndpointsBuilder(mockServer);
   });
 
   it('should create all endpoints with correct configuration', () => {
@@ -35,7 +39,7 @@ describe(companiesEndpointsBuilder.name, () => {
   });
 
   it('should create POST company endpoint with correct configuration', () => {
-    expect(createEndpoint).toHaveBeenNthCalledWith(1, {
+    expect(createEndpoint).toHaveBeenNthCalledWith(1, mockServer, {
       method: ['POST'],
       url: URL_V1,
       handler: createCompanyHandler,
@@ -46,7 +50,7 @@ describe(companiesEndpointsBuilder.name, () => {
   });
 
   it('should create GET companies list endpoint with correct configuration', () => {
-    expect(createEndpoint).toHaveBeenNthCalledWith(2, {
+    expect(createEndpoint).toHaveBeenNthCalledWith(2, mockServer, {
       method: ['GET'],
       url: URL_V1,
       handler: listCompaniesHandler,
@@ -66,7 +70,7 @@ describe(companiesEndpointsBuilder.name, () => {
   });
 
   it('should create GET single company endpoint with correct configuration', () => {
-    expect(createEndpoint).toHaveBeenNthCalledWith(3, {
+    expect(createEndpoint).toHaveBeenNthCalledWith(3, mockServer, {
       method: ['GET'],
       url: URL_WITH_ID_V1,
       handler: getCompanyHandler,
@@ -77,7 +81,7 @@ describe(companiesEndpointsBuilder.name, () => {
   });
 
   it('should create PATCH company endpoint with correct configuration', () => {
-    expect(createEndpoint).toHaveBeenNthCalledWith(4, {
+    expect(createEndpoint).toHaveBeenNthCalledWith(4, mockServer, {
       method: ['PATCH'],
       url: URL_WITH_ID_V1,
       handler: updateCompanyHandler,
@@ -89,7 +93,7 @@ describe(companiesEndpointsBuilder.name, () => {
   });
 
   it('should create DELETE company endpoint with correct configuration', () => {
-    expect(createEndpoint).toHaveBeenNthCalledWith(5, {
+    expect(createEndpoint).toHaveBeenNthCalledWith(5, mockServer, {
       method: ['DELETE'],
       url: URL_WITH_ID_V1,
       handler: deleteCompanyHandler,

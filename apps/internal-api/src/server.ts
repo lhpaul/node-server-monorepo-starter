@@ -3,12 +3,14 @@ import helmet from '@fastify/helmet';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import {
+  AUTHENTICATE_DECORATOR_NAME,
+  AUTHENTICATE_ERROR_CODES,
   SERVER_LOGGER_CONFIG,
   setServerErrorHandlers,
   setServerHooks,
   setServerProcessErrorHandlers,
 } from '@repo/fastify';
-import fastify, { FastifyInstance } from 'fastify';
+import fastify, { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { Sessions, streamableHttp } from 'fastify-mcp';
 
 import packageJson from '../package.json';
@@ -17,7 +19,7 @@ import {
   MCP_SERVER_CONFIG,
   SERVER_START_VALUES,
 } from './constants/server.constants';
-import { routes } from './routes';
+import { routesBuilder } from './routes';
 import { getMcpResources } from './utils/mcp/mcp.utils';
 import { authenticateApiKey } from './utils/auth/auth.utils';
 
@@ -32,6 +34,20 @@ export const init = async function (): Promise<FastifyInstance> {
 
   // Help secure the api by setting HTTP response headers
   server.register(helmet, { global: true });
+
+  // Add decorator to authenticate requests. To avoid authentication in an route, you can pass the `skipAuth` option when building the route.
+  server.decorate(AUTHENTICATE_DECORATOR_NAME, async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      await authenticateApiKey(request, reply);
+    } catch (err: any) {
+      if (err.statusCode && err.message) {
+        const code = AUTHENTICATE_ERROR_CODES[err.statusCode as keyof typeof AUTHENTICATE_ERROR_CODES] ?? err.code;
+        reply.code(err.statusCode).send({ code, message: err.message });
+        return;
+      }
+      reply.send(err);
+    }
+  });
 
   // Enable MCP server
   server.register(streamableHttp, {
@@ -66,11 +82,8 @@ export const init = async function (): Promise<FastifyInstance> {
     },
   });
 
-  routes.forEach((route) => {
-    server.route({
-      ...route,
-      preValidation: authenticateApiKey, // Add API key authentication
-    });
+  routesBuilder(server).forEach((route) => {
+    server.route(route);
   });
 
   setServerErrorHandlers(server);
