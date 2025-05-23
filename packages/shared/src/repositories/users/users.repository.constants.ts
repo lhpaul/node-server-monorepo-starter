@@ -1,0 +1,23 @@
+import { User } from '../../domain/models/user.model';
+import { DeleteUserErrorCode } from './users.repository.errors';
+
+export const MOCK_USERS: User[] = [
+  new User({
+    id: '1',
+    email: 'admin@company.com',
+    currentPasswordHash: '$2a$10$Mf.m4jSyzYXKKd/RZg2vmuz8CNySQ7vaSpuy2R31SGqtxOnWtNqK6', // hash of "admin-password"
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  }),
+  new User({
+    id: '2',
+    email: 'member@company.com',
+    currentPasswordHash: '$2a$10$cZiRDJMBSrUYGrPDWrXmN.LcjJCEdz7eWxvIeaM8ptM9.JyDNvopu', // hash of "member-password"
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  }),
+];
+
+export const ERROR_MESSAGES = {
+  [DeleteUserErrorCode.NOT_FOUND]: 'User not found',
+}; 

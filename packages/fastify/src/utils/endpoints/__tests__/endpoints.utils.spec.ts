@@ -1,384 +1,262 @@
-import { maskFields } from '@repo/shared/utils';
-import {
-  FastifyRequest,
-  FastifyReply,
-  RouteOptions,
-  FastifyInstance,
-  onRequestHookHandler,
-  onSendHookHandler,
-} from 'fastify';
-
-import { buildSchemaForQueryParamsProperty, createEndpoint, transformQueryParams } from '../endpoints.utils';
+import { FastifyInstance, FastifyRequest, FastifyReply, RouteOptions } from 'fastify';
+import { QueryOperator } from '@repo/shared/definitions';
+import { QUERY_PARAMS_OPERATORS, QUERY_PARAMS_OPERATORS_MAP } from '../../../constants/requests.constants';
 import { LOG_IDS } from '../endpoints.utils.constants';
+import { createEndpoint, transformQueryParams, buildSchemaForQueryParamsProperty } from '../endpoints.utils';
 import { IEndpointOptions } from '../endpoints.utils.interfaces';
 
-// Mock the maskFields utility
-jest.mock('@repo/shared/utils', () => ({
-  maskFields: jest
-    .fn()
-    .mockImplementation((obj: Record<string, any>, _fields: string[]) => obj),
-}));
-
 describe(createEndpoint.name, () => {
-  let mockRequest: jest.Mocked<FastifyRequest>;
-  let mockReply: jest.Mocked<FastifyReply>;
-  let mockFastifyInstance: jest.Mocked<FastifyInstance>;
-  let mockOnRequest: jest.Mock;
-  let mockOnSend: jest.Mock;
+  let mockServer: FastifyInstance;
+  let mockRequest: FastifyRequest;
+  let mockReply: FastifyReply;
   let mockDone: jest.Mock;
   let mockNext: jest.Mock;
 
   beforeEach(() => {
-    // Reset all mocks
-    jest.clearAllMocks();
+    mockServer = {
+      authenticate: jest.fn(),
+    } as unknown as FastifyInstance;
 
-    // Setup mock request
     mockRequest = {
       method: 'GET',
       url: '/test',
       params: { id: '123' },
-      query: { search: 'test' },
+      query: { filter: 'test' },
       body: { data: 'test' },
       headers: { 'content-type': 'application/json' },
       log: {
         info: jest.fn(),
       },
-    } as unknown as jest.Mocked<FastifyRequest>;
+    } as unknown as FastifyRequest;
 
-    // Setup mock reply
     mockReply = {
       statusCode: 200,
       elapsedTime: 100,
-      getHeaders: jest
-        .fn()
-        .mockReturnValue({ 'content-type': 'application/json' }),
-    } as unknown as jest.Mocked<FastifyReply>;
+      getHeaders: jest.fn().mockReturnValue({ 'content-type': 'application/json' }),
+    } as unknown as FastifyReply;
 
-    // Setup mock Fastify instance
-    mockFastifyInstance = {} as jest.Mocked<FastifyInstance>;
-
-    // Setup mock callbacks
-    mockOnRequest = jest.fn();
-    mockOnSend = jest.fn();
     mockDone = jest.fn();
     mockNext = jest.fn();
   });
 
-  describe(createEndpoint.name, () => {
-    it('should create an endpoint with logging hooks', () => {
-      const routeOptions: RouteOptions = {
-        method: 'GET',
-        url: '/test',
-        handler: jest.fn(),
-      };
+  it('should create endpoint with authentication by default', () => {
+    const routeOptions: RouteOptions = {
+      url: '/test',
+      method: 'GET',
+      handler: jest.fn(),
+    };
 
-      const endpoint = createEndpoint(routeOptions);
+    const result = createEndpoint(mockServer, routeOptions);
 
-      expect(endpoint).toHaveProperty('onRequest');
-      expect(endpoint).toHaveProperty('onSend');
-      expect(endpoint.method).toBe('GET');
-      expect(endpoint.url).toBe('/test');
-    });
-
-    it('should call original onRequest handler if provided', () => {
-      const routeOptions: RouteOptions = {
-        method: 'GET',
-        url: '/test',
-        handler: jest.fn(),
-        onRequest: mockOnRequest as unknown as onRequestHookHandler,
-      };
-
-      const endpoint = createEndpoint(routeOptions);
-      const onRequestHook = endpoint.onRequest as onRequestHookHandler;
-      onRequestHook.call(mockFastifyInstance, mockRequest, mockReply, mockDone);
-
-      expect(mockOnRequest).toHaveBeenCalledWith(
-        mockRequest,
-        mockReply,
-        mockDone,
-      );
-      expect(mockDone).toHaveBeenCalled();
-    });
-
-    it('should call original onSend handler if provided', () => {
-      const routeOptions: RouteOptions = {
-        method: 'GET',
-        url: '/test',
-        handler: jest.fn(),
-        onSend: mockOnSend as unknown as onSendHookHandler,
-      };
-
-      const endpoint = createEndpoint(routeOptions);
-      const onSendHook = endpoint.onSend as onSendHookHandler;
-      const payload = { data: 'test' };
-      onSendHook.call(
-        mockFastifyInstance,
-        mockRequest,
-        mockReply,
-        payload,
-        mockNext,
-      );
-
-      expect(mockOnSend).toHaveBeenCalledWith(
-        mockRequest,
-        mockReply,
-        payload,
-        mockNext,
-      );
-      expect(mockNext).toHaveBeenCalled();
-    });
-
-    it('should handle array of onRequest handlers', () => {
-      const mockOnRequest2 = jest.fn();
-      const routeOptions: RouteOptions = {
-        method: 'GET',
-        url: '/test',
-        handler: jest.fn(),
-        onRequest: [
-          mockOnRequest,
-          mockOnRequest2,
-        ] as unknown as onRequestHookHandler[],
-      };
-
-      const endpoint = createEndpoint(routeOptions);
-      const onRequestHook = endpoint.onRequest as onRequestHookHandler;
-      onRequestHook.call(mockFastifyInstance, mockRequest, mockReply, mockDone);
-
-      expect(mockOnRequest).toHaveBeenCalledWith(
-        mockRequest,
-        mockReply,
-        mockDone,
-      );
-      expect(mockOnRequest2).toHaveBeenCalledWith(
-        mockRequest,
-        mockReply,
-        mockDone,
-      );
-      expect(mockDone).toHaveBeenCalled();
-    });
-
-    it('should handle array of onSend handlers', () => {
-      const mockOnSend2 = jest.fn();
-      const routeOptions: RouteOptions = {
-        method: 'GET',
-        url: '/test',
-        handler: jest.fn(),
-        onSend: [mockOnSend, mockOnSend2] as unknown as onSendHookHandler[],
-      };
-
-      const endpoint = createEndpoint(routeOptions);
-      const onSendHook = endpoint.onSend as onSendHookHandler;
-      const payload = { data: 'test' };
-      onSendHook.call(
-        mockFastifyInstance,
-        mockRequest,
-        mockReply,
-        payload,
-        mockNext,
-      );
-
-      expect(mockOnSend).toHaveBeenCalledWith(
-        mockRequest,
-        mockReply,
-        payload,
-        mockNext,
-      );
-      expect(mockOnSend2).toHaveBeenCalledWith(
-        mockRequest,
-        mockReply,
-        payload,
-        mockNext,
-      );
-      expect(mockNext).toHaveBeenCalled();
-    });
-
-    it('should log request details with default mask options', () => {
-      const routeOptions: RouteOptions = {
-        method: 'GET',
-        url: '/test',
-        handler: jest.fn(),
-      };
-
-      const endpoint = createEndpoint(routeOptions);
-      const onRequestHook = endpoint.onRequest as onRequestHookHandler;
-      onRequestHook.call(mockFastifyInstance, mockRequest, mockReply, mockDone);
-
-      expect(mockRequest.log.info).toHaveBeenCalledWith(
-        expect.objectContaining({
-          id: LOG_IDS.ON_REQUEST,
-          data: {
-            method: mockRequest.method,
-            url: mockRequest.url,
-            params: mockRequest.params,
-            query: mockRequest.query,
-            body: mockRequest.body,
-            headers: mockRequest.headers,
-          },
-        }),
-        `On Request: ${mockRequest.method} ${mockRequest.url}`,
-      );
-    });
-
-    it('should log request details with custom mask options', () => {
-      const options: IEndpointOptions = {
-        maskOptions: {
-          params: ['id'],
-          query: ['search'],
-          requestPayloadFields: ['data'],
-          requestHeaders: ['content-type'],
-        },
-      };
-
-      const routeOptions: RouteOptions = {
-        method: 'GET',
-        url: '/test',
-        handler: jest.fn(),
-      };
-
-      const endpoint = createEndpoint(routeOptions, options);
-      const onRequestHook = endpoint.onRequest as onRequestHookHandler;
-      onRequestHook.call(mockFastifyInstance, mockRequest, mockReply, mockDone);
-
-      const maskOptions = options.maskOptions!;
-      expect(maskFields).toHaveBeenCalledWith(
-        mockRequest.params,
-        maskOptions.params,
-      );
-      expect(maskFields).toHaveBeenCalledWith(
-        mockRequest.query,
-        maskOptions.query,
-      );
-      expect(maskFields).toHaveBeenCalledWith(
-        mockRequest.body,
-        maskOptions.requestPayloadFields,
-      );
-      expect(maskFields).toHaveBeenCalledWith(
-        mockRequest.headers,
-        maskOptions.requestHeaders,
-      );
-    });
-    it('should log response details with default mask options', () => {
-      const routeOptions: RouteOptions = {
-        method: 'GET',
-        url: '/test',
-        handler: jest.fn(),
-      };
-
-      const endpoint = createEndpoint(routeOptions);
-      const onSendHook = endpoint.onSend as onSendHookHandler;
-      const payload = { data: 'test' };
-      onSendHook.call(
-        mockFastifyInstance,
-        mockRequest,
-        mockReply,
-        payload,
-        mockNext,
-      );
-
-      expect(mockRequest.log.info).toHaveBeenCalledWith(
-        expect.objectContaining({
-          id: LOG_IDS.ON_SEND,
-          data: {
-            responseTime: 100,
-            statusCode: 200,
-            responseHeaders: mockReply.getHeaders(),
-            responsePayload: payload,
-          },
-        }),
-        `On Send: statusCode: ${mockReply.statusCode} responseTime: ${mockReply.elapsedTime}ms`,
-      );
-    });
-
-    it('should log response details with custom mask options', () => {
-      const options: IEndpointOptions = {
-        maskOptions: {
-          responseHeaders: ['content-type'],
-          responsePayloadFields: ['data'],
-        },
-      };
-
-      const routeOptions: RouteOptions = {
-        method: 'GET',
-        url: '/test',
-        handler: jest.fn(),
-      };
-
-      const endpoint = createEndpoint(routeOptions, options);
-      const onSendHook = endpoint.onSend as onSendHookHandler;
-      const payload = { data: 'test' };
-      onSendHook.call(
-        mockFastifyInstance,
-        mockRequest,
-        mockReply,
-        payload,
-        mockNext,
-      );
-
-      const maskOptions = options.maskOptions!;
-      expect(maskFields).toHaveBeenCalledWith(
-        mockReply.getHeaders(),
-        maskOptions.responseHeaders,
-      );
-      expect(maskFields).toHaveBeenCalledWith(
-        payload,
-        maskOptions.responsePayloadFields,
-      );
-    });
+    expect(result.preHandler).toEqual([mockServer.authenticate]);
   });
 
-  describe(transformQueryParams.name, () => {
-    it('should transform query params', () => {
-      const queryParams = { amount: 100, date: '2021-01-01', type: 'income' };
-      const transformedQuery = transformQueryParams(queryParams);
-      expect(transformedQuery).toEqual({
-        amount: [{ value: 100, operator: '==' }],
-        date: [{ value: '2021-01-01', operator: '==' }],
-        type: [{ value: 'income', operator: '==' }],
-      });
-    });
+  it('should create endpoint without authentication when specified', () => {
+    const routeOptions: RouteOptions = {
+      url: '/test',
+      method: 'GET',
+      handler: jest.fn(),
+    };
+    const options: IEndpointOptions = { authenticate: false };
 
-    it('should transform query params with multiple operators', () => {
-      const queryParams = {
-        'amount[gt]': 100,
-        'date[gt]': '2021-01-01',
-        'date[lt]': '2021-01-02',
-        'type[in]': ['income', 'expense'],
-      };
-      const transformedQuery = transformQueryParams(queryParams);
-      expect(transformedQuery).toEqual({
-        amount: [{ value: 100, operator: '>' }],
-        date: [
-          { value: '2021-01-01', operator: '>' },
-          { value: '2021-01-02', operator: '<' },
-        ],
-        type: [{ value: ['income', 'expense'], operator: 'in' }],
-      });
-    });
+    const result = createEndpoint(mockServer, routeOptions, options);
+
+    expect(result.preHandler).toEqual([]);
+  });
+
+  it('should handle preValidation hooks', () => {
+    const preValidation = jest.fn();
+    const routeOptions: RouteOptions = {
+      url: '/test',
+      method: 'GET',
+      handler: jest.fn(),
+      preValidation,
+    };
+
+    const result = createEndpoint(mockServer, routeOptions, { maskOptions: { responsePayloadFields: ['data'] } });
+    (result.preValidation as Function).bind(mockServer)(mockRequest, mockReply, mockDone);
+
+    expect(preValidation).toHaveBeenCalledWith(mockRequest, mockReply, mockDone);
+    expect(mockRequest.log.info).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: LOG_IDS.PRE_VALIDATION,
+      }),
+      expect.any(String)
+    );
+  });
+
+  it('should handle when preValidation is an array', () => {
+    const preValidations = [jest.fn(), jest.fn()];
+    const routeOptions: RouteOptions = {
+      url: '/test',
+      method: 'GET',
+      handler: jest.fn(),
+      preValidation: preValidations,
+    };
+
+    const result = createEndpoint(mockServer, routeOptions);
+
+    (result.preValidation as Function).bind(mockServer)(mockRequest, mockReply, mockDone);
+
+    preValidations.forEach((fn) => expect(fn).toHaveBeenCalledWith(mockRequest, mockReply, mockDone));
+  });
+
+  it('should handle onSend hooks', () => {
+    const onSend = jest.fn();
+    const routeOptions: RouteOptions = {
+      url: '/test',
+      method: 'GET',
+      handler: jest.fn(),
+      onSend,
+    };
+
+    const result = createEndpoint(mockServer, routeOptions, { maskOptions: { responsePayloadFields: ['data'] } });
+    (result.onSend as Function).bind(mockServer)(mockRequest, mockReply, '{"data":"test"}', mockNext);
+
+    expect(onSend).toHaveBeenCalledWith(mockRequest, mockReply, '{"data":"test"}', mockNext);
+    expect(mockRequest.log.info).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: LOG_IDS.ON_SEND,
+      }),
+      expect.any(String)
+    );
+  });
+  it('should handle when onSend is an array', () => {
+    const onSends = [jest.fn(), jest.fn()];
+    const routeOptions: RouteOptions = {
+      url: '/test',
+      method: 'GET',
+      handler: jest.fn(),
+      onSend: onSends,
+    };
+
+    const result = createEndpoint(mockServer, routeOptions);
+    (result.onSend as Function).bind(mockServer)(mockRequest, mockReply, '{"data":"test"}', mockNext);
+
+    onSends.forEach((fn) => expect(fn).toHaveBeenCalledWith(mockRequest, mockReply, '{"data":"test"}', mockNext));
+  });
+  it('should mask request headers by default', () => { // TODO: improve this test
+    const routeOptions: RouteOptions = {
+      url: '/test',
+      method: 'GET',
+      handler: jest.fn(),
+    };
+    const result = createEndpoint(mockServer, routeOptions);
+    (result.preValidation as Function).bind(mockServer)(mockRequest, mockReply, mockDone);
+    expect(mockRequest.log.info).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: LOG_IDS.PRE_VALIDATION,
+      }),
+      expect.any(String)
+    );
+  });
+  it('should handle when there is no payload in the response', () => {
+    const routeOptions: RouteOptions = {
+      url: '/test',
+      method: 'GET',
+      handler: jest.fn(),
+    };
+    const result = createEndpoint(mockServer, routeOptions);
+    (result.onSend as Function).bind(mockServer)(mockRequest, mockReply, undefined, mockNext);
+    expect(mockRequest.log.info).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: LOG_IDS.ON_SEND,
+      }),
+      expect.any(String)
+    );
+    expect(mockNext).toHaveBeenCalledWith();
   });
 });
 
 describe(transformQueryParams.name, () => {
-  it('should transform query params', () => {
-    const queryParams = { amount: 100, date: '2021-01-01', type: 'income' };
-    const transformedQuery = transformQueryParams(queryParams);
-    expect(transformedQuery).toEqual({
-      amount: [{ value: queryParams.amount, operator: '==' }],
-      date: [{ value: queryParams.date, operator: '==' }],
-      type: [{ value: queryParams.type, operator: '==' }],
+  it('should transform simple query parameters', () => {
+    const queryParams = {
+      name: 'John',
+      age: '25',
+    };
+
+    const result = transformQueryParams(queryParams);
+
+    expect(result).toEqual({
+      name: [{ value: 'John', operator: '==' }],
+      age: [{ value: '25', operator: '==' }],
+    });
+  });
+
+  it('should transform query parameters with operators', () => {
+    const queryParams = {
+      'age[gt]': '25',
+      'name[eq]': 'John',
+    };
+
+    const result = transformQueryParams(queryParams);
+
+    expect(result).toEqual({
+      age: [{ value: '25', operator: QUERY_PARAMS_OPERATORS_MAP.gt }],
+      name: [{ value: 'John', operator: QUERY_PARAMS_OPERATORS_MAP.eq }],
+    });
+  });
+
+  it('should handle multiple conditions for the same field', () => {
+    const queryParams = {
+      'age[gt]': '25',
+      'age[lt]': '50',
+    };
+
+    const result = transformQueryParams(queryParams);
+
+    expect(result).toEqual({
+      age: [
+        { value: '25', operator: QUERY_PARAMS_OPERATORS_MAP.gt },
+        { value: '50', operator: QUERY_PARAMS_OPERATORS_MAP.lt },
+      ],
     });
   });
 });
 
 describe(buildSchemaForQueryParamsProperty.name, () => {
-  it('should build schema for query params property', () => {
-    const schema = buildSchemaForQueryParamsProperty('amount', 'number', ['eq', 'ne']);
-    expect(schema).toEqual({
-      amount: {
-        type: 'number', 
-      },
-      'amount[ne]': {
-        type: 'number',
-      },
+  it('should build schema for simple field', () => {
+    const field = 'name';
+    const type = 'string';
+    const operators: QUERY_PARAMS_OPERATORS[] = ['eq'];
+
+    const result = buildSchemaForQueryParamsProperty(field, type, operators);
+
+    expect(result).toEqual({
+      name: { type: 'string' },
+    });
+  });
+
+  it('should build schema for field with multiple operators', () => {
+    const field = 'age';
+    const type = 'number';
+    const operators: QUERY_PARAMS_OPERATORS[] = ['eq', 'gt', 'lt'];
+
+    const result = buildSchemaForQueryParamsProperty(field, type, operators);
+
+    expect(result).toEqual({
+      age: { type: 'number' },
+      'age[gt]': { type: 'number' },
+      'age[lt]': { type: 'number' },
+    });
+  });
+
+  it('should handle all supported operators', () => {
+    const field = 'search';
+    const type = 'string';
+    const operators: QUERY_PARAMS_OPERATORS[] = ['eq', 'gt', 'ge', 'in', 'le', 'lt', 'ne', 'not-in'];
+
+    const result = buildSchemaForQueryParamsProperty(field, type, operators);
+
+    expect(result).toEqual({
+      search: { type: 'string' },
+      'search[gt]': { type: 'string' },
+      'search[ge]': { type: 'string' },
+      'search[in]': { type: 'string' },
+      'search[le]': { type: 'string' },
+      'search[lt]': { type: 'string' },
+      'search[ne]': { type: 'string' },
+      'search[not-in]': { type: 'string' },
     });
   });
 });

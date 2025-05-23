@@ -11,29 +11,32 @@ import {
   QUERY_PARAMS_OPERATORS,
   QUERY_PARAMS_OPERATORS_MAP,
 } from '../../constants/requests.constants';
-import { LOG_IDS } from './endpoints.utils.constants';
+import { DEFAULT_ON_PRE_VALIDATION_HEADERS_TO_MASK, LOG_IDS } from './endpoints.utils.constants';
 import { IEndpointOptions } from './endpoints.utils.interfaces';
 
 export function createEndpoint(
+  server: FastifyInstance,
   values: RouteOptions,
   options?: IEndpointOptions,
 ): RouteOptions {
-  const { onRequest, onSend, ...rest } = values;
+  const { preValidation, onSend, ...rest } = values;
+  const authenticate = options?.authenticate ?? true;
   return {
+    preHandler: authenticate ? [server.authenticate] : [],
     ...rest,
-    onRequest: function (
+    preValidation: function (
       this: FastifyInstance,
       request: FastifyRequest,
       reply: FastifyReply,
       done: () => void,
     ) {
-      _logOnRequest(request, options);
-      if (Array.isArray(onRequest)) {
-        onRequest.forEach((handler) =>
+      _logPreValidation(request, options);
+      if (Array.isArray(preValidation)) {
+        preValidation.forEach((handler) =>
           handler.call(this, request, reply, done),
         );
-      } else if (onRequest) {
-        onRequest.call(this, request, reply, done);
+      } else if (preValidation) {
+        preValidation.call(this, request, reply, done);
       }
       done();
     },
@@ -91,17 +94,17 @@ export function buildSchemaForQueryParamsProperty(
   return schema;
 }
 
-function _logOnRequest(request: FastifyRequest, options?: IEndpointOptions) {
+function _logPreValidation(request: FastifyRequest, options?: IEndpointOptions) {
   const maskOptions = {
     params: [],
     query: [],
     requestPayloadFields: [],
-    requestHeaders: [],
+    requestHeaders: DEFAULT_ON_PRE_VALIDATION_HEADERS_TO_MASK,
     ...options?.maskOptions,
   };
   request.log.info(
     {
-      id: LOG_IDS.ON_REQUEST,
+      id: LOG_IDS.PRE_VALIDATION,
       data: {
         method: request.method,
         url: request.url,
@@ -148,7 +151,7 @@ function _logOnSend(
           reply.getHeaders() as Record<string, string>,
           maskOptions.responseHeaders,
         ),
-        responsePayload: maskFields(payload, maskOptions.responsePayloadFields),
+        responsePayload: payload ? maskFields(JSON.parse(payload), maskOptions.responsePayloadFields) : undefined,
       },
     },
     `On Send: statusCode: ${reply.statusCode} responseTime: ${reply.elapsedTime}ms`,

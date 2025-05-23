@@ -21,3 +21,15 @@ jest.config.ts        # Jest configuration file
 package.json          # Workspace configuration
 tsconfig.json         # Typescript configuration
 ```
+
+## Development Setup
+
+1. Create a `.env` file in the root directory by copying `.env.example`:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Update the environment variables in `.env` with your local development values.
+
+> Note: Make sure to never commit the `.env` file to version control as it may contain sensitive information.

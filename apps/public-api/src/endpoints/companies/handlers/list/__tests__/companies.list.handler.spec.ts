@@ -1,13 +1,21 @@
-import { FastifyReply, FastifyRequest } from 'fastify';
+import { STATUS_CODES } from '@repo/fastify';
 import { CompaniesRepository } from '@repo/shared/repositories';
+import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
-import { listCompaniesHandler } from '../companies.list.handler';
+import { AuthUser } from '../../../../../definitions/auth.types';
 import { STEPS } from '../companies.list.constants';
+import { listCompaniesHandler } from '../companies.list.handler';
+
+jest.mock('@repo/fastify', () => ({
+  STATUS_CODES: {
+    OK: 200,
+  },
+}));
 
 jest.mock('@repo/shared/repositories', () => ({
   CompaniesRepository: {
     getInstance: jest.fn().mockImplementation(() => ({
-      getCompanies: jest.fn(),
+      getCompanyById: jest.fn(),
     })),
   },
 }));
@@ -15,24 +23,16 @@ jest.mock('@repo/shared/repositories', () => ({
 describe(listCompaniesHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;
   let mockReply: Partial<FastifyReply>;
-  let mockRepository: jest.Mocked<CompaniesRepository>;
-  let mockLogger: any;
-  const mockCompanies = [
-    { id: '1', name: 'Company 1', createdAt: new Date(), updatedAt: new Date() },
-    { id: '2', name: 'Company 2', createdAt: new Date(), updatedAt: new Date() },
-    { id: '3', name: 'Company 3', createdAt: new Date(), updatedAt: new Date() },
-  ];
+  let mockLogger: Partial<FastifyBaseLogger>;
+  let mockRepository: { getCompanyById: jest.Mock };
+  let mockUser: AuthUser;
 
   beforeEach(() => {
     mockLogger = {
       child: jest.fn().mockReturnThis(),
       startStep: jest.fn(),
       endStep: jest.fn(),
-    };
-
-    mockRequest = {
-      log: mockLogger,
-      query: {},
+      error: jest.fn(),
     };
 
     mockReply = {
@@ -40,21 +40,34 @@ describe(listCompaniesHandler.name, () => {
       send: jest.fn(),
     };
 
+    mockUser = {
+      companies: {
+        'company-1': ['company:read'],
+        'company-2': ['company:write'],
+        'company-3': ['company:update'],
+      },
+    } as AuthUser;
+
+    mockRequest = {
+      log: mockLogger as FastifyBaseLogger,
+      user: mockUser,
+    };
     mockRepository = {
-      getCompanies: jest.fn(),
-    } as any;
+      getCompanyById: jest.fn(),
+    };
 
     (CompaniesRepository.getInstance as jest.Mock).mockReturnValue(
       mockRepository,
     );
   });
 
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
-  it('should return all companies when no query parameters are provided', async () => {
-    mockRepository.getCompanies.mockResolvedValue(mockCompanies);
+  it('should return list of companies user has access to', async () => {
+    const mockCompanies = [
+      { id: 'company-1', name: 'Company 1', createdAt: new Date(), updatedAt: new Date() },
+      { id: 'company-2', name: 'Company 2', createdAt: new Date(), updatedAt: new Date() },
+      { id: 'company-3', name: 'Company 3', createdAt: new Date(), updatedAt: new Date() },
+    ];
+    mockRepository.getCompanyById.mockImplementation((id) => Promise.resolve(mockCompanies.find((company) => company.id === id) ?? null));
 
     await listCompaniesHandler(
       mockRequest as FastifyRequest,
@@ -65,22 +78,18 @@ describe(listCompaniesHandler.name, () => {
       STEPS.GET_COMPANIES.id,
       STEPS.GET_COMPANIES.obfuscatedId,
     );
-    expect(mockRepository.getCompanies).toHaveBeenCalledWith(
-      {},
-      { logger: mockLogger },
-    );
+    expect(mockRepository.getCompanyById).toHaveBeenCalledTimes(3);
+    expect(mockRepository.getCompanyById).toHaveBeenCalledWith('company-1', { logger: mockLogger });
+    expect(mockRepository.getCompanyById).toHaveBeenCalledWith('company-2', { logger: mockLogger });
+    expect(mockRepository.getCompanyById).toHaveBeenCalledWith('company-3', { logger: mockLogger });
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
-    expect(mockReply.code).toHaveBeenCalledWith(200);
+    expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
     expect(mockReply.send).toHaveBeenCalledWith(mockCompanies);
   });
 
-  it('should filter companies based on query parameters', async () => {
-    const queryParams = {
-      name: 'Company 1',
-    };
-    mockRequest.query = queryParams;
-    const filteredCompanies = [mockCompanies[0]];
-    mockRepository.getCompanies.mockResolvedValue(filteredCompanies);
+  it('should handle empty permissions', async () => {
+    mockUser.companies = {};
+    mockRequest.user = mockUser;
 
     await listCompaniesHandler(
       mockRequest as FastifyRequest,
@@ -91,19 +100,22 @@ describe(listCompaniesHandler.name, () => {
       STEPS.GET_COMPANIES.id,
       STEPS.GET_COMPANIES.obfuscatedId,
     );
-    expect(mockRepository.getCompanies).toHaveBeenCalledWith(
-      {
-        name: [{ operator: '==', value: 'Company 1' }],
-      },
-      { logger: mockLogger },
-    );
+    expect(mockRepository.getCompanyById).not.toHaveBeenCalled();
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
-    expect(mockReply.code).toHaveBeenCalledWith(200);
-    expect(mockReply.send).toHaveBeenCalledWith(filteredCompanies);
+    expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
+    expect(mockReply.send).toHaveBeenCalledWith([]);
   });
 
-  it('should handle empty result set', async () => {
-    mockRepository.getCompanies.mockResolvedValue([]);
+  it('should filter out null companies', async () => {
+    const mockCompanies = [
+      { id: 'company-1', name: 'Company 1', createdAt: new Date(), updatedAt: new Date() },
+      { id: 'company-3', name: 'Company 3', createdAt: new Date(), updatedAt: new Date() },
+    ];
+
+    mockRepository.getCompanyById
+      .mockResolvedValueOnce(mockCompanies[0])
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce(mockCompanies[1]);
 
     await listCompaniesHandler(
       mockRequest as FastifyRequest,
@@ -114,18 +126,15 @@ describe(listCompaniesHandler.name, () => {
       STEPS.GET_COMPANIES.id,
       STEPS.GET_COMPANIES.obfuscatedId,
     );
-    expect(mockRepository.getCompanies).toHaveBeenCalledWith(
-      {},
-      { logger: mockLogger },
-    );
+    expect(mockRepository.getCompanyById).toHaveBeenCalledTimes(3);
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
-    expect(mockReply.code).toHaveBeenCalledWith(200);
-    expect(mockReply.send).toHaveBeenCalledWith([]);
+    expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
+    expect(mockReply.send).toHaveBeenCalledWith(mockCompanies);
   });
 
   it('should handle repository errors', async () => {
     const error = new Error('Repository error');
-    mockRepository.getCompanies.mockRejectedValue(error);
+    mockRepository.getCompanyById.mockRejectedValue(error);
 
     await expect(
       listCompaniesHandler(
@@ -138,8 +147,9 @@ describe(listCompaniesHandler.name, () => {
       STEPS.GET_COMPANIES.id,
       STEPS.GET_COMPANIES.obfuscatedId,
     );
+    expect(mockRepository.getCompanyById).toHaveBeenCalled();
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
     expect(mockReply.code).not.toHaveBeenCalled();
     expect(mockReply.send).not.toHaveBeenCalled();
   });
-});
+}); 

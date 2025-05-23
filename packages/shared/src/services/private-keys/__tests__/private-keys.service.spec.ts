@@ -5,7 +5,7 @@ import { API_KEYS_CACHE_EXPIRATION } from '../private-keys.service.constants';
 import { PrivateKeysService } from '../private-keys.service';
 
 jest.mock('bcrypt');
-jest.mock('../../../repositories/api-keys/api-keys.repository');
+jest.mock('../../../repositories/private-keys/private-keys.repository');
 
 describe(PrivateKeysService.name, () => {
   let service: PrivateKeysService;
@@ -25,74 +25,74 @@ describe(PrivateKeysService.name, () => {
 
   describe(PrivateKeysService.prototype.validatePrivateKey.name, () => {
     const mockOauthClientId = 'test-client-id';
-    const mockApiKeyValue = 'test-api-key';
-    const mockHash = 'hashed-api-key';
+    const mockPrivateKeyValue = 'test-private-key';
+    const mockHash = 'hashed-private-key';
     const mockDate = new Date();
 
-    const createMockApiKey = (hash: string): PrivateKey => {
+    const createMockPrivateKey = (hash: string): PrivateKey => {
       return new PrivateKey({
         createdAt: mockDate,
         hash,
         id: '1',
-        label: 'Test API Key',
+        label: 'Test Private Key',
         oauthClientId: mockOauthClientId,
         updatedAt: mockDate,
       });
     };
 
-    let getApiKeysMock: jest.Mock;
+    let getPrivateKeysMock: jest.Mock;
 
     beforeEach(() => {
-      getApiKeysMock = jest.fn();
+      getPrivateKeysMock = jest.fn();
       jest.spyOn(PrivateKeysRepository, 'getInstance').mockReturnValue({
-        getApiKeys: getApiKeysMock,
+        getPrivateKeys: getPrivateKeysMock,
       } as unknown as PrivateKeysRepository);
     });
 
-    it('should return isValid true when matching api key is found', async () => {
+    it('should return isValid true when matching private key is found', async () => {
       // Arrange
-      const mockApiKeys = [createMockApiKey(mockHash)];
-      getApiKeysMock.mockResolvedValue(mockApiKeys);
+      const mockPrivateKeys = [createMockPrivateKey(mockHash)];
+      getPrivateKeysMock.mockResolvedValue(mockPrivateKeys);
       (compareSync as jest.Mock).mockReturnValue(true);
 
       // Act
-      const result = await service.validatePrivateKey(mockOauthClientId, mockApiKeyValue);
+      const result = await service.validatePrivateKey(mockOauthClientId, mockPrivateKeyValue);
 
       // Assert
       expect(result.isValid).toBe(true);
-      expect(getApiKeysMock).toHaveBeenCalledWith({
+      expect(getPrivateKeysMock).toHaveBeenCalledWith({
         oauthClientId: [{ operator: '==', value: mockOauthClientId }],
       });
-      expect(compareSync).toHaveBeenCalledWith(mockApiKeyValue, mockHash);
+      expect(compareSync).toHaveBeenCalledWith(mockPrivateKeyValue, mockHash);
     });
 
-    it('should return isValid false when no matching api key is found', async () => {
+    it('should return isValid false when no matching private key is found', async () => {
       // Arrange
-      const mockApiKeys = [createMockApiKey(mockHash)];
-      getApiKeysMock.mockResolvedValue(mockApiKeys);
+      const mockPrivateKeys = [createMockPrivateKey(mockHash)];
+      getPrivateKeysMock.mockResolvedValue(mockPrivateKeys);
       (compareSync as jest.Mock).mockReturnValue(false);
 
       // Act
-      const result = await service.validatePrivateKey(mockOauthClientId, mockApiKeyValue);
+      const result = await service.validatePrivateKey(mockOauthClientId, mockPrivateKeyValue);
 
       // Assert
       expect(result.isValid).toBe(false);
-      expect(getApiKeysMock).toHaveBeenCalledWith({
+      expect(getPrivateKeysMock).toHaveBeenCalledWith({
         oauthClientId: [{ operator: '==', value: mockOauthClientId }],
       });
-      expect(compareSync).toHaveBeenCalledWith(mockApiKeyValue, mockHash);
+      expect(compareSync).toHaveBeenCalledWith(mockPrivateKeyValue, mockHash);
     });
 
-    it('should return isValid false when no api keys are found', async () => {
+    it('should return isValid false when no private keys are found', async () => {
       // Arrange
-      getApiKeysMock.mockResolvedValue([]);
+      getPrivateKeysMock.mockResolvedValue([]);
 
       // Act
-      const result = await service.validatePrivateKey(mockOauthClientId, mockApiKeyValue);
+      const result = await service.validatePrivateKey(mockOauthClientId, mockPrivateKeyValue);
 
       // Assert
       expect(result.isValid).toBe(false);
-      expect(getApiKeysMock).toHaveBeenCalledWith({
+      expect(getPrivateKeysMock).toHaveBeenCalledWith({
         oauthClientId: [{ operator: '==', value: mockOauthClientId }],
       });
       expect(compareSync).not.toHaveBeenCalled();
@@ -101,62 +101,62 @@ describe(PrivateKeysService.name, () => {
     describe('cache behavior', () => {
       it('should fetch from repository on first request', async () => {
         // Arrange
-        const mockApiKeys = [createMockApiKey(mockHash)];
-        getApiKeysMock.mockResolvedValue(mockApiKeys);
+        const mockPrivateKeys = [createMockPrivateKey(mockHash)];
+        getPrivateKeysMock.mockResolvedValue(mockPrivateKeys);
         (compareSync as jest.Mock).mockReturnValue(true);
 
         // Act
-        await service.validatePrivateKey(mockOauthClientId, mockApiKeyValue);
+        await service.validatePrivateKey(mockOauthClientId, mockPrivateKeyValue);
 
         // Assert
-        expect(getApiKeysMock).toHaveBeenCalledTimes(1);
+        expect(getPrivateKeysMock).toHaveBeenCalledTimes(1);
       });
 
       it('should use cache for subsequent requests within expiration time', async () => {
         // Arrange
-        const mockApiKeys = [createMockApiKey(mockHash)];
-        getApiKeysMock.mockResolvedValue(mockApiKeys);
+        const mockPrivateKeys = [createMockPrivateKey(mockHash)];
+        getPrivateKeysMock.mockResolvedValue(mockPrivateKeys);
         (compareSync as jest.Mock).mockReturnValue(true);
 
         // Act
-        await service.validatePrivateKey(mockOauthClientId, mockApiKeyValue);
-        await service.validatePrivateKey(mockOauthClientId, mockApiKeyValue);
+        await service.validatePrivateKey(mockOauthClientId, mockPrivateKeyValue);
+        await service.validatePrivateKey(mockOauthClientId, mockPrivateKeyValue);
 
         // Assert
-        expect(getApiKeysMock).toHaveBeenCalledTimes(1);
+        expect(getPrivateKeysMock).toHaveBeenCalledTimes(1);
       });
 
       it('should refetch when cache is expired', async () => {
         // Arrange
         jest.useFakeTimers();
-        const mockApiKeys = [createMockApiKey(mockHash)];
-        getApiKeysMock.mockResolvedValue(mockApiKeys);
+        const mockPrivateKeys = [createMockPrivateKey(mockHash)];
+        getPrivateKeysMock.mockResolvedValue(mockPrivateKeys);
         (compareSync as jest.Mock).mockReturnValue(true);
 
         // Act
-        await service.validatePrivateKey(mockOauthClientId, mockApiKeyValue);
+        await service.validatePrivateKey(mockOauthClientId, mockPrivateKeyValue);
         
         // Move time forward past cache expiration
         jest.advanceTimersByTime(API_KEYS_CACHE_EXPIRATION + 1000);
         
-        await service.validatePrivateKey(mockOauthClientId, mockApiKeyValue);
+        await service.validatePrivateKey(mockOauthClientId, mockPrivateKeyValue);
 
         // Assert
-        expect(getApiKeysMock).toHaveBeenCalledTimes(2);
+        expect(getPrivateKeysMock).toHaveBeenCalledTimes(2);
         jest.useRealTimers();
       });
 
       it('should refetch when cache is empty', async () => {
         // Arrange
-        const mockApiKeys: PrivateKey[] = [];
-        getApiKeysMock.mockResolvedValue(mockApiKeys);
+        const mockPrivateKeys: PrivateKey[] = [];
+        getPrivateKeysMock.mockResolvedValue(mockPrivateKeys);
 
         // Act
-        await service.validatePrivateKey(mockOauthClientId, mockApiKeyValue);
-        await service.validatePrivateKey(mockOauthClientId, mockApiKeyValue);
+        await service.validatePrivateKey(mockOauthClientId, mockPrivateKeyValue);
+        await service.validatePrivateKey(mockOauthClientId, mockPrivateKeyValue);
 
         // Assert
-        expect(getApiKeysMock).toHaveBeenCalledTimes(2);
+        expect(getPrivateKeysMock).toHaveBeenCalledTimes(2);
       });
     });
   });

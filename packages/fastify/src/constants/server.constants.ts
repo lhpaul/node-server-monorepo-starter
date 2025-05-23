@@ -2,6 +2,13 @@ import { FastifyReply } from 'fastify';
 import pino from 'pino';
 
 export const API_KEY_HEADER = 'x-api-key';
+
+export const AUTHENTICATE_DECORATOR_NAME = 'authenticate';
+
+export const AUTHENTICATE_ERROR_CODES = {
+  401: 'unauthorized',
+  400: 'bad-request',
+};
 export const SERVER_LOGGER_CONFIG: pino.LoggerOptions = {
   messageKey: 'message',
   timestamp() {
@@ -16,23 +23,29 @@ export const RESOURCE_NOT_FOUND_ERROR = {
   responseMessage: 'The requested resource was not found',
 };
 
-export const UNAUTHORIZED_ERROR_STATUS_CODE = 401;
+export const STATUS_CODES = {
+  OK: 200,
+  CREATED: 201,
+  NO_CONTENT: 204,
+  UNAUTHORIZED: 401,
+  FORBIDDEN: 403,
+  NOT_FOUND: 404,
+  VALIDATION_ERROR: 400,
+  INTERNAL_ERROR: 500,
+};
+
 export const UNAUTHORIZED_ERROR = {
   logId: 'unauthorized',
   logMessage: 'Unauthorized request',
   responseCode: 'unauthorized',
   responseMessage: 'Unauthorized request',
 };
-
-export const FORBIDDEN_ERROR_STATUS_CODE = 403;
 export const FORBIDDEN_ERROR = {
   logId: 'forbidden',
   logMessage: 'Forbidden request',
   responseCode: 'forbidden',
-  responseMessage: 'Forbidden request',
+  responseMessage: 'The credentials are valid but they lack of the necessary permissions',
 };
-
-export const VALIDATION_ERROR_STATUS_CODE = 400;
 export const VALIDATION_ERROR_CODE = 'FST_ERR_VALIDATION';
 
 export const VALIDATION_ERROR = {

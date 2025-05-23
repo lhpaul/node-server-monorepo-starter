@@ -1,9 +1,12 @@
-import { RouteOptions } from 'fastify';
+import { FastifyInstance, RouteOptions } from 'fastify';
 
+import { authEndpointsBuilder } from './endpoints/auth/auth.endpoints';
 import { companiesEndpointsBuilder } from './endpoints/companies/companies.endpoints';
-import { transactionsEndpointsBuilder } from './endpoints/transactions/transactions.endpoints';
 
-export const routes: RouteOptions[] = [
-  ...companiesEndpointsBuilder(),
-  ...transactionsEndpointsBuilder(),
-];
+export const routesBuilder = (server: FastifyInstance): RouteOptions[] => {
+  return [
+    ...authEndpointsBuilder(server),
+    ...companiesEndpointsBuilder(server)
+  ];
+};
+

@@ -59,7 +59,7 @@ export class PrivateKeysRepository {
     return Promise.resolve();
   }
 
-  public getApiPrivateById(
+  public getPrivateKeyById(
     id: string,
     _context?: ExecutionContext,
   ): Promise<PrivateKey | null> {

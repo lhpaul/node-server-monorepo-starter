@@ -1,7 +1,10 @@
-import { FastifyReply, FastifyRequest } from 'fastify';
+import { FORBIDDEN_ERROR, STATUS_CODES } from '@repo/fastify';
 import { CompaniesRepository } from '@repo/shared/repositories';
+import { FastifyReply, FastifyRequest } from 'fastify';
 
-import { ERROR_RESPONSES } from '../../companies.endpoints.constants';
+import { AuthUser } from '../../../../definitions/auth.types';
+import { hasCompanyReadPermission } from '../../../../utils/auth/auth.utils';
+import { COMPANY_NOT_FOUND_ERROR } from '../../companies.endpoints.constants';
 import { STEPS } from './companies.get.constants';
 import { GetCompanyParams } from './companies.get.interfaces';
 
@@ -12,12 +15,19 @@ export const getCompanyHandler = async (
   const logger = request.log.child({ handler: getCompanyHandler.name });
   const repository = CompaniesRepository.getInstance();
   const { id } = request.params as GetCompanyParams;
+  const user = request.user as AuthUser;
+  if (!hasCompanyReadPermission(id, user)) {
+    return reply.code(STATUS_CODES.FORBIDDEN).send({
+      code: FORBIDDEN_ERROR.responseCode,
+      message: FORBIDDEN_ERROR.responseMessage,
+    });
+  }
   logger.startStep(STEPS.GET_COMPANY.id, STEPS.GET_COMPANY.obfuscatedId);
   const company = await repository
     .getCompanyById(id, { logger })
     .finally(() => logger.endStep(STEPS.GET_COMPANY.id));
-  if (!company) {
-    return reply.code(404).send(ERROR_RESPONSES.COMPANY_NOT_FOUND);
+  if (!company) { // this should never happen since the user has permission to read the company so it should exist
+    throw new Error(COMPANY_NOT_FOUND_ERROR(id));
   }
-  return reply.code(200).send(company);
+  return reply.code(STATUS_CODES.OK).send(company);
 };

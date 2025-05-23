@@ -1,1 +1,2 @@
-export * from './api-keys/index.js';
+export * from './auth/index.js';
+export * from './private-keys/index.js';

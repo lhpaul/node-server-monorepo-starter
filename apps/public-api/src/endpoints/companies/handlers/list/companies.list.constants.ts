@@ -1,3 +1,6 @@
 export const STEPS = {
-  GET_COMPANIES: { id: 'get-companies', obfuscatedId: '01' },
-};
+  GET_COMPANIES: {
+    id: 'get-companies',
+    obfuscatedId: 'get-companies',
+  },
+}; 

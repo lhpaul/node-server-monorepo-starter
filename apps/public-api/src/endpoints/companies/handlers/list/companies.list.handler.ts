@@ -1,9 +1,9 @@
-import { transformQueryParams } from '@repo/fastify';
+import { STATUS_CODES } from '@repo/fastify';
 import { CompaniesRepository } from '@repo/shared/repositories';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
+import { AuthUser } from '../../../../definitions/auth.types';
 import { STEPS } from './companies.list.constants';
-import { GetCompaniesQueryParams } from './companies.list.interfaces';
 
 export const listCompaniesHandler = async (
   request: FastifyRequest,
@@ -11,10 +11,20 @@ export const listCompaniesHandler = async (
 ) => {
   const logger = request.log.child({ handler: listCompaniesHandler.name });
   const repository = CompaniesRepository.getInstance();
-  const query = request.query as GetCompaniesQueryParams;
+  const user = request.user as AuthUser;
+
+  // Get all company IDs the user has permission for
+  const companyIds = Object.keys(user.companies);
+  
+  // Get company information for each ID in parallel
   logger.startStep(STEPS.GET_COMPANIES.id, STEPS.GET_COMPANIES.obfuscatedId);
-  const companies = await repository
-    .getCompanies(transformQueryParams(query), { logger })
-    .finally(() => logger.endStep(STEPS.GET_COMPANIES.id));
-  return reply.code(200).send(companies);
+  const companies = await Promise.all(
+    companyIds.map((id) => repository.getCompanyById(id, { logger })),
+  ).finally(() => logger.endStep(STEPS.GET_COMPANIES.id));
+
+  // Filter out any null values (though this shouldn't happen if permissions are correct)
+  const validCompanies = companies.filter((company): company is NonNullable<typeof company> => 
+    company !== null
+  );
+  return reply.code(STATUS_CODES.OK).send(validCompanies);
 };

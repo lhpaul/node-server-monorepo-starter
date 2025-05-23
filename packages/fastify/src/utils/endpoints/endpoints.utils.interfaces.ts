@@ -1,4 +1,5 @@
 export interface IEndpointOptions {
+  authenticate?: boolean;
   maskOptions?: {
     params?: string[];
     query?: string[];

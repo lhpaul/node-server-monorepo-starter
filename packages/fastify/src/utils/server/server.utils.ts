@@ -2,12 +2,12 @@ import { FastifyInstance } from 'fastify';
 import {
   INTERNAL_ERROR_VALUES,
   RESOURCE_NOT_FOUND_ERROR,
+  STATUS_CODES,
   TIMEOUT_ERROR,
   UNCAUGHT_EXCEPTION_ERROR,
   UNHANDLED_REJECTION_ERROR,
   VALIDATION_ERROR,
   VALIDATION_ERROR_CODE,
-  VALIDATION_ERROR_STATUS_CODE,
 } from '../../constants/server.constants';
 import { RequestLogger } from '../request-logger/request-logger.class';
 
@@ -22,7 +22,7 @@ export function setServerErrorHandlers(server: FastifyInstance): void {
       },
       RESOURCE_NOT_FOUND_ERROR.logMessage,
     );
-    reply.status(404).send({
+    reply.status(STATUS_CODES.NOT_FOUND).send({
       code: RESOURCE_NOT_FOUND_ERROR.responseCode,
       message: RESOURCE_NOT_FOUND_ERROR.responseMessage,
     });
@@ -32,7 +32,7 @@ export function setServerErrorHandlers(server: FastifyInstance): void {
   server.setErrorHandler((error, request, reply) => {
     const lastStep = request.log.lastStep;
     const errorCode = lastStep?.obfuscatedId ?? '-1';
-    if (error.statusCode === VALIDATION_ERROR_STATUS_CODE && error.code === VALIDATION_ERROR_CODE) {
+    if (error.statusCode === STATUS_CODES.VALIDATION_ERROR && error.code === VALIDATION_ERROR_CODE) {
       request.log.warn(
         {
           logId: VALIDATION_ERROR.logId,
@@ -55,7 +55,7 @@ export function setServerErrorHandlers(server: FastifyInstance): void {
       },
       INTERNAL_ERROR_VALUES.logMessage({ error, step: lastStep?.id ?? null }),
     );
-    return reply.code(500).send({
+    return reply.code(STATUS_CODES.INTERNAL_ERROR).send({
       code: errorCode,
       message: INTERNAL_ERROR_VALUES.responseMessage,
     });

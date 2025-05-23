@@ -112,7 +112,7 @@ pnpm run dev:internal-api
 pnpm run dev:public-api
 ```
 
-> **Note**: Each application runs on its own port and can be developed independently. Make sure you have all dependencies installed by running `pnpm install` before starting development.
+> **Note**: Each application may require specific environment variables to function properly. Check the `.env.example` file in each application's directory and create a `.env` file with the required variables before starting the development server.
 
 ### Testing
 

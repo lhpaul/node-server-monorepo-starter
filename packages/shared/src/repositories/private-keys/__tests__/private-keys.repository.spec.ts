@@ -9,9 +9,9 @@ import {
 
 describe(PrivateKeysRepository.name, () => {
   let repository: PrivateKeysRepository;
-  const createApiKeyData = {
+  const createPrivateKeyData = {
     oauthClientId: 'test-oauth-client-id',
-    label: 'Test API Key',
+    label: 'Test Private Key',
     hash: 'test-hash',
   };
 
@@ -30,33 +30,33 @@ describe(PrivateKeysRepository.name, () => {
   });
 
   describe(PrivateKeysRepository.prototype.createPrivateKey.name, () => {
-    it('should create a new API key and return its id', async () => {
-      const result = await repository.createPrivateKey(createApiKeyData);
+    it('should create a new private key and return its id', async () => {
+      const result = await repository.createPrivateKey(createPrivateKeyData);
 
       expect(result).toHaveProperty('id');
     });
   });
 
-  describe(PrivateKeysRepository.prototype.getApiPrivateById.name, () => {
-    it('should return an API key when it exists', async () => {
-      const apiKey = MOCK_PRIVATE_KEYS[0];
-      const fetchedKey = await repository.getApiPrivateById(apiKey.id);
-      expect(fetchedKey).toEqual(apiKey);
+  describe(PrivateKeysRepository.prototype.getPrivateKeyById.name, () => {
+    it('should return a private key when it exists', async () => {
+      const privateKey = MOCK_PRIVATE_KEYS[0];
+      const fetchedKey = await repository.getPrivateKeyById(privateKey.id);
+      expect(fetchedKey).toEqual(privateKey);
     });
 
-    it('should return null when API key does not exist', async () => {
-      const fetchedKey = await repository.getApiPrivateById('999');
+    it('should return null when private key does not exist', async () => {
+      const fetchedKey = await repository.getPrivateKeyById('999');
       expect(fetchedKey).toBeNull();
     });
   });
 
   describe(PrivateKeysRepository.prototype.getPrivateKeys.name, () => {
-    it('should return all API keys when no query is provided', async () => {
+    it('should return all private keys when no query is provided', async () => {
       const keys = await repository.getPrivateKeys();
       expect(keys).toEqual(MOCK_PRIVATE_KEYS);
     });
 
-    it('should filter API keys by clientId', async () => {
+    it('should filter private keys by clientId', async () => {
       const keys = await repository.getPrivateKeys({
         oauthClientId: [{ operator: '==', value: 'client-1' }],
       });
@@ -64,32 +64,32 @@ describe(PrivateKeysRepository.name, () => {
       expect(keys[0].oauthClientId).toBe('client-1');
     });
 
-    it('should filter API keys by label', async () => {
+    it('should filter private keys by label', async () => {
       const keys = await repository.getPrivateKeys({
-        label: [{ operator: '==', value: 'Test API Key 1' }],
+        label: [{ operator: '==', value: 'Test Private Key 1' }],
       });
       expect(keys).toHaveLength(1);
-      expect(keys[0].label).toBe('Test API Key 1');
+      expect(keys[0].label).toBe('Test Private Key 1');
     });
   });
 
   describe(PrivateKeysRepository.prototype.updatePrivateKey.name, () => {
-    it('should update an existing API key', async () => {
-      const apiKey = MOCK_PRIVATE_KEYS[0];
+    it('should update an existing private key', async () => {
+      const privateKey = MOCK_PRIVATE_KEYS[0];
       const updateData = {
         label: 'Updated Label',
         hash: 'updated-hash',
       };
 
-      await repository.updatePrivateKey(apiKey.id, updateData);
+      await repository.updatePrivateKey(privateKey.id, updateData);
 
-      const updatedKey = MOCK_PRIVATE_KEYS.find((key) => key.id === apiKey.id);
+      const updatedKey = MOCK_PRIVATE_KEYS.find((key) => key.id === privateKey.id);
       expect(updatedKey).toBeDefined();
       expect(updatedKey?.label).toBe(updateData.label);
       expect(updatedKey?.hash).toBe(updateData.hash);
     });
 
-    it('should throw UpdateApiKeyError when API key does not exist', async () => {
+    it('should throw UpdatePrivateKeyError when private key does not exist', async () => {
       const updateData = {
         label: 'Updated Label',
       };
@@ -106,17 +106,17 @@ describe(PrivateKeysRepository.name, () => {
   });
 
   describe(PrivateKeysRepository.prototype.deletePrivateKey.name, () => {
-    it('should delete an existing API key', async () => {
-      const apiKey = MOCK_PRIVATE_KEYS[0];
+    it('should delete an existing private key', async () => {
+      const privateKey = MOCK_PRIVATE_KEYS[0];
       const initialLength = MOCK_PRIVATE_KEYS.length;
 
-      await repository.deletePrivateKey(apiKey.id);
+      await repository.deletePrivateKey(privateKey.id);
 
       expect(MOCK_PRIVATE_KEYS).toHaveLength(initialLength - 1);
-      expect(MOCK_PRIVATE_KEYS.find((key) => key.id === apiKey.id)).toBeUndefined();
+      expect(MOCK_PRIVATE_KEYS.find((key) => key.id === privateKey.id)).toBeUndefined();
     });
 
-    it('should throw DeleteApiKeyError when API key does not exist', async () => {
+    it('should throw DeletePrivateKeyError when private key does not exist', async () => {
       try {
         await repository.deletePrivateKey('999');
         expect(true).toBe(false);

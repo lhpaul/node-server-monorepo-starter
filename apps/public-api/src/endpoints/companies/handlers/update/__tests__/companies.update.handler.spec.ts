@@ -1,3 +1,4 @@
+import { FORBIDDEN_ERROR } from '@repo/fastify';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 import {
   CompaniesRepository,
@@ -5,9 +6,23 @@ import {
   UpdateCompanyErrorCode,
 } from '@repo/shared/repositories';
 
-import { ERROR_RESPONSES } from '../../../companies.endpoints.constants';
+import { AuthUser } from '../../../../../definitions/auth.types';
+import { hasCompanyUpdatePermission } from '../../../../../utils/auth/auth.utils';
 import { STEPS } from '../companies.update.constants';
 import { updateCompanyHandler } from '../companies.update.handler';
+import { COMPANY_NOT_FOUND_ERROR } from '../../../companies.endpoints.constants';
+
+jest.mock('@repo/fastify', () => ({
+  STATUS_CODES: {
+    NO_CONTENT: 204,
+    FORBIDDEN: 403,
+    NOT_FOUND: 404,
+  },
+  FORBIDDEN_ERROR: {
+    responseCode: 403,
+    responseMessage: 'Forbidden'
+  }
+}));
 
 jest.mock('@repo/shared/repositories', () => ({
   ...jest.requireActual('@repo/shared/repositories'),
@@ -16,6 +31,10 @@ jest.mock('@repo/shared/repositories', () => ({
       updateCompany: jest.fn(),
     })),
   },
+}));
+
+jest.mock('../../../../../utils/auth/auth.utils', () => ({
+  hasCompanyUpdatePermission: jest.fn(),
 }));
 
 describe(updateCompanyHandler.name, () => {
@@ -31,6 +50,11 @@ describe(updateCompanyHandler.name, () => {
   const mockBody = {
     name: 'Updated Company',
   };
+  const mockUser: AuthUser = {
+    companies: {
+      '123': ['company:update'],
+    },
+  };
 
   beforeEach(() => {
     mockLogger = {
@@ -43,6 +67,7 @@ describe(updateCompanyHandler.name, () => {
       log: mockLogger as FastifyBaseLogger,
       params: mockParams,
       body: mockBody,
+      user: mockUser,
     };
 
     mockReply = {
@@ -57,9 +82,16 @@ describe(updateCompanyHandler.name, () => {
     (CompaniesRepository.getInstance as jest.Mock).mockReturnValue(
       mockRepository,
     );
+
+    (hasCompanyUpdatePermission as jest.Mock).mockReturnValue(true);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   it('should successfully update a company', async () => {
+    (hasCompanyUpdatePermission as jest.Mock).mockReturnValue(true);
     mockRepository.updateCompany.mockResolvedValue(undefined);
 
     await updateCompanyHandler(
@@ -89,10 +121,15 @@ describe(updateCompanyHandler.name, () => {
       }),
     );
 
-    await updateCompanyHandler(
-      mockRequest as FastifyRequest,
-      mockReply as FastifyReply,
-    );
+    try {
+      await updateCompanyHandler(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+      );
+    } catch (error: any) {
+      expect(error).toBeInstanceOf(Error);
+      expect(error.message).toBe(COMPANY_NOT_FOUND_ERROR(mockParams.id));
+    }
 
     expect(mockLogger.startStep).toHaveBeenCalledWith(
       STEPS.UPDATE_COMPANY.id,
@@ -104,10 +141,6 @@ describe(updateCompanyHandler.name, () => {
       { logger: mockLogger },
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_COMPANY.id);
-    expect(mockReply.code).toHaveBeenCalledWith(404);
-    expect(mockReply.send).toHaveBeenCalledWith(
-      ERROR_RESPONSES.COMPANY_NOT_FOUND,
-    );
   });
 
   it('should handle repository errors', async () => {
@@ -133,5 +166,22 @@ describe(updateCompanyHandler.name, () => {
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_COMPANY.id);
     expect(mockReply.code).not.toHaveBeenCalled();
     expect(mockReply.send).not.toHaveBeenCalled();
+  });
+
+  it('should return forbidden when user lacks update permission', async () => {
+    (hasCompanyUpdatePermission as jest.Mock).mockReturnValue(false);
+
+    await updateCompanyHandler(
+      mockRequest as FastifyRequest,
+      mockReply as FastifyReply,
+    );
+
+    expect(hasCompanyUpdatePermission).toHaveBeenCalledWith(mockParams.id, mockUser);
+    expect(mockReply.code).toHaveBeenCalledWith(403);
+    expect(mockReply.send).toHaveBeenCalledWith({
+      code: FORBIDDEN_ERROR.responseCode,
+      message: FORBIDDEN_ERROR.responseMessage,
+    });
+    expect(mockRepository.updateCompany).not.toHaveBeenCalled();
   });
 });

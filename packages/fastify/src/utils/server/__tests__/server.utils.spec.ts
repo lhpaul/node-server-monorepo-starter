@@ -2,12 +2,12 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import {
   INTERNAL_ERROR_VALUES,
   RESOURCE_NOT_FOUND_ERROR,
+  STATUS_CODES,
   TIMEOUT_ERROR,
   UNCAUGHT_EXCEPTION_ERROR,
   UNHANDLED_REJECTION_ERROR,
   VALIDATION_ERROR,
   VALIDATION_ERROR_CODE,
-  VALIDATION_ERROR_STATUS_CODE,
 } from '../../../constants/server.constants';
 import { RequestLogger } from '../../request-logger/request-logger.class';
 import { setServerErrorHandlers, setServerHooks, setServerProcessErrorHandlers } from '../server.utils';
@@ -66,7 +66,7 @@ describe(setServerErrorHandlers.name, () => {
     
     const errorHandler = mockServer.setErrorHandler.mock.calls[0][0] as Function;
     const validationError = {
-      statusCode: VALIDATION_ERROR_STATUS_CODE,
+      statusCode: STATUS_CODES.VALIDATION_ERROR,
       code: VALIDATION_ERROR_CODE,
       validation: [{ message: 'Invalid input' }],
     };
@@ -80,7 +80,7 @@ describe(setServerErrorHandlers.name, () => {
       },
       VALIDATION_ERROR.logMessage({ error: validationError }),
     );
-    expect(mockReply.code).toHaveBeenCalledWith(VALIDATION_ERROR_STATUS_CODE);
+    expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.VALIDATION_ERROR);
     expect(mockReply.send).toHaveBeenCalledWith({
       code: VALIDATION_ERROR.responseCode,
       message: VALIDATION_ERROR.responseMessage,
