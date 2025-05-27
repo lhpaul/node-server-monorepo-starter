@@ -8,7 +8,6 @@ A [Fastify](https://fastify.dev/) application that provides a REST API implement
 src/
 ├── constants/        # Global constants used throughout the project
 ├── definitions/      # TypeScript definitions, interfaces and types for type safety
-├── mcp/              # Model Context Protocol (MCP) server implementation and resources
 ├── endpoints/        # Api endpoints configurations and handlers
 ├── services/         # Business logic and service layer implementations
 ├── utils/            # Reusable utility functions
