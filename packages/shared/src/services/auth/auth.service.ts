@@ -18,7 +18,6 @@ export class AuthService {
     }
     return this.instance;
   }
-
   public async decodeEmailToken(token: string): Promise<{ email: string}> {
     try {
       const { email } = await admin.auth().verifyIdToken(token);
@@ -27,7 +26,6 @@ export class AuthService {
       }
       return { email };
     } catch (err: any) {
-      console.log('ERR', err);
       if (err.errorInfo) {
         throw new DecodeEmailTokenError({ code: DecodeEmailTokenErrorCode.INVALID_TOKEN, message: err.errorInfo.message });
       }
@@ -44,6 +42,22 @@ export class AuthService {
     const token = await admin.auth().createCustomToken(userId, permissions);
     logger.endStep(STEPS.GENERATE_USER_TOKEN.id);
     return token;
+  }
+
+  public async updatePermissionsToUser(input: {
+    userId: string,
+    uid: string,
+  }, context?: ExecutionContext): Promise<void> {
+    const logger = context?.logger ?? processLoggerMock;
+    logger.startStep(STEPS.GET_USER_COMPANY_RELATIONS.id);
+    const permissions = await this._getUserPermissions(input.userId);
+    logger.endStep(STEPS.GET_USER_COMPANY_RELATIONS.id);
+    logger.startStep(STEPS.UPDATE_USER_PERMISSIONS.id);
+    await admin.auth().setCustomUserClaims(input.uid, {
+      ...permissions,
+      app_user_id: input.userId,
+    });
+    logger.endStep(STEPS.UPDATE_USER_PERMISSIONS.id);
   }
 
   private async _getUserPermissions(userId: string): Promise<UserPermissions> {

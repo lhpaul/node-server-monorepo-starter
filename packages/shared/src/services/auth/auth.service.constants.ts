@@ -5,6 +5,9 @@ export const STEPS = {
   GET_USER_COMPANY_RELATIONS: {
     id: 'get-user-company-relations'
   },
+  UPDATE_USER_PERMISSIONS: {
+    id: 'update-user-permissions'
+  },
 };
 
 export const ERROR_MESSAGES = {

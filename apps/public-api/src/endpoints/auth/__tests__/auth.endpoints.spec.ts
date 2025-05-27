@@ -1,8 +1,9 @@
 import { createEndpoint } from '@repo/fastify';
 import { FastifyInstance } from 'fastify';
-import { URL_LOGIN, LOGIN_BODY_JSON_SCHEMA } from '../auth.endpoints.constants';
-import { loginHandler } from '../handlers/login.handler';
+import { LOGIN_BODY_JSON_SCHEMA, URL_LOGIN, URL_UPDATE_CLAIMS } from '../auth.endpoints.constants';
+import { updateClaimsHandler } from '../handlers/update-claims/update-claims.handler';
 import { authEndpointsBuilder } from '../auth.endpoints';
+import { loginHandler } from '../handlers/login/login.handler';
 
 jest.mock('@repo/fastify', () => ({
   createEndpoint: jest.fn(),
@@ -21,8 +22,8 @@ describe(authEndpointsBuilder.name, () => {
   });
 
   it('should create all endpoints with correct configuration', () => {
-    expect(createEndpoint).toHaveBeenCalledTimes(1);
-    expect(authEndpoints).toHaveLength(1);
+    expect(createEndpoint).toHaveBeenCalledTimes(2);
+    expect(authEndpoints).toHaveLength(2);
   });
 
   it('should create POST login endpoint with correct configuration', () => {
@@ -42,6 +43,17 @@ describe(authEndpointsBuilder.name, () => {
           requestPayloadFields: ['token'],
           responsePayloadFields: ['token'],
         },
+      }
+    );
+  });
+
+  it('should create PATCH update claims endpoint with correct configuration', () => {
+    expect(createEndpoint).toHaveBeenCalledWith(
+      mockServer,
+      {
+        method: ['PATCH'],
+        url: URL_UPDATE_CLAIMS,
+        handler: updateClaimsHandler,
       }
     );
   });

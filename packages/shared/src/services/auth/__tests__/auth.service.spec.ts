@@ -1,14 +1,13 @@
-import * as admin from 'firebase-admin';
-import { AuthService } from '../auth.service';
-import { UserCompanyRelationsRepository } from '../../../repositories/user-company-relations/user-company-relations.repository';
 import { PERMISSIONS_BY_ROLE } from '../../../domain/models/user-company-relation.model';
+import { ExecutionLogger } from '../../../definitions/logging.interfaces';
+import { AuthService } from '../auth.service';
 import { DecodeEmailTokenError, DecodeEmailTokenErrorCode } from '../auth.service.errors';
 import { ERROR_MESSAGES, STEPS } from '../auth.service.constants';
-import { ExecutionLogger } from '../../../definitions/logging.interfaces';
 
 const mockFirebaseAuth = {
   verifyIdToken: jest.fn(),
   createCustomToken: jest.fn(),
+  setCustomUserClaims: jest.fn(),
 };
 
 jest.mock('firebase-admin', () => ({
@@ -142,6 +141,81 @@ describe(AuthService.name, () => {
         userId: [{ operator: '==', value: mockUserId }],
       });
       expect(mockFirebaseAuth.createCustomToken).toHaveBeenCalledWith(mockUserId, {
+        companies: {
+          company1: PERMISSIONS_BY_ROLE.admin,
+          company2: PERMISSIONS_BY_ROLE.member,
+        },
+      });
+    });
+  });
+
+  describe(AuthService.prototype.updatePermissionsToUser.name, () => {
+    it('should update the permissions of a user', async () => {
+      const mockUserId = 'user123';
+      const mockUid = 'uid123';
+      const mockUserCompanyRelations = [
+        {
+          companyId: 'company1',
+          role: 'admin',
+        },
+        {
+          companyId: 'company2',
+          role: 'member',
+        },
+      ];
+
+      mockUserCompanyRelationsRepo.getUserCompanyRelations.mockResolvedValue(mockUserCompanyRelations);
+      mockFirebaseAuth.setCustomUserClaims.mockResolvedValue(mockUserCompanyRelations);
+
+      await authService.updatePermissionsToUser({
+        userId: mockUserId,
+        uid: mockUid,
+      }, { logger: mockLogger });
+
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_USER_COMPANY_RELATIONS.id);
+      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_USER_COMPANY_RELATIONS.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_USER_PERMISSIONS.id);
+      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_USER_PERMISSIONS.id);
+      expect(mockUserCompanyRelationsRepo.getUserCompanyRelations).toHaveBeenCalledWith({
+        userId: [{ operator: '==', value: mockUserId }],
+      });
+      expect(mockFirebaseAuth.setCustomUserClaims).toHaveBeenCalledWith(mockUid, {
+        app_user_id: mockUserId,
+        companies: {
+          company1: PERMISSIONS_BY_ROLE.admin,
+          company2: PERMISSIONS_BY_ROLE.member,
+        },
+      });
+    });
+    it('should use processLoggerMock when no logger is provided', async () => {
+      const mockUserId = 'user123';
+      const mockUid = 'uid123';
+      const mockUserCompanyRelations = [
+        {
+          companyId: 'company1',
+          role: 'admin',
+        },
+        {
+          companyId: 'company2',
+          role: 'member',
+        },
+      ];
+
+      mockUserCompanyRelationsRepo.getUserCompanyRelations.mockResolvedValue(mockUserCompanyRelations);
+      mockFirebaseAuth.setCustomUserClaims.mockResolvedValue(mockUserCompanyRelations);
+
+      await authService.updatePermissionsToUser({
+        userId: mockUserId,
+        uid: mockUid,
+      });
+
+      expect(mockLogger.startStep).not.toHaveBeenCalled();
+      expect(mockLogger.endStep).not.toHaveBeenCalled();
+      expect(mockUserCompanyRelationsRepo.getUserCompanyRelations).toHaveBeenCalledWith({
+        userId: [{ operator: '==', value: mockUserId }],
+      });
+      expect(mockFirebaseAuth.setCustomUserClaims).toHaveBeenCalledWith(mockUid, {
+        app_user_id: mockUserId,
         companies: {
           company1: PERMISSIONS_BY_ROLE.admin,
           company2: PERMISSIONS_BY_ROLE.member,

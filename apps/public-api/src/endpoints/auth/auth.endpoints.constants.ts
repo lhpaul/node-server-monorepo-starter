@@ -7,3 +7,4 @@ export const LOGIN_BODY_JSON_SCHEMA = {
   },
   required: ['token'],
 } as const;
+export const URL_UPDATE_CLAIMS = `${URL_V1}/update-claims`;

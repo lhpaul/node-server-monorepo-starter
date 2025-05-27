@@ -1,9 +1,10 @@
 import { createEndpoint } from '@repo/fastify';
 import { FastifyInstance, RouteOptions } from 'fastify';
 
-import { URL_LOGIN } from './auth.endpoints.constants';
-import { LOGIN_BODY_JSON_SCHEMA } from './auth.endpoints.constants';
-import { loginHandler } from './handlers/login.handler';
+import { LOGIN_BODY_JSON_SCHEMA, URL_LOGIN, URL_UPDATE_CLAIMS } from './auth.endpoints.constants';
+import { loginHandler } from './handlers/login/login.handler';
+import { updateClaimsHandler } from './handlers/update-claims/update-claims.handler';
+
 export function authEndpointsBuilder(server: FastifyInstance): RouteOptions[] {
   return [
     createEndpoint(server, {
@@ -20,5 +21,10 @@ export function authEndpointsBuilder(server: FastifyInstance): RouteOptions[] {
         responsePayloadFields: ['token'],
       },
     }),
+    createEndpoint(server, {
+      method: ['PATCH'],
+      url: URL_UPDATE_CLAIMS,
+      handler: updateClaimsHandler,
+    })
   ];
 }
