@@ -6,7 +6,7 @@ import {
   TransactionsRepository,
 } from '@repo/shared/repositories';
 
-import { AuthUser } from '../../../../../../definitions/auth.types';
+import { AuthUser } from '../../../../../../definitions/auth.interfaces';
 import { hasCompanyTransactionsDeletePermission } from '../../../../../../utils/auth/auth.utils';
 import { STEPS } from './transactions.delete.constants';
 import { DeleteTransactionParams } from './transactions.delete.interfaces';

@@ -16,7 +16,7 @@ export function authEndpointsBuilder(server: FastifyInstance): RouteOptions[] {
     }, {
       authenticate: false,
       maskOptions: {
-        requestPayloadFields: ['email', 'password'],
+        requestPayloadFields: ['token'],
         responsePayloadFields: ['token'],
       },
     }),

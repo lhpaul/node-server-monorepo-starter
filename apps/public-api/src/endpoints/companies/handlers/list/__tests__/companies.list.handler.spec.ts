@@ -2,7 +2,7 @@ import { STATUS_CODES } from '@repo/fastify';
 import { CompaniesRepository } from '@repo/shared/repositories';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
-import { AuthUser } from '../../../../../definitions/auth.types';
+import { AuthUser } from '../../../../../definitions/auth.interfaces';
 import { STEPS } from '../companies.list.constants';
 import { listCompaniesHandler } from '../companies.list.handler';
 
@@ -46,7 +46,7 @@ describe(listCompaniesHandler.name, () => {
         'company-2': ['company:write'],
         'company-3': ['company:update'],
       },
-    } as AuthUser;
+    } as unknown as AuthUser;
 
     mockRequest = {
       log: mockLogger as FastifyBaseLogger,
@@ -59,6 +59,23 @@ describe(listCompaniesHandler.name, () => {
     (CompaniesRepository.getInstance as jest.Mock).mockReturnValue(
       mockRepository,
     );
+  });
+
+  it('should handle user without companies', async () => {
+    mockUser.companies = undefined;
+    mockRequest.user = mockUser;
+
+    await listCompaniesHandler(
+      mockRequest as FastifyRequest,
+      mockReply as FastifyReply,
+    );
+
+    expect(mockLogger.startStep).toHaveBeenCalledWith(
+      STEPS.GET_COMPANIES.id,
+      STEPS.GET_COMPANIES.obfuscatedId,
+    );
+    expect(mockRepository.getCompanyById).not.toHaveBeenCalled();
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
   });
 
   it('should return list of companies user has access to', async () => {

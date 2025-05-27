@@ -1,15 +1,20 @@
-import { FastifyInstance } from 'fastify';
+import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
+import * as admin from 'firebase-admin';
 import {
+  AUTHENTICATE_DECORATOR_NAME,
+  FORBIDDEN_ERROR,
   INTERNAL_ERROR_VALUES,
   RESOURCE_NOT_FOUND_ERROR,
   STATUS_CODES,
   TIMEOUT_ERROR,
+  UNAUTHORIZED_ERROR,
   UNCAUGHT_EXCEPTION_ERROR,
   UNHANDLED_REJECTION_ERROR,
   VALIDATION_ERROR,
   VALIDATION_ERROR_CODE,
 } from '../../constants/server.constants';
 import { RequestLogger } from '../request-logger/request-logger.class';
+import { FIREBASE_DECODE_ID_TOKEN_ERROR_CODES, FIREBASE_DECODE_ID_TOKEN_ERROR_LOG } from './server.utils.constants';
 
 export function setServerErrorHandlers(server: FastifyInstance): void {
   // Handle 404 errors
@@ -108,4 +113,38 @@ export function setServerProcessErrorHandlers(server: FastifyInstance): void {
     console.error('uncaughtException', err);
     process.exit(1);
   });
+}
+
+export function setServerFirebaseAuthenticationDecorator(server: FastifyInstance): void {
+  server.decorate(AUTHENTICATE_DECORATOR_NAME, authenticateRequest);
+}
+
+export async function authenticateRequest(request: FastifyRequest, reply: FastifyReply): Promise<void> {
+  try {
+    const token = request.headers.authorization?.split(' ')[1];
+    if (!token) {
+      reply.code(STATUS_CODES.UNAUTHORIZED).send({ code: UNAUTHORIZED_ERROR.responseCode, message: UNAUTHORIZED_ERROR.responseMessage });
+      return;
+    }
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    request.user = decodedToken;
+  } catch (err: any) {
+    if (err.errorInfo) {
+      request.log.warn({
+        logId: FIREBASE_DECODE_ID_TOKEN_ERROR_LOG.logId,
+        error: err.errorInfo,
+      }, FIREBASE_DECODE_ID_TOKEN_ERROR_LOG.logMessage);
+      const errorCode = FIREBASE_DECODE_ID_TOKEN_ERROR_CODES[err.errorInfo.code as keyof typeof FIREBASE_DECODE_ID_TOKEN_ERROR_CODES];
+      if (errorCode) {
+        reply.code(STATUS_CODES.UNAUTHORIZED).send({ code: errorCode.code, message: errorCode.message });
+        return;
+      }
+      reply.code(STATUS_CODES.FORBIDDEN).send({
+        code: FORBIDDEN_ERROR.responseCode,
+        message: err.errorInfo.message
+      });
+      return;
+    }
+    throw err;
+  }
 }

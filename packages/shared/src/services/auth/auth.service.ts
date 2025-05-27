@@ -1,13 +1,14 @@
-import { compare } from 'bcrypt';
+import * as admin from 'firebase-admin';
 
 import { ExecutionContext } from '../../definitions/executions.interfaces';
-import { User } from '../../domain/models/user.model';
 import { PERMISSIONS_BY_ROLE } from '../../domain/models/user-company-relation.model';
 import { processLoggerMock } from '../../mocks/process-logger.mocks';
 import { UserCompanyRelationsRepository } from '../../repositories/user-company-relations/user-company-relations.repository';
-import { UsersRepository } from '../../repositories/users/users.repository';
-import { UserPermissions, ValidateCredentialsInput } from './auth.service.interfaces';
-import { STEPS } from './auth.service.constants';
+import { UserPermissions } from './auth.service.interfaces';
+import { ERROR_MESSAGES, STEPS } from './auth.service.constants';
+import { DecodeEmailTokenError } from './auth.service.errors';
+import { DecodeEmailTokenErrorCode } from './auth.service.errors';
+
 export class AuthService {
   private static instance: AuthService;
 
@@ -17,41 +18,42 @@ export class AuthService {
     }
     return this.instance;
   }
-  public async validateCredentials(
-    input: ValidateCredentialsInput,
-    context?: ExecutionContext,
-  ): Promise<User | null> {
-    const logger = context?.logger ?? processLoggerMock;
-    logger.startStep(STEPS.FIND_USER.id);
-    const [user, ..._users] = await UsersRepository.getInstance().getUsers({
-      email: [{ operator: '==', value: input.email }],
-    });
-    logger.endStep(STEPS.FIND_USER.id);
-    if (!user) {
-      return null;
+
+  public async decodeEmailToken(token: string): Promise<{ email: string}> {
+    try {
+      const { email } = await admin.auth().verifyIdToken(token);
+      if (!email) {
+        throw new DecodeEmailTokenError({ code: DecodeEmailTokenErrorCode.INVALID_TOKEN, message: ERROR_MESSAGES.NO_EMAIL_IN_TOKEN });
+      }
+      return { email };
+    } catch (err: any) {
+      console.log('ERR', err);
+      if (err.errorInfo) {
+        throw new DecodeEmailTokenError({ code: DecodeEmailTokenErrorCode.INVALID_TOKEN, message: err.errorInfo.message });
+      }
+      throw err;
     }
-    logger.startStep(STEPS.CHECK_PASSWORD.id);
-    const isPasswordValid = await compare(input.password, user.currentPasswordHash);
-    logger.endStep(STEPS.CHECK_PASSWORD.id);
-    // normally here we would do something to avoid brute force attacks
-    if (!isPasswordValid) {
-      return null;
-    }
-    return user;
   }
 
-  public async getUserPermissions(userId: string, context?: ExecutionContext): Promise<UserPermissions> {
+  public async generateUserToken(userId: string, context?: ExecutionContext): Promise<string> {
     const logger = context?.logger ?? processLoggerMock;
     logger.startStep(STEPS.GET_USER_COMPANY_RELATIONS.id);
+    const permissions = await this._getUserPermissions(userId);
+    logger.endStep(STEPS.GET_USER_COMPANY_RELATIONS.id);
+    logger.startStep(STEPS.GENERATE_USER_TOKEN.id);
+    const token = await admin.auth().createCustomToken(userId, permissions);
+    logger.endStep(STEPS.GENERATE_USER_TOKEN.id);
+    return token;
+  }
+
+  private async _getUserPermissions(userId: string): Promise<UserPermissions> {
     const userCompanyRelations = await UserCompanyRelationsRepository.getInstance().getUserCompanyRelations({
       userId: [{ operator: '==', value: userId }],
     });
-    logger.endStep(STEPS.GET_USER_COMPANY_RELATIONS.id);
-    const response: UserPermissions = { companies: {} };
+    const response: { companies: { [companyId: string]: string[] } } = { companies: {} };
     for (const userCompanyRelation of userCompanyRelations) {
       response.companies[userCompanyRelation.companyId] = PERMISSIONS_BY_ROLE[userCompanyRelation.role];
     }
     return response;
   }
-  
 }

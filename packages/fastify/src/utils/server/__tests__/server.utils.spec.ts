@@ -1,5 +1,9 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
+import * as admin from 'firebase-admin';
+
 import {
+  AUTHENTICATE_DECORATOR_NAME,
+  FORBIDDEN_ERROR,
   INTERNAL_ERROR_VALUES,
   RESOURCE_NOT_FOUND_ERROR,
   STATUS_CODES,
@@ -10,7 +14,14 @@ import {
   VALIDATION_ERROR_CODE,
 } from '../../../constants/server.constants';
 import { RequestLogger } from '../../request-logger/request-logger.class';
-import { setServerErrorHandlers, setServerHooks, setServerProcessErrorHandlers } from '../server.utils';
+import { authenticateRequest, setServerErrorHandlers, setServerFirebaseAuthenticationDecorator, setServerHooks, setServerProcessErrorHandlers } from '../server.utils';
+import { FIREBASE_DECODE_ID_TOKEN_ERROR_CODES } from '../server.utils.constants';
+
+jest.mock('firebase-admin', () => ({
+  auth: jest.fn().mockReturnValue({
+    verifyIdToken: jest.fn(),
+  }),
+}));
 
 describe(setServerErrorHandlers.name, () => {
   let mockServer: jest.Mocked<FastifyInstance>;
@@ -253,3 +264,110 @@ describe(setServerProcessErrorHandlers.name, () => {
     expect(process.exit).toHaveBeenCalledWith(1);
   });
 });
+
+describe(setServerFirebaseAuthenticationDecorator.name, () => {
+  let mockServer: jest.Mocked<FastifyInstance>;
+
+  beforeEach(() => {
+    mockServer = {
+      decorate: jest.fn(),
+    } as any;
+  });
+
+  it('should set up firebase authentication decorator correctly', () => {
+    setServerFirebaseAuthenticationDecorator(mockServer);
+    expect(mockServer.decorate).toHaveBeenCalledWith(AUTHENTICATE_DECORATOR_NAME, authenticateRequest);
+  });
+});
+
+describe(authenticateRequest.name, () => {
+  let mockRequest: jest.Mocked<FastifyRequest>;
+  let mockReply: jest.Mocked<FastifyReply>;
+
+  const mockToken = 'test-token';
+  const mockDecodedToken = {
+    uid: 'test-user-id',
+    email: 'test@example.com',
+  };
+
+  beforeEach(() => {
+    mockRequest = {
+      headers: {
+        authorization: `Bearer ${mockToken}`,
+      },
+      log: {
+        warn: jest.fn(),
+      },
+    } as any;
+
+    mockReply = {
+      code: jest.fn().mockReturnThis(),
+      send: jest.fn(),
+    } as any;
+  });
+
+  it('should return unauthorized when token is missing', async () => {
+    // Arrange
+    delete mockRequest.headers.authorization;
+
+    // Act
+    await authenticateRequest(mockRequest, mockReply);
+  });
+  it('should authenticate request correctly when token is valid', async () => {
+    // Arrange
+    (admin.auth().verifyIdToken as jest.Mock).mockResolvedValue(mockDecodedToken);
+
+    // Act
+    await authenticateRequest(mockRequest, mockReply);
+
+    expect(mockRequest.user).toEqual({
+      uid: 'test-user-id',
+      email: 'test@example.com',
+    });
+  });
+
+  it('should return the correct error when is a known error', async () => {
+
+    for (const code in FIREBASE_DECODE_ID_TOKEN_ERROR_CODES) {
+      // Arrange
+      (admin.auth().verifyIdToken as jest.Mock).mockRejectedValue({ errorInfo: { code } });
+
+      // Act
+      await authenticateRequest(mockRequest, mockReply);
+      const values = FIREBASE_DECODE_ID_TOKEN_ERROR_CODES[code as keyof typeof FIREBASE_DECODE_ID_TOKEN_ERROR_CODES];
+      expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.UNAUTHORIZED);
+      expect(mockReply.send).toHaveBeenCalledWith({
+        code: values.code,
+        message: values.message,
+      });
+    }
+  });
+
+  it('should return forbidden when is an unknown error', async () => {
+    const mockError = { errorInfo: { code: 'unknown-error', message: 'Unknown error' } };
+    // Arrange
+    (admin.auth().verifyIdToken as jest.Mock).mockRejectedValue(mockError);
+
+    // Act
+    await authenticateRequest(mockRequest, mockReply);
+
+    expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.FORBIDDEN);
+    expect(mockReply.send).toHaveBeenCalledWith({
+      code: FORBIDDEN_ERROR.responseCode,
+      message: mockError.errorInfo.message,
+    });
+  });
+
+  it('should throw an error when is an unknown error', async () => {
+    const mockError = new Error('Unknown error');
+    // Arrange
+    (admin.auth().verifyIdToken as jest.Mock).mockRejectedValue(mockError);
+
+    try {
+      // Act
+      await authenticateRequest(mockRequest, mockReply);
+    } catch (error: any) {
+      expect(error).toBe(mockError);
+    }
+  });
+}); 

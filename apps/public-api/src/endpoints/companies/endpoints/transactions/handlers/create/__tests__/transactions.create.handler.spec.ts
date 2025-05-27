@@ -3,6 +3,7 @@ import { TransactionsRepository } from '@repo/shared/repositories';
 import { TransactionType } from '@repo/shared/domain';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
+import { AuthUser } from '../../../../../../../definitions/auth.interfaces';
 import { hasCompanyTransactionsCreatePermission } from '../../../../../../../utils/auth/auth.utils';
 import { STEPS } from '../transactions.create.constants';
 import { createTransactionHandler } from '../transactions.create.handler';
@@ -32,7 +33,11 @@ describe(createTransactionHandler.name, () => {
   let mockRepository: jest.Mocked<TransactionsRepository>;
 
   const mockParams = { companyId: '123' };
-  const mockUser = { id: 'user123' };
+  const mockUser: AuthUser = {
+    companies: {
+      'company-1': ['read'],
+    },
+  } as unknown as AuthUser;
   const mockBody = {
     amount: 100,
     date: '2024-03-20',

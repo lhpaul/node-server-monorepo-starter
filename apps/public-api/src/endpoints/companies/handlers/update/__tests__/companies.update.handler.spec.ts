@@ -6,7 +6,7 @@ import {
   UpdateCompanyErrorCode,
 } from '@repo/shared/repositories';
 
-import { AuthUser } from '../../../../../definitions/auth.types';
+import { AuthUser } from '../../../../../definitions/auth.interfaces';
 import { hasCompanyUpdatePermission } from '../../../../../utils/auth/auth.utils';
 import { STEPS } from '../companies.update.constants';
 import { updateCompanyHandler } from '../companies.update.handler';
@@ -54,7 +54,7 @@ describe(updateCompanyHandler.name, () => {
     companies: {
       '123': ['company:update'],
     },
-  };
+  } as unknown as AuthUser;
 
   beforeEach(() => {
     mockLogger = {

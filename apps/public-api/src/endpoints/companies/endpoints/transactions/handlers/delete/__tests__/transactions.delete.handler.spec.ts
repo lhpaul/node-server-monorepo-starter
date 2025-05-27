@@ -4,12 +4,13 @@ import {
   DeleteTransactionErrorCode,
   TransactionsRepository,
 } from '@repo/shared/repositories';
-import { UserPermissions } from '@repo/shared/services';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
+import { AuthUser } from '../../../../../../../definitions/auth.interfaces';
+import { hasCompanyTransactionsDeletePermission } from '../../../../../../../utils/auth/auth.utils';
 import { STEPS } from '../transactions.delete.constants';
 import { deleteTransactionHandler } from '../transactions.delete.handler';
-import { hasCompanyTransactionsDeletePermission } from '../../../../../../../utils/auth/auth.utils';
+
 
 jest.mock('@repo/fastify', () => ({
   STATUS_CODES: {
@@ -50,11 +51,11 @@ describe(deleteTransactionHandler.name, () => {
   let mockRepository: { deleteTransaction: jest.Mock };
 
   const mockParams = { companyId: 'company123', id: 'transaction123' };
-  const mockUser: UserPermissions = {
+  const mockUser: AuthUser = {
     companies: {
       'company123': ['transaction:delete'],
     },
-  };
+  } as unknown as AuthUser;
 
   beforeEach(() => {
     mockLogger = {

@@ -39,7 +39,7 @@ describe(authEndpointsBuilder.name, () => {
       {
         authenticate: false,
         maskOptions: {
-          requestPayloadFields: ['email', 'password'],
+          requestPayloadFields: ['token'],
           responsePayloadFields: ['token'],
         },
       }

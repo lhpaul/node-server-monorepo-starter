@@ -4,13 +4,14 @@ import {
   UpdateTransactionError,
   UpdateTransactionErrorCode,
 } from '@repo/shared/repositories';
-import { UserPermissions } from '@repo/shared/services';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
+import { AuthUser } from '../../../../../../../definitions/auth.interfaces';
 import { hasCompanyTransactionsUpdatePermission } from '../../../../../../../utils/auth/auth.utils';
 import { ERROR_RESPONSES } from '../../../transactions.endpoints.constants';
 import { STEPS } from '../transactions.update.constants';
 import { updateTransactionHandler } from '../transactions.update.handler';
+
 
 
 jest.mock('@repo/fastify', () => ({
@@ -53,11 +54,11 @@ describe(updateTransactionHandler.name, () => {
 
   const mockParams = { companyId: 'company123', id: 'transaction123' };
   const mockBody = { amount: 100, date: '2024-03-20', type: 'INCOME' };
-  const mockUser: UserPermissions = {
+  const mockUser: AuthUser = {
     companies: {
       'company123': ['transaction:update'],
     },
-  };
+  } as unknown as AuthUser;
 
   beforeEach(() => {
     mockLogger = {

@@ -1,26 +1,25 @@
 import cors from '@fastify/cors';
 import fastifyEnv from '@fastify/env';
 import helmet from '@fastify/helmet';
-import fastifyJwt from '@fastify/jwt';
 import {
-  AUTHENTICATE_DECORATOR_NAME,
-  AUTHENTICATE_ERROR_CODES,
   SERVER_LOGGER_CONFIG,
   setServerErrorHandlers,
+  setServerFirebaseAuthenticationDecorator,
   setServerHooks,
   setServerProcessErrorHandlers,
 } from '@repo/fastify';
-import fastify, { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
+import fastify, { FastifyInstance } from 'fastify';
+import * as admin from 'firebase-admin';
 
 import packageJson from '../package.json';
 
 import {
   COR_CONFIG,
   FASTIFY_ENV_CONFIG,
-  JWT_OPTIONS,
   SERVER_START_VALUES,
 } from './constants/server.constants';
 import { routesBuilder } from './routes';
+
 
 export let server: FastifyInstance;
 
@@ -38,25 +37,15 @@ export const init = async function (): Promise<FastifyInstance> {
   // Help secure the api by setting HTTP response headers
   server.register(helmet, { global: true });
 
-  // Enable JWT authentication
-  await server.register(fastifyJwt, {
-    secret: server.config.JWT_SECRET,
-    ...JWT_OPTIONS,
+  // Initialize Firebase Admin SDK
+  await admin.initializeApp({
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    credential: admin.credential.applicationDefault(),
+    databaseURL: process.env.FIREBASE_DATABASE_URL,
   });
 
   // Add decorator to authenticate requests. To avoid authentication in an route, you can pass the `skipAuth` option when building the route.
-  server.decorate(AUTHENTICATE_DECORATOR_NAME, async (request: FastifyRequest, reply: FastifyReply) => {
-    try {
-      await request.jwtVerify();
-    } catch (err: any) {
-      if (err.statusCode && err.message) {
-        const code = AUTHENTICATE_ERROR_CODES[err.statusCode as keyof typeof AUTHENTICATE_ERROR_CODES] ?? err.code;
-        reply.code(err.statusCode).send({ code, message: err.message });
-        return;
-      }
-      reply.send(err);
-    }
-  });
+  setServerFirebaseAuthenticationDecorator(server);
 
   // Load routes
   server.route({

@@ -2,6 +2,7 @@ import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 import { FORBIDDEN_ERROR, STATUS_CODES } from '@repo/fastify';
 import { CompaniesRepository } from '@repo/shared/repositories';
 
+import { AuthUser } from '../../../../../definitions/auth.interfaces';
 import { hasCompanyReadPermission } from '../../../../../utils/auth/auth.utils';
 import { COMPANY_NOT_FOUND_ERROR } from '../../../companies.endpoints.constants';
 import { STEPS } from '../companies.get.constants';
@@ -40,7 +41,9 @@ describe(getCompanyHandler.name, () => {
   let mockRepository: { getCompanyById: jest.Mock };
 
   const mockParams = { id: '123' };
-  const mockUser = { id: 'user123' };
+  const mockUser: AuthUser = {
+    companies: { 'company-1': ['read'] },
+  } as unknown as AuthUser;
 
   beforeEach(() => {
     mockLogger = {

@@ -1,21 +1,22 @@
-import { AuthService } from '@repo/shared/services';
-import { User } from '@repo/shared/domain';
-import { UserPermissions } from '@repo/shared/services';
-import { FastifyReply, FastifyRequest, FastifyInstance } from 'fastify';
-import { loginHandler } from '../login.handler';
-import { ERROR_RESPONSES, STEPS } from '../login.constants';
+import { STATUS_CODES } from '@repo/fastify';
+import { UsersRepository } from '@repo/shared/repositories';
+import { AuthService, DecodeEmailTokenError, DecodeEmailTokenErrorCode } from '@repo/shared/services';
+import { FastifyReply, FastifyRequest } from 'fastify';
 
-jest.mock('@repo/shared/services', () => ({
-  AuthService: {
-    getInstance: jest.fn(),
-  },
-}));
+import { ERROR_RESPONSES, STEPS } from '../login.constants';
+import { loginHandler } from '../login.handler';
 
 describe(loginHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;
   let mockReply: Partial<FastifyReply>;
-  let mockAuthService: jest.Mocked<AuthService>;
   let mockLogger: any;
+  let mockAuthService: jest.SpyInstance;
+  let mockUsersRepository: jest.SpyInstance;
+
+  const mockEmail = 'test@example.com';
+  const mockUserId = 'user-123';
+  const mockEmailToken = 'valid-email-token';
+  const mockUserToken = 'valid-user-token';
 
   beforeEach(() => {
     mockLogger = {
@@ -24,27 +25,11 @@ describe(loginHandler.name, () => {
       endStep: jest.fn(),
     };
 
-    const mockServer = {
-      jwt: {
-        sign: jest.fn().mockResolvedValue('mock-jwt-token'),
-        options: {
-          decode: {},
-          sign: {},
-          verify: {},
-        },
-        verify: jest.fn(),
-        decode: jest.fn(),
-        lookupToken: jest.fn(),
-      },
-    } as unknown as FastifyInstance;
-
     mockRequest = {
-      body: {
-        email: 'test@example.com',
-        password: 'password123',
-      },
       log: mockLogger,
-      server: mockServer,
+      body: {
+        token: mockEmailToken,
+      },
     };
 
     mockReply = {
@@ -52,84 +37,97 @@ describe(loginHandler.name, () => {
       send: jest.fn(),
     };
 
-    mockAuthService = {
-      validateCredentials: jest.fn(),
-      getUserPermissions: jest.fn(),
-    } as any;
+    // Mock AuthService
+    mockAuthService = jest.spyOn(AuthService, 'getInstance').mockReturnValue({
+      decodeEmailToken: jest.fn(),
+      generateUserToken: jest.fn(),
+    } as any);
 
-    (AuthService.getInstance as jest.Mock).mockReturnValue(mockAuthService);
+    // Mock UsersRepository
+    mockUsersRepository = jest.spyOn(UsersRepository, 'getInstance').mockReturnValue({
+      getUsers: jest.fn(),
+    } as any);
   });
 
   afterEach(() => {
     jest.clearAllMocks();
   });
 
-  it('should successfully login with valid credentials', async () => {
-    const mockUser = {
-      id: 'user-123',
-      email: 'test@example.com',
-      currentPasswordHash: 'hashed_password',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    const mockPermissions: UserPermissions = {
-      companies: {
-        'company-1': ['admin'],
-      },
-    };
+  it('should successfully login a user with valid credentials', async () => {
+    // Arrange
+    const mockUser = { id: mockUserId, email: mockEmail };
+    mockAuthService.mockReturnValue({
+      decodeEmailToken: jest.fn().mockResolvedValue({ email: mockEmail }),
+      generateUserToken: jest.fn().mockResolvedValue(mockUserToken),
+    } as any);
 
-    mockAuthService.validateCredentials.mockResolvedValue(mockUser);
-    mockAuthService.getUserPermissions.mockResolvedValue(mockPermissions);
+    mockUsersRepository.mockReturnValue({
+      getUsers: jest.fn().mockResolvedValue([mockUser]),
+    } as any);
 
+    // Act
     await loginHandler(mockRequest as FastifyRequest, mockReply as FastifyReply);
 
-    expect(mockAuthService.validateCredentials).toHaveBeenCalledWith({
-      email: 'test@example.com',
-      password: 'password123',
-    });
-
-    expect(mockLogger.startStep).toHaveBeenCalledWith(
-      STEPS.VALIDATE_CREDENTIALS.id,
-      STEPS.VALIDATE_CREDENTIALS.obfuscatedId
-    );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.VALIDATE_CREDENTIALS.id);
-
-    expect(mockAuthService.getUserPermissions).toHaveBeenCalledWith('user-123');
-    expect(mockLogger.startStep).toHaveBeenCalledWith(
-      STEPS.GET_PERMISSIONS.id,
-      STEPS.GET_PERMISSIONS.obfuscatedId
-    );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_PERMISSIONS.id);
-
-    expect(mockRequest.server?.jwt.sign).toHaveBeenCalledWith({
-      userId: 'user-123',
-      ...mockPermissions,
-    });
-
-    expect(mockReply.status).toHaveBeenCalledWith(200);
-    expect(mockReply.send).toHaveBeenCalledWith({ token: 'mock-jwt-token' });
+    // Assert
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DECODE_EMAIL_TOKEN.id, STEPS.DECODE_EMAIL_TOKEN.obfuscatedId);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.DECODE_EMAIL_TOKEN.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.FIND_USER.id, STEPS.FIND_USER.obfuscatedId);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.FIND_USER.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GENERATE_USER_TOKEN.id, STEPS.GENERATE_USER_TOKEN.obfuscatedId);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GENERATE_USER_TOKEN.id);
+    expect(mockReply.status).toHaveBeenCalledWith(STATUS_CODES.OK);
+    expect(mockReply.send).toHaveBeenCalledWith({ token: mockUserToken });
   });
 
-  it('should return 401 for invalid credentials', async () => {
-    mockAuthService.validateCredentials.mockResolvedValue(null);
+  it('should return unauthorized when user is not found', async () => {
+    // Arrange
+    mockAuthService.mockReturnValue({
+      decodeEmailToken: jest.fn().mockResolvedValue({ email: mockEmail }),
+    } as any);
 
+    mockUsersRepository.mockReturnValue({
+      getUsers: jest.fn().mockResolvedValue([]),
+    } as any);
+
+    // Act
     await loginHandler(mockRequest as FastifyRequest, mockReply as FastifyReply);
 
-    expect(mockAuthService.validateCredentials).toHaveBeenCalledWith({
-      email: 'test@example.com',
-      password: 'password123',
+    // Assert
+    expect(mockReply.status).toHaveBeenCalledWith(STATUS_CODES.UNAUTHORIZED);
+    expect(mockReply.send).toHaveBeenCalledWith({
+      code: ERROR_RESPONSES.NO_USER_FOUND.code,
+      message: ERROR_RESPONSES.NO_USER_FOUND.message(mockEmail),
     });
+  });
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(
-      STEPS.VALIDATE_CREDENTIALS.id,
-      STEPS.VALIDATE_CREDENTIALS.obfuscatedId
-    );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.VALIDATE_CREDENTIALS.id);
+  it('should return bad request when email token is invalid', async () => {
+    // Arrange
+    const mockError = new DecodeEmailTokenError({ code: DecodeEmailTokenErrorCode.INVALID_TOKEN, message: 'Invalid token' });
+    mockAuthService.mockReturnValue({
+      decodeEmailToken: jest.fn().mockRejectedValue(mockError),
+    } as any);
 
-    expect(mockAuthService.getUserPermissions).not.toHaveBeenCalled();
-    expect(mockRequest.server?.jwt.sign).not.toHaveBeenCalled();
+    // Act
+    await loginHandler(mockRequest as FastifyRequest, mockReply as FastifyReply);
 
-    expect(mockReply.status).toHaveBeenCalledWith(401);
-    expect(mockReply.send).toHaveBeenCalledWith(ERROR_RESPONSES.INVALID_CREDENTIALS);
+    // Assert
+    expect(mockReply.status).toHaveBeenCalledWith(STATUS_CODES.BAD_REQUEST);
+    expect(mockReply.send).toHaveBeenCalledWith({
+      code: mockError.code,
+      message: mockError.message,
+    });
+  });
+
+  it('should throw error for unexpected errors', async () => {
+    // Arrange
+    const unexpectedError = new Error('Unexpected error');
+    mockAuthService.mockReturnValue({
+      decodeEmailToken: jest.fn().mockRejectedValue(unexpectedError),
+    } as any);
+
+    // Act & Assert
+    await expect(loginHandler(mockRequest as FastifyRequest, mockReply as FastifyReply))
+      .rejects
+      .toThrow(unexpectedError);
   });
 });

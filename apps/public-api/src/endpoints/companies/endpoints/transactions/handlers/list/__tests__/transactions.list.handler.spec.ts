@@ -2,7 +2,7 @@ import { FORBIDDEN_ERROR, STATUS_CODES, transformQueryParams } from '@repo/fasti
 import { TransactionsRepository } from '@repo/shared/repositories';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
-import { AuthUser } from '../../../../../../../definitions/auth.types';
+import { AuthUser } from '../../../../../../../definitions/auth.interfaces';
 import { hasCompanyTransactionsReadPermission } from '../../../../../../../utils/auth/auth.utils';
 import { STEPS } from '../transactions.list.constants';
 import { listTransactionsHandler } from '../transactions.list.handler';
@@ -47,7 +47,7 @@ describe(listTransactionsHandler.name, () => {
     companies: {
       'company123': ['transaction:read'],
     },
-  };
+  } as unknown as AuthUser;
 
   beforeEach(() => {
     mockLogger = {

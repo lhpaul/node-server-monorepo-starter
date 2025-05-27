@@ -2,7 +2,7 @@ import { STATUS_CODES } from '@repo/fastify';
 import { CompaniesRepository } from '@repo/shared/repositories';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
-import { AuthUser } from '../../../../definitions/auth.types';
+import { AuthUser } from '../../../../definitions/auth.interfaces';
 import { STEPS } from './companies.list.constants';
 
 export const listCompaniesHandler = async (
@@ -14,7 +14,7 @@ export const listCompaniesHandler = async (
   const user = request.user as AuthUser;
 
   // Get all company IDs the user has permission for
-  const companyIds = Object.keys(user.companies);
+  const companyIds = user.companies ? Object.keys(user.companies) : [];
   
   // Get company information for each ID in parallel
   logger.startStep(STEPS.GET_COMPANIES.id, STEPS.GET_COMPANIES.obfuscatedId);

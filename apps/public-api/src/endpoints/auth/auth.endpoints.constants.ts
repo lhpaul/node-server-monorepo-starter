@@ -3,8 +3,7 @@ export const URL_LOGIN = `${URL_V1}/login`;
 export const LOGIN_BODY_JSON_SCHEMA = {
   type: 'object',
   properties: {
-    email: { type: 'string' },
-    password: { type: 'string' },
+    token: { type: 'string' },
   },
-  required: ['email', 'password'],
+  required: ['token'],
 } as const;
