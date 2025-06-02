@@ -1,22 +1,13 @@
+import { STATUS_CODES } from '@repo/fastify';
+import { CompaniesRepository } from '@repo/shared/repositories';
+import { RepositoryError, RepositoryErrorCode } from '@repo/shared/utils';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
-import {
-  CompaniesRepository,
-  UpdateCompanyError,
-  UpdateCompanyErrorCode,
-} from '@repo/shared/repositories';
 
 import { ERROR_RESPONSES } from '../../../companies.endpoints.constants';
 import { STEPS } from '../companies.update.constants';
 import { updateCompanyHandler } from '../companies.update.handler';
 
-jest.mock('@repo/shared/repositories', () => ({
-  ...jest.requireActual('@repo/shared/repositories'),
-  CompaniesRepository: {
-    getInstance: jest.fn().mockImplementation(() => ({
-      updateCompany: jest.fn(),
-    })),
-  },
-}));
+jest.mock('@repo/shared/repositories');
 
 describe(updateCompanyHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;
@@ -25,7 +16,7 @@ describe(updateCompanyHandler.name, () => {
     startStep: jest.Mock;
     endStep: jest.Mock;
   } & Partial<FastifyBaseLogger>;
-  let mockRepository: { updateCompany: jest.Mock };
+  let mockRepository: { updateDocument: jest.Mock };
 
   const mockParams = { id: '123' };
   const mockBody = {
@@ -51,7 +42,7 @@ describe(updateCompanyHandler.name, () => {
     };
 
     mockRepository = {
-      updateCompany: jest.fn(),
+      updateDocument: jest.fn(),
     };
 
     (CompaniesRepository.getInstance as jest.Mock).mockReturnValue(
@@ -60,7 +51,7 @@ describe(updateCompanyHandler.name, () => {
   });
 
   it('should successfully update a company', async () => {
-    mockRepository.updateCompany.mockResolvedValue(undefined);
+    mockRepository.updateDocument.mockResolvedValue(undefined);
 
     await updateCompanyHandler(
       mockRequest as FastifyRequest,
@@ -71,20 +62,20 @@ describe(updateCompanyHandler.name, () => {
       STEPS.UPDATE_COMPANY.id,
       STEPS.UPDATE_COMPANY.obfuscatedId,
     );
-    expect(mockRepository.updateCompany).toHaveBeenCalledWith(
+    expect(mockRepository.updateDocument).toHaveBeenCalledWith(
       mockParams.id,
       mockBody,
-      { logger: mockLogger },
+      mockLogger,
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_COMPANY.id);
-    expect(mockReply.code).toHaveBeenCalledWith(204);
+    expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.NO_CONTENT);
     expect(mockReply.send).toHaveBeenCalled();
   });
 
   it('should handle company not found', async () => {
-    mockRepository.updateCompany.mockRejectedValue(
-      new UpdateCompanyError({
-        code: UpdateCompanyErrorCode.DOCUMENT_NOT_FOUND,
+    mockRepository.updateDocument.mockRejectedValue(
+      new RepositoryError({
+        code: RepositoryErrorCode.DOCUMENT_NOT_FOUND,
         message: 'Document not found',
       }),
     );
@@ -98,13 +89,13 @@ describe(updateCompanyHandler.name, () => {
       STEPS.UPDATE_COMPANY.id,
       STEPS.UPDATE_COMPANY.obfuscatedId,
     );
-    expect(mockRepository.updateCompany).toHaveBeenCalledWith(
+    expect(mockRepository.updateDocument).toHaveBeenCalledWith(
       mockParams.id,
       mockBody,
-      { logger: mockLogger },
+      mockLogger,
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_COMPANY.id);
-    expect(mockReply.code).toHaveBeenCalledWith(404);
+    expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.NOT_FOUND);
     expect(mockReply.send).toHaveBeenCalledWith(
       ERROR_RESPONSES.COMPANY_NOT_FOUND,
     );
@@ -112,7 +103,7 @@ describe(updateCompanyHandler.name, () => {
 
   it('should handle repository errors', async () => {
     const error = new Error('Repository error');
-    mockRepository.updateCompany.mockRejectedValue(error);
+    mockRepository.updateDocument.mockRejectedValue(error);
 
     await expect(
       updateCompanyHandler(
@@ -125,10 +116,10 @@ describe(updateCompanyHandler.name, () => {
       STEPS.UPDATE_COMPANY.id,
       STEPS.UPDATE_COMPANY.obfuscatedId,
     );
-    expect(mockRepository.updateCompany).toHaveBeenCalledWith(
+    expect(mockRepository.updateDocument).toHaveBeenCalledWith(
       mockParams.id,
       mockBody,
-      { logger: mockLogger },
+      mockLogger,
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_COMPANY.id);
     expect(mockReply.code).not.toHaveBeenCalled();

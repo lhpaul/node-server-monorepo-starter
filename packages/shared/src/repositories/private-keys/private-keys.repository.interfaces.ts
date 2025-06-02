@@ -1,12 +1,12 @@
 import { QueryInput, QueryOptions } from '../../definitions/listing.interfaces';
 
-export interface CreatePrivateKeyBody {
+export interface CreatePrivateKeyInput {
   oauthClientId: string;
   label: string;
   hash: string;
 }
 
-export interface UpdatePrivateKeyBody {
+export interface UpdatePrivateKeyInput {
   label?: string;
   hash?: string;
 }

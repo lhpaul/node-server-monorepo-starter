@@ -1,21 +1,16 @@
-import { FastifyReply, FastifyRequest } from 'fastify';
+import { STATUS_CODES } from '@repo/fastify';
 import { CompaniesRepository } from '@repo/shared/repositories';
+import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { listCompaniesHandler } from '../companies.list.handler';
 import { STEPS } from '../companies.list.constants';
 
-jest.mock('@repo/shared/repositories', () => ({
-  CompaniesRepository: {
-    getInstance: jest.fn().mockImplementation(() => ({
-      getCompanies: jest.fn(),
-    })),
-  },
-}));
+jest.mock('@repo/shared/repositories');
 
 describe(listCompaniesHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;
   let mockReply: Partial<FastifyReply>;
-  let mockRepository: jest.Mocked<CompaniesRepository>;
+  let mockRepository: { getDocumentsList: jest.Mock };
   let mockLogger: any;
   const mockCompanies = [
     { id: '1', name: 'Company 1', createdAt: new Date(), updatedAt: new Date() },
@@ -41,7 +36,7 @@ describe(listCompaniesHandler.name, () => {
     };
 
     mockRepository = {
-      getCompanies: jest.fn(),
+      getDocumentsList: jest.fn(),
     } as any;
 
     (CompaniesRepository.getInstance as jest.Mock).mockReturnValue(
@@ -54,7 +49,7 @@ describe(listCompaniesHandler.name, () => {
   });
 
   it('should return all companies when no query parameters are provided', async () => {
-    mockRepository.getCompanies.mockResolvedValue(mockCompanies);
+    mockRepository.getDocumentsList.mockResolvedValue(mockCompanies);
 
     await listCompaniesHandler(
       mockRequest as FastifyRequest,
@@ -65,12 +60,12 @@ describe(listCompaniesHandler.name, () => {
       STEPS.GET_COMPANIES.id,
       STEPS.GET_COMPANIES.obfuscatedId,
     );
-    expect(mockRepository.getCompanies).toHaveBeenCalledWith(
+    expect(mockRepository.getDocumentsList).toHaveBeenCalledWith(
       {},
-      { logger: mockLogger },
+      mockLogger,
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
-    expect(mockReply.code).toHaveBeenCalledWith(200);
+    expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
     expect(mockReply.send).toHaveBeenCalledWith(mockCompanies);
   });
 
@@ -80,7 +75,7 @@ describe(listCompaniesHandler.name, () => {
     };
     mockRequest.query = queryParams;
     const filteredCompanies = [mockCompanies[0]];
-    mockRepository.getCompanies.mockResolvedValue(filteredCompanies);
+    mockRepository.getDocumentsList.mockResolvedValue(filteredCompanies);
 
     await listCompaniesHandler(
       mockRequest as FastifyRequest,
@@ -91,19 +86,19 @@ describe(listCompaniesHandler.name, () => {
       STEPS.GET_COMPANIES.id,
       STEPS.GET_COMPANIES.obfuscatedId,
     );
-    expect(mockRepository.getCompanies).toHaveBeenCalledWith(
+    expect(mockRepository.getDocumentsList).toHaveBeenCalledWith(
       {
         name: [{ operator: '==', value: 'Company 1' }],
-      },
-      { logger: mockLogger },
+      },  
+      mockLogger,
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
-    expect(mockReply.code).toHaveBeenCalledWith(200);
+    expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
     expect(mockReply.send).toHaveBeenCalledWith(filteredCompanies);
   });
 
   it('should handle empty result set', async () => {
-    mockRepository.getCompanies.mockResolvedValue([]);
+    mockRepository.getDocumentsList.mockResolvedValue([]);
 
     await listCompaniesHandler(
       mockRequest as FastifyRequest,
@@ -114,18 +109,18 @@ describe(listCompaniesHandler.name, () => {
       STEPS.GET_COMPANIES.id,
       STEPS.GET_COMPANIES.obfuscatedId,
     );
-    expect(mockRepository.getCompanies).toHaveBeenCalledWith(
+    expect(mockRepository.getDocumentsList).toHaveBeenCalledWith(
       {},
-      { logger: mockLogger },
+      mockLogger,
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
-    expect(mockReply.code).toHaveBeenCalledWith(200);
+    expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
     expect(mockReply.send).toHaveBeenCalledWith([]);
   });
 
   it('should handle repository errors', async () => {
     const error = new Error('Repository error');
-    mockRepository.getCompanies.mockRejectedValue(error);
+    mockRepository.getDocumentsList.mockRejectedValue(error);
 
     await expect(
       listCompaniesHandler(

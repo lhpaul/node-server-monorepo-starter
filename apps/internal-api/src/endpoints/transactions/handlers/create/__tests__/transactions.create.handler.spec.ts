@@ -1,9 +1,11 @@
-import { FastifyReply, FastifyRequest } from 'fastify';
-import { TransactionsRepository } from '@repo/shared/repositories';
+import { STATUS_CODES } from '@repo/fastify';
 import { TransactionType } from '@repo/shared/domain';
+import { TransactionsRepository } from '@repo/shared/repositories';
+import { RepositoryError, RepositoryErrorCode } from '@repo/shared/utils';
+import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { createTransactionHandler } from '../transactions.create.handler';
-import { STEPS } from '../transactions.create.constants';
+import { ERROR_RESPONSES, STEPS } from '../transactions.create.constants';
 
 jest.mock('@repo/shared/repositories');
 
@@ -35,7 +37,7 @@ describe(createTransactionHandler.name, () => {
     };
 
     mockRepository = {
-      createTransaction: jest.fn(),
+      createDocument: jest.fn(),
     } as any;
 
     (TransactionsRepository.getInstance as jest.Mock).mockReturnValue(
@@ -49,9 +51,7 @@ describe(createTransactionHandler.name, () => {
 
   it('should create a transaction successfully', async () => {
     const mockTransactionId = '123';
-    mockRepository.createTransaction.mockResolvedValue({
-      id: mockTransactionId,
-    });
+    mockRepository.createDocument.mockResolvedValue(mockTransactionId);
 
     await createTransactionHandler(
       mockRequest as FastifyRequest,
@@ -65,20 +65,35 @@ describe(createTransactionHandler.name, () => {
       STEPS.CREATE_TRANSACTION.id,
       STEPS.CREATE_TRANSACTION.obfuscatedId,
     );
-    expect(mockRepository.createTransaction).toHaveBeenCalledWith(
+    expect(mockRepository.createDocument).toHaveBeenCalledWith(
       mockRequest.body,
-      { logger: mockLogger },
+      mockLogger,
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(
       STEPS.CREATE_TRANSACTION.id,
     );
-    expect(mockReply.code).toHaveBeenCalledWith(201);
+    expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.CREATED);
     expect(mockReply.send).toHaveBeenCalledWith({ id: mockTransactionId });
   });
 
-  it('should handle repository errors', async () => {
+  it('should handle repository known errors', async () => {
+    const mockError = new RepositoryError({
+      code: RepositoryErrorCode.RELATED_DOCUMENT_NOT_FOUND,
+      message: 'Related document not found',
+    });
+    mockRepository.createDocument.mockRejectedValue(mockError);
+
+    await createTransactionHandler(
+      mockRequest as FastifyRequest,
+      mockReply as FastifyReply,
+    );
+    expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.BAD_REQUEST);
+    expect(mockReply.send).toHaveBeenCalledWith(ERROR_RESPONSES.COMPANY_NOT_FOUND);
+  });
+
+  it('should handle repository unknown errors', async () => {
     const mockError = new Error('Repository error');
-    mockRepository.createTransaction.mockRejectedValue(mockError);
+    mockRepository.createDocument.mockRejectedValue(mockError);
 
     await expect(
       createTransactionHandler(

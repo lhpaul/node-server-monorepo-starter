@@ -22,7 +22,7 @@ jest.mock('@repo/fastify', () => ({
 jest.mock('@repo/shared/repositories', () => ({
   TransactionsRepository: {
     getInstance: jest.fn().mockImplementation(() => ({
-      getTransactions: jest.fn(),
+      getDocumentsList: jest.fn(),
     })),
   },
 }));
@@ -39,7 +39,7 @@ describe(listTransactionsHandler.name, () => {
     endStep: jest.Mock;
     child: jest.Mock;
   } & Partial<FastifyBaseLogger>;
-  let mockRepository: { getTransactions: jest.Mock };
+  let mockRepository: { getDocumentsList: jest.Mock };
 
   const mockParams = { companyId: 'company123' };
   const mockQuery = { amount: { eq: 100 } };
@@ -69,7 +69,7 @@ describe(listTransactionsHandler.name, () => {
     };
 
     mockRepository = {
-      getTransactions: jest.fn(),
+      getDocumentsList: jest.fn(),
     };
 
     (TransactionsRepository.getInstance as jest.Mock).mockReturnValue(mockRepository);
@@ -83,7 +83,7 @@ describe(listTransactionsHandler.name, () => {
 
   it('should successfully list transactions', async () => {
     const mockTransactions = [{ id: '1', amount: 100 }];
-    mockRepository.getTransactions.mockResolvedValue(mockTransactions);
+    mockRepository.getDocumentsList.mockResolvedValue(mockTransactions);
 
     await listTransactionsHandler(
       mockRequest as FastifyRequest,
@@ -95,9 +95,10 @@ describe(listTransactionsHandler.name, () => {
       STEPS.GET_TRANSACTIONS.obfuscatedId,
     );
     expect(transformQueryParams).toHaveBeenCalledWith(mockQuery);
-    expect(mockRepository.getTransactions).toHaveBeenCalledWith(
+    expect(mockRepository.getDocumentsList).toHaveBeenCalledWith(
       { amount: { eq: 100 } },
-      { logger: mockLogger },
+      mockLogger,
+      { parentIds: { companyId: mockParams.companyId } },
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
@@ -117,12 +118,12 @@ describe(listTransactionsHandler.name, () => {
       code: FORBIDDEN_ERROR.responseCode,
       message: FORBIDDEN_ERROR.responseMessage,
     });
-    expect(mockRepository.getTransactions).not.toHaveBeenCalled();
+    expect(mockRepository.getDocumentsList).not.toHaveBeenCalled();
   });
 
   it('should handle repository errors', async () => {
     const error = new Error('Repository error');
-    mockRepository.getTransactions.mockRejectedValue(error);
+    mockRepository.getDocumentsList.mockRejectedValue(error);
 
     await expect(
       listTransactionsHandler(
@@ -135,9 +136,10 @@ describe(listTransactionsHandler.name, () => {
       STEPS.GET_TRANSACTIONS.id,
       STEPS.GET_TRANSACTIONS.obfuscatedId,
     );
-    expect(mockRepository.getTransactions).toHaveBeenCalledWith(
+    expect(mockRepository.getDocumentsList).toHaveBeenCalledWith(
       { amount: { eq: 100 } },
-      { logger: mockLogger },
+      mockLogger,
+      { parentIds: { companyId: mockParams.companyId } },
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id);
     expect(mockReply.code).not.toHaveBeenCalled();

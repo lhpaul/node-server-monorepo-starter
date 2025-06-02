@@ -68,7 +68,7 @@ describe(createTransactionHandler.name, () => {
 
     // Setup repository mock
     mockRepository = {
-      createTransaction: jest.fn(),
+      createDocument: jest.fn(),
     } as any;
 
     (TransactionsRepository.getInstance as jest.Mock).mockReturnValue(mockRepository);
@@ -93,7 +93,7 @@ describe(createTransactionHandler.name, () => {
         code: FORBIDDEN_ERROR.responseCode,
         message: FORBIDDEN_ERROR.responseMessage,
       });
-      expect(mockRepository.createTransaction).not.toHaveBeenCalled();
+      expect(mockRepository.createDocument).not.toHaveBeenCalled();
     });
   });
 
@@ -104,9 +104,7 @@ describe(createTransactionHandler.name, () => {
 
     it('should create a transaction successfully', async () => {
       const mockTransactionId = '123';
-      mockRepository.createTransaction.mockResolvedValue({
-        id: mockTransactionId,
-      });
+      mockRepository.createDocument.mockResolvedValue(mockTransactionId);
 
       await createTransactionHandler(
         mockRequest as FastifyRequest,
@@ -126,12 +124,12 @@ describe(createTransactionHandler.name, () => {
       );
 
       // Verify repository call
-      expect(mockRepository.createTransaction).toHaveBeenCalledWith(
+      expect(mockRepository.createDocument).toHaveBeenCalledWith(
         {
           ...mockBody,
           companyId: mockParams.companyId,
         } as CreateCompanyTransactionBody,
-        { logger: mockLogger },
+        mockLogger,
       );
 
       // Verify response
@@ -147,7 +145,7 @@ describe(createTransactionHandler.name, () => {
 
     it('should handle repository errors gracefully', async () => {
       const error = new Error('Repository error');
-      mockRepository.createTransaction.mockRejectedValue(error);
+      mockRepository.createDocument.mockRejectedValue(error);
 
       await expect(
         createTransactionHandler(

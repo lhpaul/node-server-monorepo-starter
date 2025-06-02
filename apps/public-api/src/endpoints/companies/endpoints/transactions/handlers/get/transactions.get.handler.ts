@@ -25,7 +25,7 @@ export const getTransactionHandler = async (
     STEPS.GET_TRANSACTION.obfuscatedId,
   );
   const transaction = await repository
-    .getTransactionById(id, { logger })
+    .getDocument(id, logger)
     .finally(() => logger.endStep(STEPS.GET_TRANSACTION.id));
   if (!transaction) {
     return reply.code(STATUS_CODES.NOT_FOUND).send({

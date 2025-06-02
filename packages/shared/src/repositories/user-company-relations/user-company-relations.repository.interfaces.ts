@@ -1,13 +1,13 @@
 import { QueryInput, QueryOptions } from '../../definitions/listing.interfaces';
 import { UserCompanyRole } from '../../domain/models/user-company-relation.model';
 
-export interface CreateUserCompanyRelationBody {
+export interface CreateUserCompanyRelationInput {
   companyId: string;
   userId: string;
   role: UserCompanyRole;
 }
 
-export interface UpdateUserCompanyRelationBody {
+export interface UpdateUserCompanyRelationInput {
   role?: UserCompanyRole;
 }
 

@@ -1,22 +1,11 @@
+import { STATUS_CODES } from '@repo/fastify';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
-import {
-  CompaniesRepository,
-  DeleteCompanyError,
-  DeleteCompanyErrorCode,
-} from '@repo/shared/repositories';
+import { CompaniesRepository } from '@repo/shared/repositories';
 
-import { ERROR_RESPONSES } from '../../../companies.endpoints.constants';
 import { STEPS } from '../companies.delete.constants';
 import { deleteCompanyHandler } from '../companies.delete.handler';
 
-jest.mock('@repo/shared/repositories', () => ({
-  ...jest.requireActual('@repo/shared/repositories'),
-  CompaniesRepository: {
-    getInstance: jest.fn().mockImplementation(() => ({
-      deleteCompany: jest.fn(),
-    })),
-  },
-}));
+jest.mock('@repo/shared/repositories');
 
 describe(deleteCompanyHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;
@@ -25,7 +14,7 @@ describe(deleteCompanyHandler.name, () => {
     startStep: jest.Mock;
     endStep: jest.Mock;
   } & Partial<FastifyBaseLogger>;
-  let mockRepository: { deleteCompany: jest.Mock };
+  let mockRepository: { deleteDocument: jest.Mock };
 
   const mockParams = { id: '123' };
 
@@ -47,7 +36,7 @@ describe(deleteCompanyHandler.name, () => {
     };
 
     mockRepository = {
-      deleteCompany: jest.fn(),
+      deleteDocument: jest.fn(),
     };
 
     (CompaniesRepository.getInstance as jest.Mock).mockReturnValue(
@@ -56,7 +45,7 @@ describe(deleteCompanyHandler.name, () => {
   });
 
   it('should successfully delete a company', async () => {
-    mockRepository.deleteCompany.mockResolvedValue(true);
+    mockRepository.deleteDocument.mockResolvedValue(undefined);
 
     await deleteCompanyHandler(
       mockRequest as FastifyRequest,
@@ -67,44 +56,15 @@ describe(deleteCompanyHandler.name, () => {
       STEPS.DELETE_COMPANY.id,
       STEPS.DELETE_COMPANY.obfuscatedId,
     );
-    expect(mockRepository.deleteCompany).toHaveBeenCalledWith(mockParams.id, {
-      logger: mockLogger,
-    });
+    expect(mockRepository.deleteDocument).toHaveBeenCalledWith(mockParams.id, mockLogger);
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.DELETE_COMPANY.id);
-    expect(mockReply.code).toHaveBeenCalledWith(204);
+    expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.NO_CONTENT);
     expect(mockReply.send).toHaveBeenCalled();
-  });
-
-  it('should handle non-existent company', async () => {
-    mockRepository.deleteCompany.mockRejectedValue(
-      new DeleteCompanyError({
-        code: DeleteCompanyErrorCode.DOCUMENT_NOT_FOUND,
-        message: 'Company not found',
-      }),
-    );
-
-    await deleteCompanyHandler(
-      mockRequest as FastifyRequest,
-      mockReply as FastifyReply,
-    );
-
-    expect(mockLogger.startStep).toHaveBeenCalledWith(
-      STEPS.DELETE_COMPANY.id,
-      STEPS.DELETE_COMPANY.obfuscatedId,
-    );
-    expect(mockRepository.deleteCompany).toHaveBeenCalledWith(mockParams.id, {
-      logger: mockLogger,
-    });
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.DELETE_COMPANY.id);
-    expect(mockReply.code).toHaveBeenCalledWith(404);
-    expect(mockReply.send).toHaveBeenCalledWith(
-      ERROR_RESPONSES.COMPANY_NOT_FOUND,
-    );
   });
 
   it('should handle repository unknown error', async () => {
     const error = new Error('Repository error');
-    mockRepository.deleteCompany.mockRejectedValue(error);
+    mockRepository.deleteDocument.mockRejectedValue(error);
 
     await expect(
       deleteCompanyHandler(
@@ -117,9 +77,7 @@ describe(deleteCompanyHandler.name, () => {
       STEPS.DELETE_COMPANY.id,
       STEPS.DELETE_COMPANY.obfuscatedId,
     );
-    expect(mockRepository.deleteCompany).toHaveBeenCalledWith(mockParams.id, {
-      logger: mockLogger,
-    });
+    expect(mockRepository.deleteDocument).toHaveBeenCalledWith(mockParams.id, mockLogger);
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.DELETE_COMPANY.id);
     expect(mockReply.code).not.toHaveBeenCalled();
     expect(mockReply.send).not.toHaveBeenCalled();

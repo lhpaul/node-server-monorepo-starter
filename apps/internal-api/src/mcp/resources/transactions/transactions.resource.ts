@@ -29,10 +29,13 @@ export function transactionsResourceBuilder(serverLogger: FastifyBaseLogger): Mc
         dateFilters.push({ value: dateTo as string, operator: '<=' });
       }
       const transactionsRepo = TransactionsRepository.getInstance();
-      const transactions = await transactionsRepo.getTransactions({
-        companyId: [{ value: companyId, operator: '==' }],
-        date: dateFilters,
-      }, { logger: requestLogger })
+      const transactions = await transactionsRepo.getDocumentsList(
+        {
+          date: dateFilters,
+        },
+        requestLogger,
+        { parentIds: { companyId: companyId as string } },
+      )
       .finally(() => requestLogger.endStep(STEPS.GET_TRANSACTIONS.id));
       return {
         contents: [{

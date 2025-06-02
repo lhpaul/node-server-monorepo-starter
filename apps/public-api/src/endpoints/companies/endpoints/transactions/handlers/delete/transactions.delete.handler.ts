@@ -1,10 +1,6 @@
-import { FORBIDDEN_ERROR, RESOURCE_NOT_FOUND_ERROR, STATUS_CODES } from '@repo/fastify';
+import { FORBIDDEN_ERROR, STATUS_CODES } from '@repo/fastify';
+import { TransactionsRepository } from '@repo/shared/repositories';
 import { FastifyReply, FastifyRequest } from 'fastify';
-import {
-  DeleteTransactionError,
-  DeleteTransactionErrorCode,
-  TransactionsRepository,
-} from '@repo/shared/repositories';
 
 import { AuthUser } from '../../../../../../definitions/auth.interfaces';
 import { hasCompanyTransactionsDeletePermission } from '../../../../../../utils/auth/auth.utils';
@@ -29,21 +25,8 @@ export const deleteTransactionHandler = async (
     STEPS.DELETE_TRANSACTION.id,
     STEPS.DELETE_TRANSACTION.obfuscatedId,
   );
-  try {
-    await repository
-      .deleteTransaction(id, { logger })
-      .finally(() => logger.endStep(STEPS.DELETE_TRANSACTION.id));
-  } catch (error) {
-    if (
-      error instanceof DeleteTransactionError &&
-      error.code === DeleteTransactionErrorCode.DOCUMENT_NOT_FOUND
-    ) {
-      return reply.code(STATUS_CODES.NOT_FOUND).send({
-        code: RESOURCE_NOT_FOUND_ERROR.responseCode,
-        message: RESOURCE_NOT_FOUND_ERROR.responseMessage,
-      });
-    }
-    throw error;
-  }
+  await repository
+    .deleteDocument(id, logger)
+    .finally(() => logger.endStep(STEPS.DELETE_TRANSACTION.id));
   return reply.code(STATUS_CODES.NO_CONTENT).send();
 };

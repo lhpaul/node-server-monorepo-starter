@@ -18,9 +18,12 @@ export const updateClaimsHandler = async (request: FastifyRequest, reply: Fastif
       });
     }
     logger.startStep(STEPS.FIND_USER.id, STEPS.FIND_USER.obfuscatedId);
-    const [user, ..._rest] = await UsersRepository.getInstance().getUsers({
-      email: [{ value: email, operator: '==' }],
-    });
+    const [user, ..._rest] = await UsersRepository.getInstance().getDocumentsList(
+      {
+        email: [{ value: email, operator: '==' }],
+      },
+      logger,
+    );
     logger.endStep(STEPS.FIND_USER.id);
     if (!user) {
       return reply.status(STATUS_CODES.FORBIDDEN).send({

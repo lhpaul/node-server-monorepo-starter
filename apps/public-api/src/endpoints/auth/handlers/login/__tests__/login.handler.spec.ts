@@ -45,7 +45,7 @@ describe(loginHandler.name, () => {
 
     // Mock UsersRepository
     mockUsersRepository = jest.spyOn(UsersRepository, 'getInstance').mockReturnValue({
-      getUsers: jest.fn(),
+      getDocumentsList: jest.fn(),
     } as any);
   });
 
@@ -62,7 +62,7 @@ describe(loginHandler.name, () => {
     } as any);
 
     mockUsersRepository.mockReturnValue({
-      getUsers: jest.fn().mockResolvedValue([mockUser]),
+      getDocumentsList: jest.fn().mockResolvedValue([mockUser]),
     } as any);
 
     // Act
@@ -86,7 +86,7 @@ describe(loginHandler.name, () => {
     } as any);
 
     mockUsersRepository.mockReturnValue({
-      getUsers: jest.fn().mockResolvedValue([]),
+      getDocumentsList: jest.fn().mockResolvedValue([]),
     } as any);
 
     // Act

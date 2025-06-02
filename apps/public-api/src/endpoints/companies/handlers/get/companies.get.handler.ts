@@ -24,7 +24,7 @@ export const getCompanyHandler = async (
   }
   logger.startStep(STEPS.GET_COMPANY.id, STEPS.GET_COMPANY.obfuscatedId);
   const company = await repository
-    .getCompanyById(id, { logger })
+    .getDocument(id, logger)
     .finally(() => logger.endStep(STEPS.GET_COMPANY.id));
   if (!company) { // this should never happen since the user has permission to read the company so it should exist
     throw new Error(COMPANY_NOT_FOUND_ERROR(id));

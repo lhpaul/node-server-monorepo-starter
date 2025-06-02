@@ -1,15 +1,10 @@
-import {
-  TransactionsRepository,
-  UpdateTransactionError,
-} from '@repo/shared/repositories';
+import { STATUS_CODES } from '@repo/fastify';
+import { TransactionsRepository } from '@repo/shared/repositories';
+import { RepositoryError, RepositoryErrorCode } from '@repo/shared/utils';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
-import { ERROR_RESPONSES } from '../../transactions.endpoints.constants';
-import { STEPS } from './transactions.update.constants';
-import {
-  UpdateTransactionBody,
-  UpdateTransactionParams,
-} from './transactions.update.interfaces';
+import { ERROR_RESPONSES, STEPS } from './transactions.update.constants';
+import { UpdateTransactionBody, UpdateTransactionParams } from './transactions.update.interfaces';
 
 export const updateTransactionHandler = async (
   request: FastifyRequest,
@@ -24,13 +19,13 @@ export const updateTransactionHandler = async (
       STEPS.UPDATE_TRANSACTION.id,
       STEPS.UPDATE_TRANSACTION.obfuscatedId,
     );
-    await repository.updateTransaction(id, body, { logger });
+    await repository.updateDocument(id, body, logger);
     logger.endStep(STEPS.UPDATE_TRANSACTION.id);
-    return reply.code(204).send();
+    return reply.code(STATUS_CODES.NO_CONTENT).send();
   } catch (error) {
     logger.endStep(STEPS.UPDATE_TRANSACTION.id);
-    if (error instanceof UpdateTransactionError) {
-      return reply.code(404).send(ERROR_RESPONSES.TRANSACTION_NOT_FOUND);
+    if (error instanceof RepositoryError && error.code === RepositoryErrorCode.DOCUMENT_NOT_FOUND) {
+      return reply.code(STATUS_CODES.NOT_FOUND).send(ERROR_RESPONSES.TRANSACTION_NOT_FOUND);
     }
     throw error;
   }

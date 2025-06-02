@@ -1,5 +1,6 @@
-import { FastifyReply, FastifyRequest } from 'fastify';
+import { STATUS_CODES } from '@repo/fastify';
 import { CompaniesRepository } from '@repo/shared/repositories';
+import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { createCompanyHandler } from '../companies.create.handler';
 import { STEPS } from '../companies.create.constants';
@@ -10,7 +11,7 @@ describe(createCompanyHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;
   let mockReply: Partial<FastifyReply>;
   let mockLogger: any;
-  let mockRepository: jest.Mocked<CompaniesRepository>;
+  let mockRepository: { createDocument: jest.Mock };
 
   beforeEach(() => {
     mockLogger = {
@@ -32,7 +33,7 @@ describe(createCompanyHandler.name, () => {
     };
 
     mockRepository = {
-      createCompany: jest.fn(),
+      createDocument: jest.fn(),
     } as any;
 
     (CompaniesRepository.getInstance as jest.Mock).mockReturnValue(
@@ -46,9 +47,7 @@ describe(createCompanyHandler.name, () => {
 
   it('should create a company successfully', async () => {
     const mockCompanyId = '123';
-    mockRepository.createCompany.mockResolvedValue({
-      id: mockCompanyId,
-    });
+    mockRepository.createDocument.mockResolvedValue(mockCompanyId);
 
     await createCompanyHandler(
       mockRequest as FastifyRequest,
@@ -62,18 +61,18 @@ describe(createCompanyHandler.name, () => {
       STEPS.CREATE_COMPANY.id,
       STEPS.CREATE_COMPANY.obfuscatedId,
     );
-    expect(mockRepository.createCompany).toHaveBeenCalledWith(
+    expect(mockRepository.createDocument).toHaveBeenCalledWith(
       mockRequest.body,
-      { logger: mockLogger },
+      mockLogger,
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.CREATE_COMPANY.id);
-    expect(mockReply.code).toHaveBeenCalledWith(201);
+    expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.CREATED);
     expect(mockReply.send).toHaveBeenCalledWith({ id: mockCompanyId });
   });
 
   it('should handle repository errors', async () => {
     const mockError = new Error('Repository error');
-    mockRepository.createCompany.mockRejectedValue(mockError);
+    mockRepository.createDocument.mockRejectedValue(mockError);
 
     await expect(
       createCompanyHandler(

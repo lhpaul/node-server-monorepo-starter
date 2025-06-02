@@ -21,17 +21,17 @@ export const createTransactionHandler = async (
       message: FORBIDDEN_ERROR.responseMessage,
     });
   }
-  const repository = TransactionsRepository.getInstance();
+  const transactionsSvc = TransactionsRepository.getInstance();
   const body = request.body as CreateCompanyTransactionBody;
   logger.startStep(
     STEPS.CREATE_TRANSACTION.id,
     STEPS.CREATE_TRANSACTION.obfuscatedId,
   );
-  const { id } = await repository
-    .createTransaction({
+  const id = await transactionsSvc
+    .createDocument({
       ...body,
       companyId,
-    }, { logger })
+    }, logger)
     .finally(() => logger.endStep(STEPS.CREATE_TRANSACTION.id));
   return reply.code(STATUS_CODES.CREATED).send({ id });
 };

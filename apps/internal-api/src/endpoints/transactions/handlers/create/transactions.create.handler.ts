@@ -1,8 +1,10 @@
+import { STATUS_CODES } from '@repo/fastify';
 import { TransactionsRepository } from '@repo/shared/repositories';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
-import { STEPS } from './transactions.create.constants';
+import { ERROR_RESPONSES, STEPS } from './transactions.create.constants';
 import { CreateTransactionBody } from './transactions.create.interfaces';
+import { RepositoryError } from '@repo/shared/utils';
 
 export const createTransactionHandler = async (
   request: FastifyRequest,
@@ -15,8 +17,15 @@ export const createTransactionHandler = async (
     STEPS.CREATE_TRANSACTION.id,
     STEPS.CREATE_TRANSACTION.obfuscatedId,
   );
-  const { id } = await repository
-    .createTransaction(body, { logger })
-    .finally(() => logger.endStep(STEPS.CREATE_TRANSACTION.id));
-  return reply.code(201).send({ id });
+  try {
+    const id = await repository
+      .createDocument(body, logger)
+      .finally(() => logger.endStep(STEPS.CREATE_TRANSACTION.id));
+    return reply.code(STATUS_CODES.CREATED).send({ id });
+  } catch (error) {
+    if (error instanceof RepositoryError) {
+      return reply.code(STATUS_CODES.BAD_REQUEST).send(ERROR_RESPONSES.COMPANY_NOT_FOUND);
+    }
+    throw error;
+  }
 };

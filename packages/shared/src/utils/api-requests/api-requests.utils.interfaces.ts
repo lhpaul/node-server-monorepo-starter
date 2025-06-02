@@ -17,7 +17,6 @@ export interface MaskRequestOptions {
   responseHeaders?: string[];
 }
 export interface IRequestOptions {
-  logger?: ExecutionLogger;
   maskOptions?: MaskRequestOptions;
 }
 

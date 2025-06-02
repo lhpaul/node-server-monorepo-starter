@@ -1,17 +1,12 @@
-import { FastifyReply, FastifyRequest } from 'fastify';
+import { STATUS_CODES } from '@repo/fastify';
 import { TransactionType } from '@repo/shared/domain';
 import { TransactionsRepository } from '@repo/shared/repositories';
+import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { listTransactionsHandler } from '../transactions.list.handler';
 import { STEPS } from '../transactions.list.constants';
 
-jest.mock('@repo/shared/repositories', () => ({
-  TransactionsRepository: {
-    getInstance: jest.fn().mockImplementation(() => ({
-      getTransactions: jest.fn(),
-    })),
-  },
-}));
+jest.mock('@repo/shared/repositories');
 
 describe(listTransactionsHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;
@@ -66,7 +61,7 @@ describe(listTransactionsHandler.name, () => {
     };
 
     mockRepository = {
-      getTransactions: jest.fn(),
+      getDocumentsList: jest.fn(),
     } as any;
 
     (TransactionsRepository.getInstance as jest.Mock).mockReturnValue(
@@ -79,7 +74,7 @@ describe(listTransactionsHandler.name, () => {
   });
 
   it('should return all transactions when no query parameters are provided', async () => {
-    mockRepository.getTransactions.mockResolvedValue(mockTransactions);
+    mockRepository.getDocumentsList.mockResolvedValue(mockTransactions);
 
     await listTransactionsHandler(
       mockRequest as FastifyRequest,
@@ -90,12 +85,12 @@ describe(listTransactionsHandler.name, () => {
       STEPS.GET_TRANSACTIONS.id,
       STEPS.GET_TRANSACTIONS.obfuscatedId,
     );
-    expect(mockRepository.getTransactions).toHaveBeenCalledWith(
+    expect(mockRepository.getDocumentsList).toHaveBeenCalledWith(
       {},
-      { logger: mockLogger },
+      mockLogger,
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id);
-    expect(mockReply.code).toHaveBeenCalledWith(200);
+    expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
     expect(mockReply.send).toHaveBeenCalledWith(mockTransactions);
   });
 
@@ -106,7 +101,7 @@ describe(listTransactionsHandler.name, () => {
     };
     mockRequest.query = queryParams;
     const filteredTransactions = [mockTransactions[0]];
-    mockRepository.getTransactions.mockResolvedValue(filteredTransactions);
+    mockRepository.getDocumentsList.mockResolvedValue(filteredTransactions);
 
     await listTransactionsHandler(
       mockRequest as FastifyRequest,
@@ -117,20 +112,20 @@ describe(listTransactionsHandler.name, () => {
       STEPS.GET_TRANSACTIONS.id,
       STEPS.GET_TRANSACTIONS.obfuscatedId,
     );
-    expect(mockRepository.getTransactions).toHaveBeenCalledWith(
+    expect(mockRepository.getDocumentsList).toHaveBeenCalledWith(
       {
         amount: [{ operator: '==', value: 100 }],
         date: [{ operator: '>', value: '2024-01-01' }],
       },
-      { logger: mockLogger },
+      mockLogger,
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id);
-    expect(mockReply.code).toHaveBeenCalledWith(200);
+    expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
     expect(mockReply.send).toHaveBeenCalledWith(filteredTransactions);
   });
 
   it('should handle empty result set', async () => {
-    mockRepository.getTransactions.mockResolvedValue([]);
+    mockRepository.getDocumentsList.mockResolvedValue([]);
 
     await listTransactionsHandler(
       mockRequest as FastifyRequest,
@@ -141,18 +136,18 @@ describe(listTransactionsHandler.name, () => {
       STEPS.GET_TRANSACTIONS.id,
       STEPS.GET_TRANSACTIONS.obfuscatedId,
     );
-    expect(mockRepository.getTransactions).toHaveBeenCalledWith(
+    expect(mockRepository.getDocumentsList).toHaveBeenCalledWith(
       {},
-      { logger: mockLogger },
+      mockLogger,
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id);
-    expect(mockReply.code).toHaveBeenCalledWith(200);
+    expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
     expect(mockReply.send).toHaveBeenCalledWith([]);
   });
 
   it('should handle repository errors', async () => {
     const error = new Error('Repository error');
-    mockRepository.getTransactions.mockRejectedValue(error);
+    mockRepository.getDocumentsList.mockRejectedValue(error);
 
     await expect(
       listTransactionsHandler(

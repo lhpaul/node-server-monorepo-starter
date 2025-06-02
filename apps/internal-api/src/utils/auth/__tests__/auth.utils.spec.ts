@@ -109,7 +109,7 @@ describe(authenticateApiKey.name, () => {
 
     await authenticateApiKey(mockRequest as FastifyRequest, mockReply as FastifyReply);
 
-    expect(mockApiKeysService.validatePrivateKey).toHaveBeenCalledWith(clientId, apiKeyValue);
+    expect(mockApiKeysService.validatePrivateKey).toHaveBeenCalledWith(clientId, apiKeyValue, { logger: mockLogger });
 
     expect(mockLogger.warn).toHaveBeenCalledWith(
       { logId: FORBIDDEN_ERROR.logId },
@@ -131,7 +131,7 @@ describe(authenticateApiKey.name, () => {
 
     await authenticateApiKey(mockRequest as FastifyRequest, mockReply as FastifyReply);
 
-    expect(mockApiKeysService.validatePrivateKey).toHaveBeenCalledWith('clientId', 'validKey');
+    expect(mockApiKeysService.validatePrivateKey).toHaveBeenCalledWith('clientId', 'validKey', { logger: mockLogger });
     expect(mockLogger.warn).not.toHaveBeenCalled();
     expect(mockReply.code).not.toHaveBeenCalled();
     expect(mockReply.send).not.toHaveBeenCalled();

@@ -21,9 +21,12 @@ export const loginHandler = async (
     const { email } = await authService.decodeEmailToken(emailToken);
     logger.endStep(STEPS.DECODE_EMAIL_TOKEN.id);
     logger.startStep(STEPS.FIND_USER.id, STEPS.FIND_USER.obfuscatedId);
-    const [user, ..._rest] = await UsersRepository.getInstance().getUsers({
-      email: [{ value: email, operator: '==' }],
-    });
+    const [user, ..._rest] = await UsersRepository.getInstance().getDocumentsList(
+      {
+        email: [{ value: email, operator: '==' }],
+      },
+      logger,
+    );
     logger.endStep(STEPS.FIND_USER.id);
 
     if (!user) {

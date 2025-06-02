@@ -2,7 +2,6 @@ import * as admin from 'firebase-admin';
 
 import { ExecutionContext } from '../../definitions/executions.interfaces';
 import { PERMISSIONS_BY_ROLE } from '../../domain/models/user-company-relation.model';
-import { processLoggerMock } from '../../mocks/process-logger.mocks';
 import { UserCompanyRelationsRepository } from '../../repositories/user-company-relations/user-company-relations.repository';
 import { UserPermissions } from './auth.service.interfaces';
 import { ERROR_MESSAGES, STEPS } from './auth.service.constants';
@@ -33,10 +32,10 @@ export class AuthService {
     }
   }
 
-  public async generateUserToken(userId: string, context?: ExecutionContext): Promise<string> {
-    const logger = context?.logger ?? processLoggerMock;
+  public async generateUserToken(userId: string, context: ExecutionContext): Promise<string> {
+    const { logger } = context;
     logger.startStep(STEPS.GET_USER_COMPANY_RELATIONS.id);
-    const permissions = await this._getUserPermissions(userId);
+    const permissions = await this._getUserPermissions(userId, context);
     logger.endStep(STEPS.GET_USER_COMPANY_RELATIONS.id);
     logger.startStep(STEPS.GENERATE_USER_TOKEN.id);
     const token = await admin.auth().createCustomToken(userId, permissions);
@@ -47,10 +46,10 @@ export class AuthService {
   public async updatePermissionsToUser(input: {
     userId: string,
     uid: string,
-  }, context?: ExecutionContext): Promise<void> {
-    const logger = context?.logger ?? processLoggerMock;
+  }, context: ExecutionContext): Promise<void> {
+    const { logger } = context;
     logger.startStep(STEPS.GET_USER_COMPANY_RELATIONS.id);
-    const permissions = await this._getUserPermissions(input.userId);
+    const permissions = await this._getUserPermissions(input.userId, context);
     logger.endStep(STEPS.GET_USER_COMPANY_RELATIONS.id);
     logger.startStep(STEPS.UPDATE_USER_PERMISSIONS.id);
     await admin.auth().setCustomUserClaims(input.uid, {
@@ -60,10 +59,11 @@ export class AuthService {
     logger.endStep(STEPS.UPDATE_USER_PERMISSIONS.id);
   }
 
-  private async _getUserPermissions(userId: string): Promise<UserPermissions> {
-    const userCompanyRelations = await UserCompanyRelationsRepository.getInstance().getUserCompanyRelations({
+  private async _getUserPermissions(userId: string, context: ExecutionContext): Promise<UserPermissions> {
+    const { logger } = context;
+    const userCompanyRelations = await UserCompanyRelationsRepository.getInstance().getDocumentsList({
       userId: [{ operator: '==', value: userId }],
-    });
+    }, logger);
     const response: { companies: { [companyId: string]: string[] } } = { companies: {} };
     for (const userCompanyRelation of userCompanyRelations) {
       response.companies[userCompanyRelation.companyId] = PERMISSIONS_BY_ROLE[userCompanyRelation.role];

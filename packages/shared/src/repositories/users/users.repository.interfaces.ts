@@ -1,11 +1,11 @@
 import { QueryInput, QueryOptions } from '../../definitions/listing.interfaces';
 
-export interface CreateUserBody {
+export interface CreateUserInput {
   email: string;
   currentPasswordHash: string;
 }
 
-export interface UpdateUserBody {
+export interface UpdateUserInput {
   email?: string;
   currentPasswordHash?: string;
 }

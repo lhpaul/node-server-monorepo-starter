@@ -1,4 +1,5 @@
 import cors from '@fastify/cors';
+import fastifyEnv from '@fastify/env';
 import helmet from '@fastify/helmet';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
@@ -12,10 +13,12 @@ import {
 } from '@repo/fastify';
 import fastify, { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { Sessions, streamableHttp } from 'fastify-mcp';
+import * as admin from 'firebase-admin';
 
 import packageJson from '../package.json';
 import {
   COR_CONFIG,
+  FASTIFY_ENV_CONFIG,
   MCP_SERVER_CONFIG,
   SERVER_START_VALUES,
 } from './constants/server.constants';
@@ -30,10 +33,21 @@ export const init = async function (): Promise<FastifyInstance> {
     logger: SERVER_LOGGER_CONFIG,
   });
 
+  // Load environment variables so they can be accessed through the server and the request instance
+  await server.register(fastifyEnv, FASTIFY_ENV_CONFIG);
+
+  // Enable CORS
   await server.register(cors, COR_CONFIG);
 
   // Help secure the api by setting HTTP response headers
   server.register(helmet, { global: true });
+
+  // Initialize Firebase Admin SDK
+  await admin.initializeApp({
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    credential: admin.credential.applicationDefault(),
+    databaseURL: process.env.FIREBASE_DATABASE_URL,
+  });
 
   // Add decorator to authenticate requests. To avoid authentication in an route, you can pass the `skipAuth` option when building the route.
   server.decorate(AUTHENTICATE_DECORATOR_NAME, async (request: FastifyRequest, reply: FastifyReply) => {

@@ -27,7 +27,7 @@ export const listTransactionsHandler = async (
     STEPS.GET_TRANSACTIONS.obfuscatedId,
   );
   const transactions = await repository
-    .getTransactions(transformQueryParams(query), { logger })
+    .getDocumentsList(transformQueryParams(query), logger, { parentIds: { companyId } })
     .finally(() => logger.endStep(STEPS.GET_TRANSACTIONS.id));
   return reply.code(STATUS_CODES.OK).send(transactions);
 };

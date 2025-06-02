@@ -1,4 +1,4 @@
-import { transformQueryParams } from '@repo/fastify';
+import { STATUS_CODES, transformQueryParams } from '@repo/fastify';
 import { CompaniesRepository } from '@repo/shared/repositories';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
@@ -14,7 +14,7 @@ export const listCompaniesHandler = async (
   const query = request.query as GetCompaniesQueryParams;
   logger.startStep(STEPS.GET_COMPANIES.id, STEPS.GET_COMPANIES.obfuscatedId);
   const companies = await repository
-    .getCompanies(transformQueryParams(query), { logger })
+    .getDocumentsList(transformQueryParams(query), logger)
     .finally(() => logger.endStep(STEPS.GET_COMPANIES.id));
-  return reply.code(200).send(companies);
+  return reply.code(STATUS_CODES.OK).send(companies);
 };

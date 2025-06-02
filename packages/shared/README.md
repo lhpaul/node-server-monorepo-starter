@@ -8,7 +8,6 @@ This package contains reusable components, utilities, and business logic shared 
 src/
 ├── constants/       # Global constants used throughout the project
 ├── domain/          # Domain models and use cases
-├── mocks/           # Component's mock implementations
 ├── repositories/    # Data layer component
 ├── services/        # Business logic and service layer implementations 
 ├── utils/           # Reusable utility functions

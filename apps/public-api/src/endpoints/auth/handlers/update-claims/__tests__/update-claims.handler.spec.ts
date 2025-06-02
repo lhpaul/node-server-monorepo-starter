@@ -1,16 +1,21 @@
 import { STATUS_CODES } from '@repo/fastify';
+import { User } from '@repo/shared/domain';
 import { UsersRepository } from '@repo/shared/repositories';
 import { AuthService } from '@repo/shared/services';
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { User } from '@repo/shared/domain';
 
 import { ERROR_RESPONSES, STEPS } from '../update-claims.handler.constants';
 import { updateClaimsHandler } from '../update-claims.handler';
+
+jest.mock('@repo/shared/repositories');
 
 describe(updateClaimsHandler.name, () => {
   let mockRequest: FastifyRequest;
   let mockReply: FastifyReply;
   let mockLogger: any;
+  let mockUsersRepository: {
+    getDocumentsList: jest.Mock;
+  };
 
   beforeEach(() => {
     mockLogger = {
@@ -37,6 +42,12 @@ describe(updateClaimsHandler.name, () => {
       status: jest.fn().mockReturnThis(),
       send: jest.fn(),
     } as unknown as FastifyReply;
+
+    mockUsersRepository = {
+      getDocumentsList: jest.fn(),
+    };
+
+    jest.spyOn(UsersRepository, 'getInstance').mockReturnValue(mockUsersRepository as unknown as UsersRepository);
   });
 
   describe('when app_user_id is present', () => {
@@ -97,7 +108,7 @@ describe(updateClaimsHandler.name, () => {
       });
 
       it('should return 403 when user is not found', async () => {
-        jest.spyOn(UsersRepository.getInstance(), 'getUsers')
+        jest.spyOn(UsersRepository.getInstance(), 'getDocumentsList')
           .mockResolvedValueOnce([]);
 
         await updateClaimsHandler(mockRequest, mockReply);
@@ -115,11 +126,10 @@ describe(updateClaimsHandler.name, () => {
         const mockUser = new User({
           id: 'found-user-id',
           email: testEmail,
-          currentPasswordHash: 'test-hash',
           createdAt: new Date(),
           updatedAt: new Date(),
         });
-        jest.spyOn(UsersRepository.getInstance(), 'getUsers')
+        jest.spyOn(UsersRepository.getInstance(), 'getDocumentsList')
           .mockResolvedValueOnce([mockUser]);
 
         const mockUpdatePermissions = jest.spyOn(AuthService.getInstance(), 'updatePermissionsToUser')

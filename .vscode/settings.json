@@ -21,6 +21,7 @@
     "monorepo",
     "pnpm",
     "prettier",
+    "retriable",
     "turbo",
     "turborepo"
   ]

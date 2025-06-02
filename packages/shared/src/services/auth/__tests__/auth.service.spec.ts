@@ -15,7 +15,7 @@ jest.mock('firebase-admin', () => ({
 }));
 
 const mockUserCompanyRelationsRepo = {
-  getUserCompanyRelations: jest.fn(),
+  getDocumentsList: jest.fn(),
 };
 
 jest.mock('../../../repositories/user-company-relations/user-company-relations.repository', () => ({
@@ -110,7 +110,7 @@ describe(AuthService.name, () => {
     ];
 
     beforeEach(() => {
-      mockUserCompanyRelationsRepo.getUserCompanyRelations.mockResolvedValue(mockUserCompanyRelations);
+      mockUserCompanyRelationsRepo.getDocumentsList.mockResolvedValue(mockUserCompanyRelations);
       mockFirebaseAuth.createCustomToken.mockResolvedValue(mockToken);
     });
 
@@ -122,24 +122,9 @@ describe(AuthService.name, () => {
       expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_USER_COMPANY_RELATIONS.id);
       expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GENERATE_USER_TOKEN.id);
       expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GENERATE_USER_TOKEN.id);
-      expect(mockUserCompanyRelationsRepo.getUserCompanyRelations).toHaveBeenCalledWith({
+      expect(mockUserCompanyRelationsRepo.getDocumentsList).toHaveBeenCalledWith({
         userId: [{ operator: '==', value: mockUserId }],
-      });
-      expect(mockFirebaseAuth.createCustomToken).toHaveBeenCalledWith(mockUserId, {
-        companies: {
-          company1: PERMISSIONS_BY_ROLE.admin,
-          company2: PERMISSIONS_BY_ROLE.member,
-        },
-      });
-    });
-
-    it('should use processLoggerMock when no logger is provided', async () => {
-      const result = await authService.generateUserToken(mockUserId);
-
-      expect(result).toBe(mockToken);
-      expect(mockUserCompanyRelationsRepo.getUserCompanyRelations).toHaveBeenCalledWith({
-        userId: [{ operator: '==', value: mockUserId }],
-      });
+      }, mockLogger);
       expect(mockFirebaseAuth.createCustomToken).toHaveBeenCalledWith(mockUserId, {
         companies: {
           company1: PERMISSIONS_BY_ROLE.admin,
@@ -164,7 +149,7 @@ describe(AuthService.name, () => {
         },
       ];
 
-      mockUserCompanyRelationsRepo.getUserCompanyRelations.mockResolvedValue(mockUserCompanyRelations);
+      mockUserCompanyRelationsRepo.getDocumentsList.mockResolvedValue(mockUserCompanyRelations);
       mockFirebaseAuth.setCustomUserClaims.mockResolvedValue(mockUserCompanyRelations);
 
       await authService.updatePermissionsToUser({
@@ -176,44 +161,9 @@ describe(AuthService.name, () => {
       expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_USER_COMPANY_RELATIONS.id);
       expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_USER_PERMISSIONS.id);
       expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_USER_PERMISSIONS.id);
-      expect(mockUserCompanyRelationsRepo.getUserCompanyRelations).toHaveBeenCalledWith({
+      expect(mockUserCompanyRelationsRepo.getDocumentsList).toHaveBeenCalledWith({
         userId: [{ operator: '==', value: mockUserId }],
-      });
-      expect(mockFirebaseAuth.setCustomUserClaims).toHaveBeenCalledWith(mockUid, {
-        app_user_id: mockUserId,
-        companies: {
-          company1: PERMISSIONS_BY_ROLE.admin,
-          company2: PERMISSIONS_BY_ROLE.member,
-        },
-      });
-    });
-    it('should use processLoggerMock when no logger is provided', async () => {
-      const mockUserId = 'user123';
-      const mockUid = 'uid123';
-      const mockUserCompanyRelations = [
-        {
-          companyId: 'company1',
-          role: 'admin',
-        },
-        {
-          companyId: 'company2',
-          role: 'member',
-        },
-      ];
-
-      mockUserCompanyRelationsRepo.getUserCompanyRelations.mockResolvedValue(mockUserCompanyRelations);
-      mockFirebaseAuth.setCustomUserClaims.mockResolvedValue(mockUserCompanyRelations);
-
-      await authService.updatePermissionsToUser({
-        userId: mockUserId,
-        uid: mockUid,
-      });
-
-      expect(mockLogger.startStep).not.toHaveBeenCalled();
-      expect(mockLogger.endStep).not.toHaveBeenCalled();
-      expect(mockUserCompanyRelationsRepo.getUserCompanyRelations).toHaveBeenCalledWith({
-        userId: [{ operator: '==', value: mockUserId }],
-      });
+      }, mockLogger);
       expect(mockFirebaseAuth.setCustomUserClaims).toHaveBeenCalledWith(mockUid, {
         app_user_id: mockUserId,
         companies: {

@@ -19,7 +19,7 @@ export const listCompaniesHandler = async (
   // Get company information for each ID in parallel
   logger.startStep(STEPS.GET_COMPANIES.id, STEPS.GET_COMPANIES.obfuscatedId);
   const companies = await Promise.all(
-    companyIds.map((id) => repository.getCompanyById(id, { logger })),
+    companyIds.map((id) => repository.getDocument(id, logger)),
   ).finally(() => logger.endStep(STEPS.GET_COMPANIES.id));
 
   // Filter out any null values (though this shouldn't happen if permissions are correct)

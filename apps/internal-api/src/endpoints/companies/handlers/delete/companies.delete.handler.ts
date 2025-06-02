@@ -1,11 +1,9 @@
-import { FastifyReply, FastifyRequest } from 'fastify';
+import { STATUS_CODES } from '@repo/fastify';
 import {
-  DeleteCompanyError,
   CompaniesRepository,
-  DeleteCompanyErrorCode,
 } from '@repo/shared/repositories';
+import { FastifyReply, FastifyRequest } from 'fastify';
 
-import { ERROR_RESPONSES } from '../../companies.endpoints.constants';
 import { STEPS } from './companies.delete.constants';
 import { DeleteCompanyParams } from './companies.delete.interfaces';
 
@@ -17,18 +15,8 @@ export const deleteCompanyHandler = async (
   const repository = CompaniesRepository.getInstance();
   const { id } = request.params as DeleteCompanyParams;
   logger.startStep(STEPS.DELETE_COMPANY.id, STEPS.DELETE_COMPANY.obfuscatedId);
-  try {
-    await repository
-      .deleteCompany(id, { logger })
+  await repository
+      .deleteDocument(id, logger)
       .finally(() => logger.endStep(STEPS.DELETE_COMPANY.id));
-  } catch (error) {
-    if (
-      error instanceof DeleteCompanyError &&
-      error.code === DeleteCompanyErrorCode.DOCUMENT_NOT_FOUND
-    ) {
-      return reply.code(404).send(ERROR_RESPONSES.COMPANY_NOT_FOUND);
-    }
-    throw error;
-  }
-  return reply.code(204).send();
+  return reply.code(STATUS_CODES.NO_CONTENT).send();
 };

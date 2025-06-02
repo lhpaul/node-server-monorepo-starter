@@ -10,7 +10,7 @@ import { RESOURCE_NAME, RESOURCE_PATH, STEPS } from '../transactions.resource.co
 jest.mock('@repo/shared/repositories', () => ({
   TransactionsRepository: {
     getInstance: jest.fn().mockReturnValue({
-      getTransactions: jest.fn(),
+      getDocumentsList: jest.fn(),
     }),
   },
 }));
@@ -64,7 +64,7 @@ describe(transactionsResourceBuilder.name, () => {
       createdAt: new Date(),
       updatedAt: new Date(),
     }];
-    mockTransactionsRepo.getTransactions.mockResolvedValue(mockTransactions);
+    mockTransactionsRepo.getDocumentsList.mockResolvedValue(mockTransactions);
 
     const variables = {
       companyId: 'company123',
@@ -82,15 +82,15 @@ describe(transactionsResourceBuilder.name, () => {
     const result = await resource.handler(uri, variables, extra);
 
     expect(mockRequestLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id, STEPS.GET_TRANSACTIONS.obfuscatedId);
-    expect(mockTransactionsRepo.getTransactions).toHaveBeenCalledWith(
+    expect(mockTransactionsRepo.getDocumentsList).toHaveBeenCalledWith(
       {
-        companyId: [{ value: variables.companyId, operator: '==' }],
         date: [
           { value: variables.dateFrom, operator: '>=' },
           { value: variables.dateTo, operator: '<=' },
         ],
       },
-      { logger: mockRequestLogger }
+      mockRequestLogger,
+      { parentIds: { companyId: variables.companyId } },
     );
     expect(mockRequestLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id);
     expect(result.contents[0]).toEqual({
@@ -111,7 +111,7 @@ describe(transactionsResourceBuilder.name, () => {
       createdAt: new Date(),
       updatedAt: new Date(),
     }];
-    mockTransactionsRepo.getTransactions.mockResolvedValue(mockTransactions);
+    mockTransactionsRepo.getDocumentsList.mockResolvedValue(mockTransactions);
     const variables = {
       companyId: mockTransactions[0].companyId,
     };
@@ -125,12 +125,10 @@ describe(transactionsResourceBuilder.name, () => {
 
     const result = await resource.handler(uri, variables, extra);
 
-    expect(mockTransactionsRepo.getTransactions).toHaveBeenCalledWith(
-      {
-        companyId: [{ value: variables.companyId, operator: '==' }],
-        date: [],
-      },
-      { logger: mockRequestLogger }
+    expect(mockTransactionsRepo.getDocumentsList).toHaveBeenCalledWith(
+      { date: [] },
+      mockRequestLogger,
+      { parentIds: { companyId: variables.companyId } },
     );
     expect(result.contents[0].text).toBe(JSON.stringify(mockTransactions));
   });
@@ -146,7 +144,7 @@ describe(transactionsResourceBuilder.name, () => {
       createdAt: new Date(),
       updatedAt: new Date(),
     }];
-    mockTransactionsRepo.getTransactions.mockResolvedValue(mockTransactions);
+    mockTransactionsRepo.getDocumentsList.mockResolvedValue(mockTransactions);
 
     const variables = {
       companyId: mockTransactions[0].companyId,
@@ -162,12 +160,12 @@ describe(transactionsResourceBuilder.name, () => {
 
     const result = await resource.handler(uri, variables, extra);
 
-    expect(mockTransactionsRepo.getTransactions).toHaveBeenCalledWith(
+    expect(mockTransactionsRepo.getDocumentsList).toHaveBeenCalledWith(
       {
-        companyId: [{ value: variables.companyId, operator: '==' }],
         date: [{ value: variables.dateFrom, operator: '>=' }],
       },
-      { logger: mockRequestLogger }
+      mockRequestLogger,
+      { parentIds: { companyId: variables.companyId } },
     );
     expect(result.contents[0].text).toBe(JSON.stringify(mockTransactions));
   });
@@ -183,7 +181,7 @@ describe(transactionsResourceBuilder.name, () => {
       createdAt: new Date(),
       updatedAt: new Date(),
     }];
-    mockTransactionsRepo.getTransactions.mockResolvedValue(mockTransactions)
+    mockTransactionsRepo.getDocumentsList.mockResolvedValue(mockTransactions)
 
     const variables = {
       companyId: mockTransactions[0].companyId,
@@ -199,12 +197,12 @@ describe(transactionsResourceBuilder.name, () => {
 
     const result = await resource.handler(uri, variables, extra);
 
-    expect(mockTransactionsRepo.getTransactions).toHaveBeenCalledWith(
+    expect(mockTransactionsRepo.getDocumentsList).toHaveBeenCalledWith(
       {
-        companyId: [{ value: variables.companyId, operator: '==' }],
         date: [{ value: variables.dateTo, operator: '<=' }],
       },
-      { logger: mockRequestLogger }
+      mockRequestLogger,
+      { parentIds: { companyId: variables.companyId } },
     );
     expect(result.contents[0].text).toBe(JSON.stringify(mockTransactions));
   });
@@ -212,7 +210,7 @@ describe(transactionsResourceBuilder.name, () => {
   it('should handle repository errors gracefully', async () => {
     const resource = transactionsResourceBuilder(mockServerLogger);
     const error = new Error('Database error');
-    mockTransactionsRepo.getTransactions.mockRejectedValue(error);
+    mockTransactionsRepo.getDocumentsList.mockRejectedValue(error);
 
     const variables = {
       companyId: 'company123',

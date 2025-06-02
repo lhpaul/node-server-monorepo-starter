@@ -1,14 +1,14 @@
 import { QueryInput, QueryOptions } from '../../definitions/listing.interfaces';
 import { TransactionType } from '../../domain/models/transaction.model';
 
-export interface CreateTransactionBody {
+export interface CreateTransactionInput {
   amount: number;
   companyId: string;
   date: string;
   type: TransactionType;
 }
 
-export interface UpdateTransactionBody {
+export interface UpdateTransactionInput {
   amount?: number;
   companyId?: string;
   date?: string;

@@ -1,20 +1,10 @@
+import { TransactionsRepository } from '@repo/shared/repositories';
 import { FastifyReply, FastifyRequest } from 'fastify';
-import {
-  DeleteTransactionError,
-  DeleteTransactionErrorCode,
-  TransactionsRepository,
-} from '@repo/shared/repositories';
 
-import { ERROR_RESPONSES } from '../../../transactions.endpoints.constants';
 import { STEPS } from '../transactions.delete.constants';
 import { deleteTransactionHandler } from '../transactions.delete.handler';
 
-jest.mock('@repo/shared/repositories', () => ({
-  ...jest.requireActual('@repo/shared/repositories'),
-  TransactionsRepository: {
-    getInstance: jest.fn(),
-  },
-}));
+jest.mock('@repo/shared/repositories');
 
 describe(deleteTransactionHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;
@@ -42,7 +32,7 @@ describe(deleteTransactionHandler.name, () => {
     };
 
     mockRepository = {
-      deleteTransaction: jest.fn(),
+      deleteDocument: jest.fn(),
     } as any;
 
     (TransactionsRepository.getInstance as jest.Mock).mockReturnValue(
@@ -55,7 +45,7 @@ describe(deleteTransactionHandler.name, () => {
   });
 
   it('should successfully delete a transaction', async () => {
-    mockRepository.deleteTransaction.mockResolvedValue();
+    mockRepository.deleteDocument.mockResolvedValueOnce(undefined as never);
 
     await deleteTransactionHandler(
       mockRequest as FastifyRequest,
@@ -66,70 +56,14 @@ describe(deleteTransactionHandler.name, () => {
       STEPS.DELETE_TRANSACTION.id,
       STEPS.DELETE_TRANSACTION.obfuscatedId,
     );
-    expect(mockRepository.deleteTransaction).toHaveBeenCalledWith(
+    expect(mockRepository.deleteDocument).toHaveBeenCalledWith(
       mockParams.id,
-      { logger: mockLogger },
+      mockLogger,
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(
       STEPS.DELETE_TRANSACTION.id,
     );
     expect(mockReply.code).toHaveBeenCalledWith(204);
     expect(mockReply.send).toHaveBeenCalled();
-  });
-
-  it('should handle non-existent transaction', async () => {
-    mockRepository.deleteTransaction.mockRejectedValue(
-      new DeleteTransactionError({
-        code: DeleteTransactionErrorCode.DOCUMENT_NOT_FOUND,
-        message: 'Transaction not found',
-      }),
-    );
-
-    await deleteTransactionHandler(
-      mockRequest as FastifyRequest,
-      mockReply as FastifyReply,
-    );
-
-    expect(mockLogger.startStep).toHaveBeenCalledWith(
-      STEPS.DELETE_TRANSACTION.id,
-      STEPS.DELETE_TRANSACTION.obfuscatedId,
-    );
-    expect(mockRepository.deleteTransaction).toHaveBeenCalledWith(
-      mockParams.id,
-      { logger: mockLogger },
-    );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(
-      STEPS.DELETE_TRANSACTION.id,
-    );
-    expect(mockReply.code).toHaveBeenCalledWith(404);
-    expect(mockReply.send).toHaveBeenCalledWith(
-      ERROR_RESPONSES.TRANSACTION_NOT_FOUND,
-    );
-  });
-
-  it('should rethrow non-DeleteTransactionError errors', async () => {
-    const error = new Error('Unexpected error');
-    mockRepository.deleteTransaction.mockRejectedValue(error);
-
-    await expect(
-      deleteTransactionHandler(
-        mockRequest as FastifyRequest,
-        mockReply as FastifyReply,
-      ),
-    ).rejects.toThrow(error);
-
-    expect(mockLogger.startStep).toHaveBeenCalledWith(
-      STEPS.DELETE_TRANSACTION.id,
-      STEPS.DELETE_TRANSACTION.obfuscatedId,
-    );
-    expect(mockRepository.deleteTransaction).toHaveBeenCalledWith(
-      mockParams.id,
-      { logger: mockLogger },
-    );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(
-      STEPS.DELETE_TRANSACTION.id,
-    );
-    expect(mockReply.code).not.toHaveBeenCalled();
-    expect(mockReply.send).not.toHaveBeenCalled();
   });
 });

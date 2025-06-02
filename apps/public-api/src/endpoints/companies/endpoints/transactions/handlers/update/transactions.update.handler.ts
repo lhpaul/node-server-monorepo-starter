@@ -1,8 +1,6 @@
 import { STATUS_CODES, FORBIDDEN_ERROR } from '@repo/fastify';
-import {
-  TransactionsRepository,
-  UpdateTransactionError,
-} from '@repo/shared/repositories';
+import { TransactionsRepository } from '@repo/shared/repositories';
+import { RepositoryError, RepositoryErrorCode } from '@repo/shared/utils';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../../definitions/auth.interfaces';
@@ -35,11 +33,11 @@ export const updateTransactionHandler = async (
       STEPS.UPDATE_TRANSACTION.id,
       STEPS.UPDATE_TRANSACTION.obfuscatedId,
     );
-    await repository.updateTransaction(id, body, { logger })
+    await repository.updateDocument(id, body, logger)
     .finally(() => logger.endStep(STEPS.UPDATE_TRANSACTION.id));
     return reply.code(STATUS_CODES.NO_CONTENT).send();
   } catch (error) {
-    if (error instanceof UpdateTransactionError) {
+    if (error instanceof RepositoryError && error.code === RepositoryErrorCode.DOCUMENT_NOT_FOUND) {
       return reply.code(STATUS_CODES.NOT_FOUND).send(ERROR_RESPONSES.TRANSACTION_NOT_FOUND);
     }
     throw error;
