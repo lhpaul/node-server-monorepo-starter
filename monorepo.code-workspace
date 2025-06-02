@@ -25,5 +25,10 @@
 			"path": "packages/shared"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"cSpell.words": [
+			"firestore",
+			"retriable"
+		]
+	}
 }
