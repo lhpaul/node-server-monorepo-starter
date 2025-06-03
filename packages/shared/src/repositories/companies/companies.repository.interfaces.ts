@@ -1,4 +1,4 @@
-import { IQueryInput, IQueryOptions } from '../../definitions/listing.interfaces';
+import { QueryInput, QueryItem } from '../../definitions/listing.interfaces';
 
 export interface CreateCompanyInput {
   name: string;
@@ -8,6 +8,6 @@ export interface UpdateCompanyInput {
   name?: string;
 }
 
-export interface GetCompaniesQuery extends IQueryInput {
-  name?: IQueryOptions<string>[];
+export interface GetCompaniesQuery extends QueryInput {
+  name?: QueryItem<string>[];
 }

@@ -1,4 +1,4 @@
-import { IQueryInput, QueryOperator } from '@repo/shared/definitions';
+import { QueryInput, QueryOperator } from '@repo/shared/definitions';
 import { maskFields } from '@repo/shared/utils';
 import {
   FastifyRequest,
@@ -12,12 +12,12 @@ import {
   QUERY_PARAMS_OPERATORS_MAP,
 } from '../../constants/requests.constants';
 import { DEFAULT_ON_PRE_VALIDATION_HEADERS_TO_MASK, LOG_IDS } from './endpoints.utils.constants';
-import { IEndpointOptions } from './endpoints.utils.interfaces';
+import { EndpointOptions } from './endpoints.utils.interfaces';
 
 export function createEndpoint(
   server: FastifyInstance,
   values: RouteOptions,
-  options?: IEndpointOptions,
+  options?: EndpointOptions,
 ): RouteOptions {
   const { preValidation, onSend, ...rest } = values;
   const authenticate = options?.authenticate ?? true;
@@ -60,8 +60,8 @@ export function createEndpoint(
   };
 }
 
-export function transformQueryParams(queryParams: any): IQueryInput {
-  const query: IQueryInput = {};
+export function transformQueryParams(queryParams: any): QueryInput {
+  const query: QueryInput = {};
   for (const key in queryParams) {
     const [attribute, other] = key.split('[');
     let queryOperator = other?.split(']')[0];
@@ -94,7 +94,7 @@ export function buildSchemaForQueryParamsProperty(
   return schema;
 }
 
-function _logPreValidation(request: FastifyRequest, options?: IEndpointOptions) {
+function _logPreValidation(request: FastifyRequest, options?: EndpointOptions) {
   const maskOptions = {
     params: [],
     query: [],
@@ -134,7 +134,7 @@ function _logOnSend(
   request: FastifyRequest,
   reply: FastifyReply,
   payload: any,
-  options?: IEndpointOptions,
+  options?: EndpointOptions,
 ) {
   const maskOptions = {
     responseHeaders: [],

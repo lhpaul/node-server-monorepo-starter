@@ -1,4 +1,4 @@
-import { IQueryInput } from './listing.interfaces';
+import { QueryInput } from './listing.interfaces';
 import { ExecutionLogger } from './logging.interfaces';
 
 /**
@@ -6,9 +6,9 @@ import { ExecutionLogger } from './logging.interfaces';
  * @template DocumentModel - The type of document being stored and retrieved
  * @template CreateDocumentInput - The data structure required to create a new document
  * @template UpdateDocumentInput - The data structure used to update an existing document
- * @template QueryInput - The query parameters used to filter and list documents
+ * @template FilterInput - The query parameters used to filter and list documents
  */
-export interface IRepository<DocumentModel, CreateDocumentInput, UpdateDocumentInput, QueryInput extends IQueryInput> {
+export interface Repository<DocumentModel, CreateDocumentInput, UpdateDocumentInput, FilterInput extends QueryInput> {
 
   /**
    * Creates a new document in the repository
@@ -40,7 +40,7 @@ export interface IRepository<DocumentModel, CreateDocumentInput, UpdateDocumentI
    * @param logger - Logger instance for tracking execution
    * @returns Promise resolving to an array of matching documents
    */
-  getDocumentsList(query: QueryInput, logger: ExecutionLogger): Promise<DocumentModel[]>;
+  getDocumentsList(query: FilterInput, logger: ExecutionLogger): Promise<DocumentModel[]>;
 
   /**
    * Updates an existing document in the repository

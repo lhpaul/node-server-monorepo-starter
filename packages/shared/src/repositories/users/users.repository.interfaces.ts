@@ -1,4 +1,4 @@
-import { IQueryInput, IQueryOptions } from '../../definitions/listing.interfaces';
+import { QueryInput, QueryItem } from '../../definitions/listing.interfaces';
 
 export interface CreateUserInput {
   email: string;
@@ -10,8 +10,8 @@ export interface UpdateUserInput {
   currentPasswordHash?: string;
 }
 
-export interface GetUsersQuery extends IQueryInput {
-  email?: IQueryOptions<string>[];
-  createdAt?: IQueryOptions<Date>[];
-  updatedAt?: IQueryOptions<Date>[];
+export interface GetUsersQuery extends QueryInput {
+  email?: QueryItem<string>[];
+  createdAt?: QueryItem<Date>[];
+  updatedAt?: QueryItem<Date>[];
 } 

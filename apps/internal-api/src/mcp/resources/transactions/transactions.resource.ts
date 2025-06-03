@@ -4,7 +4,7 @@ import { RequestLogger } from '@repo/fastify';
 import { McpResourceConfig } from '../../../definitions/mcp.interfaces';
 import { RESOURCE_NAME, RESOURCE_PATH, STEPS } from './transactions.resource.constants';
 import { TransactionsRepository } from '@repo/shared/repositories';
-import { IQueryOptions } from '@repo/shared/definitions';
+import { QueryItem } from '@repo/shared/definitions';
 import { FastifyBaseLogger } from 'fastify';
 export function transactionsResourceBuilder(serverLogger: FastifyBaseLogger): McpResourceConfig {
   return {
@@ -21,7 +21,7 @@ export function transactionsResourceBuilder(serverLogger: FastifyBaseLogger): Mc
       .child({ requestId: extra.requestId, resource: RESOURCE_NAME, uri, variables });
 
       requestLogger.startStep(STEPS.GET_TRANSACTIONS.id);
-      const dateFilters: IQueryOptions<string>[] = [];
+      const dateFilters: QueryItem<string>[] = [];
       if (dateFrom) {
         dateFilters.push({ value: dateFrom as string, operator: '>=' });
       }

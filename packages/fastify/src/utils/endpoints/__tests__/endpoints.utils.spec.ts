@@ -3,7 +3,7 @@ import { QueryOperator } from '@repo/shared/definitions';
 import { QUERY_PARAMS_OPERATORS, QUERY_PARAMS_OPERATORS_MAP } from '../../../constants/requests.constants';
 import { LOG_IDS } from '../endpoints.utils.constants';
 import { createEndpoint, transformQueryParams, buildSchemaForQueryParamsProperty } from '../endpoints.utils';
-import { IEndpointOptions } from '../endpoints.utils.interfaces';
+import { EndpointOptions } from '../endpoints.utils.interfaces';
 
 describe(createEndpoint.name, () => {
   let mockServer: FastifyInstance;
@@ -57,7 +57,7 @@ describe(createEndpoint.name, () => {
       method: 'GET',
       handler: jest.fn(),
     };
-    const options: IEndpointOptions = { authenticate: false };
+    const options: EndpointOptions = { authenticate: false };
 
     const result = createEndpoint(mockServer, routeOptions, options);
 

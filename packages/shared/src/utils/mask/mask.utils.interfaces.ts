@@ -1,4 +1,4 @@
-export interface IMaskConfig {
+export interface MaskOptions {
   maskChar?: string;
   maskLength?: number;
 }

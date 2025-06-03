@@ -1,4 +1,4 @@
-import { IQueryInput, IQueryOptions } from '../../definitions/listing.interfaces';
+import { QueryInput, QueryItem } from '../../definitions/listing.interfaces';
 import { UserCompanyRole } from '../../domain/models/user-company-relation.model';
 
 export interface CreateUserCompanyRelationInput {
@@ -11,10 +11,10 @@ export interface UpdateUserCompanyRelationInput {
   role?: UserCompanyRole;
 }
 
-export interface GetUserCompanyRelationsQuery extends IQueryInput {
-  companyId?: IQueryOptions<string>[];
-  userId?: IQueryOptions<string>[];
-  role?: IQueryOptions<UserCompanyRole>[];
-  createdAt?: IQueryOptions<Date>[];
-  updatedAt?: IQueryOptions<Date>[];
+export interface GetUserCompanyRelationsQuery extends QueryInput {
+  companyId?: QueryItem<string>[];
+  userId?: QueryItem<string>[];
+  role?: QueryItem<UserCompanyRole>[];
+  createdAt?: QueryItem<Date>[];
+  updatedAt?: QueryItem<Date>[];
 } 

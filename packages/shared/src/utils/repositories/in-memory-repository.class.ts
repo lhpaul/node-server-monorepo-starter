@@ -1,4 +1,4 @@
-import { DatabaseObject, ExecutionLogger, IQueryInput, IQueryOptions, IRepository } from '../../definitions';
+import { DatabaseObject, ExecutionLogger, QueryInput, QueryItem, Repository } from '../../definitions';
 import { filterList } from '../lists/lists.utils';
 import { wait } from '../time/time.utils';
 import { IN_MEMORY_REPOSITORY_WAIT_TIME, STEPS } from './in-memory-repository.class.constants';
@@ -11,9 +11,9 @@ import { RepositoryErrorCode, REPOSITORY_ERROR_MESSAGES, RepositoryError } from 
  * @template DocumentModel - The type of document being stored and retrieved
  * @template CreateDocumentInput - The data structure required to create a new document
  * @template UpdateDocumentInput - The data structure used to update an existing document
- * @template QueryInput - The query parameters used to filter and list documents
+ * @template FilterInput - The query parameters used to filter and list documents
  */
-export class InMemoryRepository<DocumentModel extends DatabaseObject, CreateDocumentInput, UpdateDocumentInput, QueryInput extends IQueryInput> implements IRepository<DocumentModel, CreateDocumentInput, UpdateDocumentInput, QueryInput> {
+export class InMemoryRepository<DocumentModel extends DatabaseObject, CreateDocumentInput, UpdateDocumentInput, FilterInput extends QueryInput> implements Repository<DocumentModel, CreateDocumentInput, UpdateDocumentInput, QueryInput> {
   private _documents: DocumentModel[] = [];
 
   constructor(documents: DocumentModel[]) {
@@ -83,15 +83,15 @@ export class InMemoryRepository<DocumentModel extends DatabaseObject, CreateDocu
    * @param logger - Logger instance for tracking execution
    * @returns Promise resolving to an array of matching documents
    */
-  public async getDocumentsList(query: IQueryInput, logger: ExecutionLogger): Promise<DocumentModel[]> {
+  public async getDocumentsList(query: FilterInput, logger: ExecutionLogger): Promise<DocumentModel[]> {
     logger.startStep(STEPS.GET_DOCUMENTS.id);
     await wait(IN_MEMORY_REPOSITORY_WAIT_TIME);
     logger.endStep(STEPS.GET_DOCUMENTS.id);
     let filteredItems = [...this._documents];
     for (const key in query) {
       const queries = query[
-        key as keyof QueryInput
-      ] as IQueryOptions<any>[];
+        key as keyof FilterInput
+      ] as QueryItem<any>[];
       filteredItems = queries.reduce(
         (acc, query) => filterList(acc, key, query),
         filteredItems,
