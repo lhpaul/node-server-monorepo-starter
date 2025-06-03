@@ -4,8 +4,8 @@
   "scripts": {
     "build": "turbo run build",
     "check-types": "turbo run check-types",
-    "dev:internal-api": "turbo run dev --filter=internal-api",
-    "dev:public-api": "turbo run dev --filter=public-api",
+    "dev:internal-api": "turbo watch dev --filter=internal-api",
+    "dev:public-api": "turbo watch dev --filter=public-api",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "lint": "turbo run lint",
     "lint:staged": "lint-staged",
