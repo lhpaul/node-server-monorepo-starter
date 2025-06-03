@@ -4,7 +4,7 @@ This repository provides a robust foundation for developing a server-side applic
 
 This starter template is designed to be cloud platform and database independent, giving you the flexibility to choose your preferred infrastructure. For specialized implementations tailored to specific cloud providers, explore these extensions:
 
-- [Google Cloud Platform (GCP)](https://github.com/lhpaul/node-server-monorepo-starter): A complete implementation leveraging [Firebase Authentication](https://firebase.google.com/docs/auth) for user authentication, [Cloud Firestore](https://firebase.google.com/docs/firestore) for data storage, and [Cloud Run](https://cloud.google.com/run) for serverless deployment.
+- [Google Cloud Platform (GCP)](https://github.com/lhpaul/node-server-monorepo-starter/tree/extensions/google-cloud): A complete implementation leveraging [Firebase Authentication](https://firebase.google.com/docs/auth) for user authentication, [Cloud Firestore](https://firebase.google.com/docs/firestore) for data storage, and [Cloud Run](https://cloud.google.com/run) for serverless deployment.
 
 ## What's Inside?
 
