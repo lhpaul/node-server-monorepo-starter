@@ -1,17 +1,17 @@
-import { QueryInput, QueryOptions } from '../../definitions/listing.interfaces';
+import { IQueryInput, IQueryOptions } from '../../definitions/listing.interfaces';
 
-export interface CreatePrivateKeyBody {
+export interface CreatePrivateKeyInput {
   oauthClientId: string;
   label: string;
   hash: string;
 }
 
-export interface UpdatePrivateKeyBody {
+export interface UpdatePrivateKeyInput {
   label?: string;
   hash?: string;
 }
 
-export interface GetPrivateKeysQuery extends QueryInput {
-  oauthClientId?: QueryOptions<string>[];
-  label?: QueryOptions<string>[];
+export interface GetPrivateKeysQuery extends IQueryInput {
+  oauthClientId?: IQueryOptions<string>[];
+  label?: IQueryOptions<string>[];
 } 

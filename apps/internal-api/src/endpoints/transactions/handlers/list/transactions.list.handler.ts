@@ -1,4 +1,4 @@
-import { transformQueryParams } from '@repo/fastify';
+import { STATUS_CODES, transformQueryParams } from '@repo/fastify';
 import { TransactionsRepository } from '@repo/shared/repositories';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
@@ -12,12 +12,9 @@ export const listTransactionsHandler = async (
   const logger = request.log.child({ handler: listTransactionsHandler.name });
   const repository = TransactionsRepository.getInstance();
   const query = request.query as GetTransactionsQueryParams;
-  logger.startStep(
-    STEPS.GET_TRANSACTIONS.id,
-    STEPS.GET_TRANSACTIONS.obfuscatedId,
-  );
+  logger.startStep(STEPS.GET_TRANSACTIONS.id);
   const transactions = await repository
-    .getTransactions(transformQueryParams(query), { logger })
+    .getDocumentsList(transformQueryParams(query), logger)
     .finally(() => logger.endStep(STEPS.GET_TRANSACTIONS.id));
-  return reply.code(200).send(transactions);
+  return reply.code(STATUS_CODES.OK).send(transactions);
 };

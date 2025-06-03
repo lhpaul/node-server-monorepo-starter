@@ -1,4 +1,5 @@
 import { FORBIDDEN_ERROR, RESOURCE_NOT_FOUND_ERROR, STATUS_CODES } from '@repo/fastify';
+import { TransactionType } from '@repo/shared/domain';
 import { TransactionsRepository } from '@repo/shared/repositories';
 import { UserPermissions } from '@repo/shared/services';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
@@ -43,7 +44,7 @@ describe(getTransactionHandler.name, () => {
     startStep: jest.Mock;
     endStep: jest.Mock;
   } & Partial<FastifyBaseLogger>;
-  let mockRepository: { getTransactionById: jest.Mock };
+  let mockRepository: Partial<TransactionsRepository>;
 
   const mockParams = { companyId: 'company123', id: 'transaction123' };
   const mockUser: UserPermissions = {
@@ -71,7 +72,7 @@ describe(getTransactionHandler.name, () => {
     };
 
     mockRepository = {
-      getTransactionById: jest.fn(),
+      getDocument: jest.fn(),
     };
 
     (TransactionsRepository.getInstance as jest.Mock).mockReturnValue(
@@ -91,23 +92,22 @@ describe(getTransactionHandler.name, () => {
       companyId: mockParams.companyId,
       amount: 100,
       date: '2024-03-20',
-      type: 'CREDIT',
+      type: TransactionType.CREDIT,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     };
 
-    mockRepository.getTransactionById.mockResolvedValue(mockTransaction);
+    jest.spyOn(mockRepository, 'getDocument').mockResolvedValue(mockTransaction);
 
     await getTransactionHandler(
       mockRequest as FastifyRequest,
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(
-      STEPS.GET_TRANSACTION.id,
-      STEPS.GET_TRANSACTION.obfuscatedId,
-    );
-    expect(mockRepository.getTransactionById).toHaveBeenCalledWith(
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION.id);
+    expect(mockRepository.getDocument).toHaveBeenCalledWith(
       mockParams.id,
-      { logger: mockLogger },
+      mockLogger,
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION.id);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
@@ -115,20 +115,17 @@ describe(getTransactionHandler.name, () => {
   });
 
   it('should handle transaction not found', async () => {
-    mockRepository.getTransactionById.mockResolvedValue(null);
+    jest.spyOn(mockRepository, 'getDocument').mockResolvedValue(null);
 
     await getTransactionHandler(
       mockRequest as FastifyRequest,
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(
-      STEPS.GET_TRANSACTION.id,
-      STEPS.GET_TRANSACTION.obfuscatedId,
-    );
-    expect(mockRepository.getTransactionById).toHaveBeenCalledWith(
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION.id);
+    expect(mockRepository.getDocument).toHaveBeenCalledWith(
       mockParams.id,
-      { logger: mockLogger },
+      mockLogger,
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION.id);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.NOT_FOUND);
@@ -140,7 +137,7 @@ describe(getTransactionHandler.name, () => {
 
   it('should handle repository errors', async () => {
     const error = new Error('Repository error');
-    mockRepository.getTransactionById.mockRejectedValue(error);
+    jest.spyOn(mockRepository, 'getDocument').mockRejectedValue(error);
 
     await expect(
       getTransactionHandler(
@@ -149,13 +146,10 @@ describe(getTransactionHandler.name, () => {
       ),
     ).rejects.toThrow(error);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(
-      STEPS.GET_TRANSACTION.id,
-      STEPS.GET_TRANSACTION.obfuscatedId,
-    );
-    expect(mockRepository.getTransactionById).toHaveBeenCalledWith(
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION.id);
+    expect(mockRepository.getDocument).toHaveBeenCalledWith(
       mockParams.id,
-      { logger: mockLogger },
+      mockLogger,
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION.id);
     expect(mockReply.code).not.toHaveBeenCalled();
@@ -175,6 +169,6 @@ describe(getTransactionHandler.name, () => {
       code: FORBIDDEN_ERROR.responseCode,
       message: FORBIDDEN_ERROR.responseMessage,
     });
-    expect(mockRepository.getTransactionById).not.toHaveBeenCalled();
+    expect(mockRepository.getDocument).not.toHaveBeenCalled();
   });
 });

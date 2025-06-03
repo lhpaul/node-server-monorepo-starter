@@ -1,4 +1,5 @@
 import { CompaniesRepository } from '@repo/shared/repositories';
+import { STATUS_CODES } from '@repo/fastify';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { STEPS } from './companies.create.constants';
@@ -11,9 +12,9 @@ export const createCompanyHandler = async (
   const logger = request.log.child({ handler: createCompanyHandler.name });
   const repository = CompaniesRepository.getInstance();
   const body = request.body as CreateCompanyBody;
-  logger.startStep(STEPS.CREATE_COMPANY.id, STEPS.CREATE_COMPANY.obfuscatedId);
-  const { id } = await repository
-    .createCompany(body, { logger })
+  logger.startStep(STEPS.CREATE_COMPANY.id);
+  const id = await repository
+    .createDocument(body, logger)
     .finally(() => logger.endStep(STEPS.CREATE_COMPANY.id));
-  return reply.code(201).send({ id });
+  return reply.code(STATUS_CODES.CREATED).send({ id });
 };

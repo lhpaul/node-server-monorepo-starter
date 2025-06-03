@@ -25,6 +25,7 @@ describe(setServerErrorHandlers.name, () => {
         warn: jest.fn(),
         error: jest.fn(),
         lastStep: null,
+        stepsCounter: 0,
       },
     } as any;
 
@@ -54,7 +55,7 @@ describe(setServerErrorHandlers.name, () => {
       },
       RESOURCE_NOT_FOUND_ERROR.logMessage,
     );
-    expect(mockReply.status).toHaveBeenCalledWith(404);
+    expect(mockReply.status).toHaveBeenCalledWith(STATUS_CODES.NOT_FOUND);
     expect(mockReply.send).toHaveBeenCalledWith({
       code: RESOURCE_NOT_FOUND_ERROR.responseCode,
       message: RESOURCE_NOT_FOUND_ERROR.responseMessage,
@@ -99,22 +100,23 @@ describe(setServerErrorHandlers.name, () => {
     expect(mockRequest.log.error).toHaveBeenCalledWith(
       {
         logId: INTERNAL_ERROR_VALUES.logId,
-        errorCode: '-1',
+        errorCode: null,
         error: internalError,
         step: null,
       },
       INTERNAL_ERROR_VALUES.logMessage({ error: internalError, step: null }),
     );
-    expect(mockReply.code).toHaveBeenCalledWith(500);
+    expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.INTERNAL_ERROR);
     expect(mockReply.send).toHaveBeenCalledWith({
-      code: '-1',
+      code: '0',
       message: INTERNAL_ERROR_VALUES.responseMessage,
     });
   });
   it('should handle internal errors correctly with step', () => {
     setServerErrorHandlers(mockServer);
-    const step = { id: 'some-step-id', obfuscatedId: 'some-obfuscated-id' };
+    const step = { id: 'some-step-id' };
     mockRequest.log.lastStep = step;
+    mockRequest.log.stepsCounter = 1;
     
     const errorHandler = mockServer.setErrorHandler.mock.calls[0][0] as Function;
     const internalError = new Error('Internal error');
@@ -124,15 +126,15 @@ describe(setServerErrorHandlers.name, () => {
     expect(mockRequest.log.error).toHaveBeenCalledWith(
       {
         logId: INTERNAL_ERROR_VALUES.logId,
-        errorCode: step.obfuscatedId,
+        errorCode: step.id,
         error: internalError,
         step,
       },
       INTERNAL_ERROR_VALUES.logMessage({ error: internalError, step: step.id }),
     );
-    expect(mockReply.code).toHaveBeenCalledWith(500);
+    expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.INTERNAL_ERROR);
     expect(mockReply.send).toHaveBeenCalledWith({
-      code: step.obfuscatedId,
+      code: mockRequest.log.stepsCounter.toString(),
       message: INTERNAL_ERROR_VALUES.responseMessage,
     });
   });

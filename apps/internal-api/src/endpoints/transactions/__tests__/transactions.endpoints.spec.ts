@@ -1,4 +1,4 @@
-import { createEndpoint } from '@repo/fastify';
+import { createEndpoint, HTTP_METHODS_MAP } from '@repo/fastify';
 import { TransactionType } from '@repo/shared/domain';
 import { FastifyInstance } from 'fastify';
 import {
@@ -18,9 +18,8 @@ import {
 import { transactionsEndpointsBuilder } from '../transactions.endpoints';
 
 jest.mock('@repo/fastify', () => ({
+  ...jest.requireActual('@repo/fastify'),
   createEndpoint: jest.fn(),
-  buildSchemaForQueryParamsProperty:
-    jest.requireActual('@repo/fastify').buildSchemaForQueryParamsProperty,
 }));
 
 describe('transactionsEndpointsBuilder', () => {
@@ -41,7 +40,7 @@ describe('transactionsEndpointsBuilder', () => {
 
   it('should create POST transaction endpoint with correct configuration', () => {
     expect(createEndpoint).toHaveBeenNthCalledWith(1, mockServer, {
-      method: ['POST'],
+      method: [HTTP_METHODS_MAP.CREATE],
       url: URL_V1,
       handler: createTransactionHandler,
       schema: {
@@ -52,7 +51,7 @@ describe('transactionsEndpointsBuilder', () => {
 
   it('should create GET transactions list endpoint with correct configuration', () => {
     expect(createEndpoint).toHaveBeenNthCalledWith(2, mockServer, {
-      method: ['GET'],
+      method: [HTTP_METHODS_MAP.LIST],
       url: URL_V1,
       handler: listTransactionsHandler,
       schema: {
@@ -79,7 +78,7 @@ describe('transactionsEndpointsBuilder', () => {
 
   it('should create GET single transaction endpoint with correct configuration', () => {
     expect(createEndpoint).toHaveBeenNthCalledWith(3, mockServer, {
-      method: ['GET'],
+      method: [HTTP_METHODS_MAP.GET],
       url: URL_WITH_ID_V1,
       handler: getTransactionHandler,
       schema: {
@@ -90,7 +89,7 @@ describe('transactionsEndpointsBuilder', () => {
 
   it('should create PATCH transaction endpoint with correct configuration', () => {
     expect(createEndpoint).toHaveBeenNthCalledWith(4, mockServer, {
-      method: ['PATCH'],
+      method: [HTTP_METHODS_MAP.UPDATE],
       url: URL_WITH_ID_V1,
       handler: updateTransactionHandler,
       schema: {
@@ -102,7 +101,7 @@ describe('transactionsEndpointsBuilder', () => {
 
   it('should create DELETE transaction endpoint with correct configuration', () => {
     expect(createEndpoint).toHaveBeenNthCalledWith(5, mockServer, {
-      method: ['DELETE'],
+      method: [HTTP_METHODS_MAP.DELETE],
       url: URL_WITH_ID_V1,
       handler: deleteTransactionHandler,
       schema: {

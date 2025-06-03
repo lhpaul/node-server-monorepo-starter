@@ -1,34 +1,19 @@
 import { compare } from 'bcrypt';
 
-import { ExecutionLogger } from '../../../definitions/logging.interfaces';
-import { User } from '../../../domain/models/user.model';
-import { PERMISSIONS_BY_ROLE, UserCompanyRole } from '../../../domain/models/user-company-relation.model';
-import { UsersRepository } from '../../../repositories/users/users.repository';
-import { UserCompanyRelationsRepository } from '../../../repositories/user-company-relations/user-company-relations.repository';
+import { ExecutionLogger } from '../../../definitions';
+import { User, UserCompanyRole, PERMISSIONS_BY_ROLE } from '../../../domain';
+import { UsersRepository, UserCompanyRelationsRepository } from '../../../repositories';
 import { AuthService } from '../auth.service';
 import { STEPS } from '../auth.service.constants';
 
-
 jest.mock('bcrypt');
-jest.mock('../../../repositories/users/users.repository', () => ({
-  UsersRepository: {
-    getInstance: jest.fn().mockImplementation(() => ({
-      getUsers: jest.fn(),
-    })),
-  },
-}));
-jest.mock('../../../repositories/user-company-relations/user-company-relations.repository', () => ({
-  UserCompanyRelationsRepository: {
-    getInstance: jest.fn().mockImplementation(() => ({
-      getUserCompanyRelations: jest.fn(),
-    })),
-  },
-}));
+jest.mock('../../../repositories/users/users.repository');
+jest.mock('../../../repositories/user-company-relations/user-company-relations.repository');
 
 describe(AuthService.name, () => {
   let authService: AuthService;
-  let mockUsersRepository: { getUsers: jest.Mock };
-  let mockUserCompanyRelationsRepository: { getUserCompanyRelations: jest.Mock };
+  let mockUsersRepository: Partial<UsersRepository>;
+  let mockUserCompanyRelationsRepository: Partial<UserCompanyRelationsRepository>;
   const mockLogger: jest.Mocked<ExecutionLogger> = {
     info: jest.fn(),
     error: jest.fn(),
@@ -50,16 +35,16 @@ describe(AuthService.name, () => {
     jest.clearAllMocks();
     authService = AuthService.getInstance();
     mockUsersRepository = {
-      getUsers: jest.fn(),
+      getDocumentsList: jest.fn(),
     };
     mockUserCompanyRelationsRepository = {
-      getUserCompanyRelations: jest.fn(),
+      getDocumentsList: jest.fn(),
     };
     (UsersRepository.getInstance as jest.Mock).mockReturnValue(mockUsersRepository);
     (UserCompanyRelationsRepository.getInstance as jest.Mock).mockReturnValue(mockUserCompanyRelationsRepository);
   });
 
-  describe('getInstance', () => {
+  describe(AuthService.getInstance.name, () => {
     it('should return the same instance when called multiple times', () => {
       const instance1 = AuthService.getInstance();
       const instance2 = AuthService.getInstance();
@@ -67,7 +52,7 @@ describe(AuthService.name, () => {
     });
   });
 
-  describe('validateCredentials', () => {
+  describe(AuthService.prototype.validateCredentials.name, () => {
     const mockUser: User = {
       id: 'user-1',
       email: 'test@example.com',
@@ -75,14 +60,14 @@ describe(AuthService.name, () => {
     } as User;
 
     beforeEach(() => {
-      (mockUsersRepository.getUsers as jest.Mock).mockResolvedValue([mockUser]);
+      (mockUsersRepository.getDocumentsList as jest.Mock).mockResolvedValue([mockUser]);
     });
 
     it('should return null when user is not found', async () => {
-      (mockUsersRepository.getUsers as jest.Mock).mockResolvedValue([]);
+      (mockUsersRepository.getDocumentsList as jest.Mock).mockResolvedValue([]);
       const result = await authService.validateCredentials(
         { email: 'nonexistent@example.com', password: 'password' },
-        { logger: mockLogger }
+        mockLogger
       );
       expect(result).toBeNull();
       expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.FIND_USER.id);
@@ -93,7 +78,7 @@ describe(AuthService.name, () => {
       (compare as jest.Mock).mockResolvedValue(false);
       const result = await authService.validateCredentials(
         { email: 'test@example.com', password: 'wrong-password' },
-        { logger: mockLogger }
+        mockLogger
       );
       expect(result).toBeNull();
       expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CHECK_PASSWORD.id);
@@ -104,19 +89,13 @@ describe(AuthService.name, () => {
       (compare as jest.Mock).mockResolvedValue(true);
       const result = await authService.validateCredentials(
         { email: 'test@example.com', password: 'correct-password' },
-        { logger: mockLogger }
+        mockLogger
       );
       expect(result).toEqual(mockUser);
       expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.FIND_USER.id);
       expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.FIND_USER.id);
       expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CHECK_PASSWORD.id);
       expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.CHECK_PASSWORD.id);
-    });
-    it('should not log when no logger is provided', async () => {
-      const result = await authService.validateCredentials({ email: 'test@example.com', password: 'correct-password' });
-      expect(result).toEqual(mockUser);
-      expect(mockLogger.startStep).not.toHaveBeenCalled();
-      expect(mockLogger.endStep).not.toHaveBeenCalled();
     });
   });
 
@@ -135,13 +114,13 @@ describe(AuthService.name, () => {
     ];
 
     beforeEach(() => {
-      (UserCompanyRelationsRepository.getInstance().getUserCompanyRelations as jest.Mock).mockResolvedValue(
+      (mockUserCompanyRelationsRepository.getDocumentsList as jest.Mock).mockResolvedValue(
         mockUserCompanyRelations
       );
     });
 
     it('should return user permissions for all companies', async () => {
-      const result = await authService.getUserPermissions('user-1', { logger: mockLogger });
+      const result = await authService.getUserPermissions('user-1', mockLogger);
       expect(result).toEqual({
         companies: {
           'company-1': PERMISSIONS_BY_ROLE[UserCompanyRole.ADMIN],
@@ -153,16 +132,9 @@ describe(AuthService.name, () => {
     });
 
     it('should return empty companies object when user has no company relations', async () => {
-      (UserCompanyRelationsRepository.getInstance().getUserCompanyRelations as jest.Mock).mockResolvedValue([]);
-      const result = await authService.getUserPermissions('user-1', { logger: mockLogger });
+      (mockUserCompanyRelationsRepository.getDocumentsList as jest.Mock).mockResolvedValue([]);
+      const result = await authService.getUserPermissions('user-1', mockLogger);
       expect(result).toEqual({ companies: {} });
-    });
-    it('should not log when no logger is provided', async () => {
-      (UserCompanyRelationsRepository.getInstance().getUserCompanyRelations as jest.Mock).mockResolvedValue([]);
-      const result = await authService.getUserPermissions('user-1');
-      expect(result).toEqual({ companies: {} });
-      expect(mockLogger.startStep).not.toHaveBeenCalled();
-      expect(mockLogger.endStep).not.toHaveBeenCalled();
     });
   });
 }); 

@@ -1,17 +1,12 @@
-import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
+import { STATUS_CODES } from '@repo/fastify';
 import { CompaniesRepository } from '@repo/shared/repositories';
+import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
 import { ERROR_RESPONSES } from '../../../companies.endpoints.constants';
 import { STEPS } from '../companies.get.constants';
 import { getCompanyHandler } from '../companies.get.handler';
 
-jest.mock('@repo/shared/repositories', () => ({
-  CompaniesRepository: {
-    getInstance: jest.fn().mockImplementation(() => ({
-      getCompanyById: jest.fn(),
-    })),
-  },
-}));
+jest.mock('@repo/shared/repositories');
 
 describe(getCompanyHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;
@@ -20,7 +15,7 @@ describe(getCompanyHandler.name, () => {
     startStep: jest.Mock;
     endStep: jest.Mock;
   } & Partial<FastifyBaseLogger>;
-  let mockRepository: { getCompanyById: jest.Mock };
+  let mockRepository: Partial<CompaniesRepository>;
 
   const mockParams = { id: '123' };
 
@@ -42,7 +37,7 @@ describe(getCompanyHandler.name, () => {
     };
 
     mockRepository = {
-      getCompanyById: jest.fn(),
+      getDocument: jest.fn(),
     };
 
     (CompaniesRepository.getInstance as jest.Mock).mockReturnValue(
@@ -54,44 +49,36 @@ describe(getCompanyHandler.name, () => {
     const mockCompany = {
       id: mockParams.id,
       name: 'Test Company',
+      createdAt: new Date(),
+      updatedAt: new Date(),
     };
 
-    mockRepository.getCompanyById.mockResolvedValue(mockCompany);
+    jest.spyOn(mockRepository, 'getDocument').mockResolvedValue(mockCompany);
 
     await getCompanyHandler(
       mockRequest as FastifyRequest,
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(
-      STEPS.GET_COMPANY.id,
-      STEPS.GET_COMPANY.obfuscatedId,
-    );
-    expect(mockRepository.getCompanyById).toHaveBeenCalledWith(mockParams.id, {
-      logger: mockLogger,
-    });
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANY.id);
+    expect(mockRepository.getDocument).toHaveBeenCalledWith(mockParams.id, mockLogger);
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANY.id);
-    expect(mockReply.code).toHaveBeenCalledWith(200);
+    expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
     expect(mockReply.send).toHaveBeenCalledWith(mockCompany);
   });
 
   it('should handle company not found', async () => {
-    mockRepository.getCompanyById.mockResolvedValue(null);
+    jest.spyOn(mockRepository, 'getDocument').mockResolvedValue(null);
 
     await getCompanyHandler(
       mockRequest as FastifyRequest,
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(
-      STEPS.GET_COMPANY.id,
-      STEPS.GET_COMPANY.obfuscatedId,
-    );
-    expect(mockRepository.getCompanyById).toHaveBeenCalledWith(mockParams.id, {
-      logger: mockLogger,
-    });
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANY.id);
+    expect(mockRepository.getDocument).toHaveBeenCalledWith(mockParams.id, mockLogger);
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANY.id);
-    expect(mockReply.code).toHaveBeenCalledWith(404);
+    expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.NOT_FOUND);
     expect(mockReply.send).toHaveBeenCalledWith(
       ERROR_RESPONSES.COMPANY_NOT_FOUND,
     );
@@ -99,7 +86,7 @@ describe(getCompanyHandler.name, () => {
 
   it('should handle repository errors', async () => {
     const error = new Error('Repository error');
-    mockRepository.getCompanyById.mockRejectedValue(error);
+    jest.spyOn(mockRepository, 'getDocument').mockRejectedValue(error);
 
     await expect(
       getCompanyHandler(
@@ -108,13 +95,8 @@ describe(getCompanyHandler.name, () => {
       ),
     ).rejects.toThrow(error);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(
-      STEPS.GET_COMPANY.id,
-      STEPS.GET_COMPANY.obfuscatedId,
-    );
-    expect(mockRepository.getCompanyById).toHaveBeenCalledWith(mockParams.id, {
-      logger: mockLogger,
-    });
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANY.id);
+    expect(mockRepository.getDocument).toHaveBeenCalledWith(mockParams.id, mockLogger);
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANY.id);
     expect(mockReply.code).not.toHaveBeenCalled();
     expect(mockReply.send).not.toHaveBeenCalled();

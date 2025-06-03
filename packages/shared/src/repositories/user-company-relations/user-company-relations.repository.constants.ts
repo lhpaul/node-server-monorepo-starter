@@ -1,5 +1,4 @@
 import { UserCompanyRelation, UserCompanyRole } from '../../domain/models/user-company-relation.model';
-import { UpdateUserCompanyRelationErrorCode } from './user-company-relations.repository.errors';
 
 export const MOCK_USER_COMPANY_RELATIONS: UserCompanyRelation[] = [
   new UserCompanyRelation({
@@ -29,5 +28,6 @@ export const MOCK_USER_COMPANY_RELATIONS: UserCompanyRelation[] = [
 ];
 
 export const ERROR_MESSAGES = {
-  [UpdateUserCompanyRelationErrorCode.NOT_FOUND]: 'User company relation not found',
-}; 
+  USER_NOT_FOUND: 'Related user not found',
+  COMPANY_NOT_FOUND: 'Related company not found',
+}

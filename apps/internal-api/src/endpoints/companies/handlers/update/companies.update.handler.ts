@@ -1,8 +1,6 @@
-import {
-  CompaniesRepository,
-  UpdateCompanyError,
-  UpdateCompanyErrorCode,
-} from '@repo/shared/repositories';
+import { STATUS_CODES } from '@repo/fastify';
+import { CompaniesRepository } from '@repo/shared/repositories';
+import { RepositoryError, RepositoryErrorCode } from '@repo/shared/utils';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { ERROR_RESPONSES } from '../../companies.endpoints.constants';
@@ -21,20 +19,17 @@ export const updateCompanyHandler = async (
   const { id } = request.params as UpdateCompanyParams;
   const body = request.body as UpdateCompanyBody;
   try {
-    logger.startStep(
-      STEPS.UPDATE_COMPANY.id,
-      STEPS.UPDATE_COMPANY.obfuscatedId,
-    );
-    await repository.updateCompany(id, body, { logger });
+    logger.startStep(STEPS.UPDATE_COMPANY.id);
+    await repository.updateDocument(id, body, logger);
     logger.endStep(STEPS.UPDATE_COMPANY.id);
-    return reply.code(204).send();
+    return reply.code(STATUS_CODES.NO_CONTENT).send();
   } catch (error) {
     logger.endStep(STEPS.UPDATE_COMPANY.id);
     if (
-      error instanceof UpdateCompanyError &&
-      error.code === UpdateCompanyErrorCode.DOCUMENT_NOT_FOUND
+      error instanceof RepositoryError &&
+      error.code === RepositoryErrorCode.DOCUMENT_NOT_FOUND
     ) {
-      return reply.code(404).send(ERROR_RESPONSES.COMPANY_NOT_FOUND);
+      return reply.code(STATUS_CODES.NOT_FOUND).send(ERROR_RESPONSES.COMPANY_NOT_FOUND);
     }
     throw error;
   }

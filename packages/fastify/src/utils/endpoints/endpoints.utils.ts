@@ -1,4 +1,4 @@
-import { QueryInput, QueryOperator } from '@repo/shared/definitions';
+import { IQueryInput, QueryOperator } from '@repo/shared/definitions';
 import { maskFields } from '@repo/shared/utils';
 import {
   FastifyRequest,
@@ -60,8 +60,8 @@ export function createEndpoint(
   };
 }
 
-export function transformQueryParams(queryParams: any): QueryInput {
-  const query: QueryInput = {};
+export function transformQueryParams(queryParams: any): IQueryInput {
+  const query: IQueryInput = {};
   for (const key in queryParams) {
     const [attribute, other] = key.split('[');
     let queryOperator = other?.split(']')[0];

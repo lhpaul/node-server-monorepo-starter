@@ -1,6 +1,7 @@
-import { FastifyReply, FastifyRequest } from 'fastify';
-import { TransactionsRepository } from '@repo/shared/repositories';
+import { STATUS_CODES } from '@repo/fastify';
 import { TransactionType } from '@repo/shared/domain';
+import { TransactionsRepository } from '@repo/shared/repositories';
+import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
 import { createTransactionHandler } from '../transactions.create.handler';
 import { STEPS } from '../transactions.create.constants';
@@ -10,8 +11,8 @@ jest.mock('@repo/shared/repositories');
 describe(createTransactionHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;
   let mockReply: Partial<FastifyReply>;
-  let mockLogger: any;
-  let mockRepository: jest.Mocked<TransactionsRepository>;
+  let mockLogger: Partial<FastifyBaseLogger>;
+  let mockRepository: Partial<TransactionsRepository>;
 
   beforeEach(() => {
     mockLogger = {
@@ -21,7 +22,7 @@ describe(createTransactionHandler.name, () => {
     };
 
     mockRequest = {
-      log: mockLogger,
+      log: mockLogger as FastifyBaseLogger,
       body: {
         amount: 100,
         date: '2024-03-20',
@@ -35,8 +36,8 @@ describe(createTransactionHandler.name, () => {
     };
 
     mockRepository = {
-      createTransaction: jest.fn(),
-    } as any;
+      createDocument: jest.fn(),
+    };
 
     (TransactionsRepository.getInstance as jest.Mock).mockReturnValue(
       mockRepository,
@@ -49,9 +50,7 @@ describe(createTransactionHandler.name, () => {
 
   it('should create a transaction successfully', async () => {
     const mockTransactionId = '123';
-    mockRepository.createTransaction.mockResolvedValue({
-      id: mockTransactionId,
-    });
+    jest.spyOn(mockRepository, 'createDocument').mockResolvedValue(mockTransactionId);
 
     await createTransactionHandler(
       mockRequest as FastifyRequest,
@@ -61,24 +60,21 @@ describe(createTransactionHandler.name, () => {
     expect(mockLogger.child).toHaveBeenCalledWith({
       handler: createTransactionHandler.name,
     });
-    expect(mockLogger.startStep).toHaveBeenCalledWith(
-      STEPS.CREATE_TRANSACTION.id,
-      STEPS.CREATE_TRANSACTION.obfuscatedId,
-    );
-    expect(mockRepository.createTransaction).toHaveBeenCalledWith(
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_TRANSACTION.id);
+    expect(mockRepository.createDocument).toHaveBeenCalledWith(
       mockRequest.body,
-      { logger: mockLogger },
+      mockLogger,
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(
       STEPS.CREATE_TRANSACTION.id,
     );
-    expect(mockReply.code).toHaveBeenCalledWith(201);
+    expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.CREATED);
     expect(mockReply.send).toHaveBeenCalledWith({ id: mockTransactionId });
   });
 
   it('should handle repository errors', async () => {
     const mockError = new Error('Repository error');
-    mockRepository.createTransaction.mockRejectedValue(mockError);
+    jest.spyOn(mockRepository, 'createDocument').mockRejectedValue(mockError);
 
     await expect(
       createTransactionHandler(
@@ -87,10 +83,7 @@ describe(createTransactionHandler.name, () => {
       ),
     ).rejects.toThrow(mockError);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(
-      STEPS.CREATE_TRANSACTION.id,
-      STEPS.CREATE_TRANSACTION.obfuscatedId,
-    );
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_TRANSACTION.id);
     expect(mockLogger.endStep).toHaveBeenCalledWith(
       STEPS.CREATE_TRANSACTION.id,
     );

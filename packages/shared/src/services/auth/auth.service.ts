@@ -1,13 +1,12 @@
 import { compare } from 'bcrypt';
 
-import { ExecutionContext } from '../../definitions/executions.interfaces';
 import { User } from '../../domain/models/user.model';
 import { PERMISSIONS_BY_ROLE } from '../../domain/models/user-company-relation.model';
-import { processLoggerMock } from '../../mocks/process-logger.mocks';
 import { UserCompanyRelationsRepository } from '../../repositories/user-company-relations/user-company-relations.repository';
 import { UsersRepository } from '../../repositories/users/users.repository';
 import { UserPermissions, ValidateCredentialsInput } from './auth.service.interfaces';
 import { STEPS } from './auth.service.constants';
+import { ExecutionLogger } from '../../definitions/logging.interfaces';
 export class AuthService {
   private static instance: AuthService;
 
@@ -19,13 +18,12 @@ export class AuthService {
   }
   public async validateCredentials(
     input: ValidateCredentialsInput,
-    context?: ExecutionContext,
+    logger: ExecutionLogger,
   ): Promise<User | null> {
-    const logger = context?.logger ?? processLoggerMock;
     logger.startStep(STEPS.FIND_USER.id);
-    const [user, ..._users] = await UsersRepository.getInstance().getUsers({
+    const [user, ..._users] = await UsersRepository.getInstance().getDocumentsList({
       email: [{ operator: '==', value: input.email }],
-    });
+    }, logger);
     logger.endStep(STEPS.FIND_USER.id);
     if (!user) {
       return null;
@@ -40,12 +38,11 @@ export class AuthService {
     return user;
   }
 
-  public async getUserPermissions(userId: string, context?: ExecutionContext): Promise<UserPermissions> {
-    const logger = context?.logger ?? processLoggerMock;
+  public async getUserPermissions(userId: string, logger: ExecutionLogger): Promise<UserPermissions> {
     logger.startStep(STEPS.GET_USER_COMPANY_RELATIONS.id);
-    const userCompanyRelations = await UserCompanyRelationsRepository.getInstance().getUserCompanyRelations({
+    const userCompanyRelations = await UserCompanyRelationsRepository.getInstance().getDocumentsList({
       userId: [{ operator: '==', value: userId }],
-    });
+    }, logger);
     logger.endStep(STEPS.GET_USER_COMPANY_RELATIONS.id);
     const response: UserPermissions = { companies: {} };
     for (const userCompanyRelation of userCompanyRelations) {

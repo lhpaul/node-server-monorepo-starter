@@ -125,10 +125,11 @@ describe(RequestLogger.name, () => {
       });
     });
 
-    it('should start a step and update currentStep', () => {
-      const step = { id: 'test-step', obfuscatedId: '01' };
-      requestLogger.startStep(step.id, step.obfuscatedId);
+    it('should start a step, update currentStep and increment stepsCounter', () => {
+      const step = { id: 'test-step' };
+      requestLogger.startStep(step.id);
       expect(requestLogger.lastStep).toEqual(step);
+      expect(requestLogger.stepsCounter).toBe(1);
       expect(mockLogger.info).toHaveBeenCalledWith(
         LOGS.STEP_START.logMessage(step.id),
         expect.objectContaining({
@@ -140,15 +141,15 @@ describe(RequestLogger.name, () => {
     });
 
     it('should start a step silently when config.silent is true', () => {
-      const step = { id: 'test-step', obfuscatedId: '01' };
-      requestLogger.startStep(step.id, step.obfuscatedId, { silent: true });
+      const step = { id: 'test-step' };
+      requestLogger.startStep(step.id, { silent: true });
       expect(requestLogger.lastStep).toEqual(step);
       expect(mockLogger.info).not.toHaveBeenCalled();
     });
 
     it('should end a step and log the elapsed time', () => {
-      const step = { id: 'test-step', obfuscatedId: '01' };
-      requestLogger.startStep(step.id, step.obfuscatedId);
+      const step = { id: 'test-step' };
+      requestLogger.startStep(step.id);
 
       // Mock a later time for the end step
       jest.useFakeTimers().setSystemTime(new Date(BASE_TIME + 100));
@@ -166,8 +167,8 @@ describe(RequestLogger.name, () => {
     });
 
     it('should end a step silently when config.silent is true', () => {
-      const step = { id: 'test-step', obfuscatedId: '01' };
-      requestLogger.startStep(step.id, step.obfuscatedId, { silent: true });
+      const step = { id: 'test-step' };
+      requestLogger.startStep(step.id, { silent: true });
       jest.useFakeTimers().setSystemTime(new Date(BASE_TIME + 100));
       requestLogger.endStep(step.id, { silent: true });
       expect(mockLogger.info).not.toHaveBeenCalled();
@@ -179,16 +180,16 @@ describe(RequestLogger.name, () => {
     });
 
     it('should propagate step start to parent logger silently', () => {
-      const step = { id: 'test-step', obfuscatedId: '01' };
-      requestLogger.startStep(step.id, step.obfuscatedId);
+      const step = { id: 'test-step' };
+      requestLogger.startStep(step.id);
       expect(parentLogger.lastStep).toEqual(step);
       // Verify parent logger was called with silent config
       expect(mockLogger.info).toHaveBeenCalledTimes(1); // Only called once for child logger
     });
 
     it('should propagate step end to parent logger silently', () => {
-      const step = { id: 'test-step', obfuscatedId: '01' };
-      requestLogger.startStep(step.id, step.obfuscatedId);
+      const step = { id: 'test-step' };
+      requestLogger.startStep(step.id);
       jest.useFakeTimers().setSystemTime(new Date(BASE_TIME + 100));
       requestLogger.endStep(step.id);
       // Verify parent logger was called with silent config

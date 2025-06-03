@@ -32,7 +32,7 @@ jest.mock('@repo/shared/services');
 describe(authenticateApiKey.name, () => {
   let mockRequest: Partial<FastifyRequest>;
   let mockReply: Partial<FastifyReply>;
-  let mockApiKeysService: jest.Mocked<PrivateKeysService>;
+  let mockApiKeysService: Partial<PrivateKeysService>;
   let mockLogger: jest.Mocked<RequestLogger>;
 
   const API_KEY_HEADER_MOCK = 'api-key';
@@ -61,7 +61,7 @@ describe(authenticateApiKey.name, () => {
     };
     mockApiKeysService = {
       validatePrivateKey: jest.fn(),
-    } as unknown as jest.Mocked<PrivateKeysService>;
+    };
 
     (PrivateKeysService.getInstance as jest.Mock).mockReturnValue(mockApiKeysService);
   });
@@ -105,11 +105,11 @@ describe(authenticateApiKey.name, () => {
       responseMessage: 'Forbidden request',
     };
     forbiddenErrorMock.mockReturnValue(FORBIDDEN_ERROR_MOCK);
-    mockApiKeysService.validatePrivateKey.mockResolvedValue({ isValid: false });
+    jest.spyOn(mockApiKeysService, 'validatePrivateKey').mockResolvedValue({ isValid: false });
 
     await authenticateApiKey(mockRequest as FastifyRequest, mockReply as FastifyReply);
 
-    expect(mockApiKeysService.validatePrivateKey).toHaveBeenCalledWith(clientId, apiKeyValue);
+    expect(mockApiKeysService.validatePrivateKey).toHaveBeenCalledWith(clientId, apiKeyValue, mockLogger);
 
     expect(mockLogger.warn).toHaveBeenCalledWith(
       { logId: FORBIDDEN_ERROR.logId },
@@ -127,11 +127,11 @@ describe(authenticateApiKey.name, () => {
     mockRequest.headers = {
       [API_KEY_HEADER]: validApiKey,
     };
-    mockApiKeysService.validatePrivateKey.mockResolvedValue({ isValid: true });
+    jest.spyOn(mockApiKeysService, 'validatePrivateKey').mockResolvedValue({ isValid: true });
 
     await authenticateApiKey(mockRequest as FastifyRequest, mockReply as FastifyReply);
 
-    expect(mockApiKeysService.validatePrivateKey).toHaveBeenCalledWith('clientId', 'validKey');
+    expect(mockApiKeysService.validatePrivateKey).toHaveBeenCalledWith('clientId', 'validKey', mockLogger);
     expect(mockLogger.warn).not.toHaveBeenCalled();
     expect(mockReply.code).not.toHaveBeenCalled();
     expect(mockReply.send).not.toHaveBeenCalled();

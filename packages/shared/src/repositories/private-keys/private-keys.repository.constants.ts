@@ -18,7 +18,3 @@ export const MOCK_PRIVATE_KEYS: PrivateKey[] = [
     hash: '$2a$10$VY6HfnfxXZklNF8.5IceReeoWSf7F.AzKhKOYGmWTzfqIWhndL2yW', // hash of 'private-key-2'
   }),
 ];
-
-export const ERROR_MESSAGES = {
-  DOCUMENT_NOT_FOUND: 'Private key not found',
-};

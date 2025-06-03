@@ -1,9 +1,6 @@
 import { FORBIDDEN_ERROR, STATUS_CODES } from '@repo/fastify';
-import {
-  CompaniesRepository,
-  UpdateCompanyError,
-  UpdateCompanyErrorCode,
-} from '@repo/shared/repositories';
+import { CompaniesRepository } from '@repo/shared/repositories';
+import { RepositoryError, RepositoryErrorCode } from '@repo/shared/utils';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../definitions/auth.types';
@@ -28,17 +25,14 @@ export const updateCompanyHandler = async (
     });
   }
   try {
-    logger.startStep(
-      STEPS.UPDATE_COMPANY.id,
-      STEPS.UPDATE_COMPANY.obfuscatedId,
-    );
-    await repository.updateCompany(id, body, { logger })
+    logger.startStep(STEPS.UPDATE_COMPANY.id);
+    await repository.updateDocument(id, body, logger)
       .finally(() => logger.endStep(STEPS.UPDATE_COMPANY.id));
     return reply.code(STATUS_CODES.NO_CONTENT).send();
   } catch (error) {
     if (
-      error instanceof UpdateCompanyError &&
-      error.code === UpdateCompanyErrorCode.DOCUMENT_NOT_FOUND
+      error instanceof RepositoryError &&
+      error.code === RepositoryErrorCode.DOCUMENT_NOT_FOUND
     ) { // this should never happen since the user has permission to update the company so it should exist
       throw new Error(COMPANY_NOT_FOUND_ERROR(id));
     }

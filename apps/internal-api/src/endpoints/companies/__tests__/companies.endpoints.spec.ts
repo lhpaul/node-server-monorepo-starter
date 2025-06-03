@@ -1,4 +1,4 @@
-import { createEndpoint } from '@repo/fastify';
+import { createEndpoint, HTTP_METHODS_MAP } from '@repo/fastify';
 import { FastifyInstance } from 'fastify';
 import {
   CREATE_COMPANY_BODY_JSON_SCHEMA,
@@ -17,9 +17,8 @@ import {
 import { companiesEndpointsBuilder } from '../companies.endpoints';
 
 jest.mock('@repo/fastify', () => ({
+  ...jest.requireActual('@repo/fastify'),
   createEndpoint: jest.fn(),
-  buildSchemaForQueryParamsProperty:
-    jest.requireActual('@repo/fastify').buildSchemaForQueryParamsProperty,
 }));
 
 describe(companiesEndpointsBuilder.name, () => {
@@ -40,7 +39,7 @@ describe(companiesEndpointsBuilder.name, () => {
 
   it('should create POST company endpoint with correct configuration', () => {
     expect(createEndpoint).toHaveBeenNthCalledWith(1, mockServer, {
-      method: ['POST'],
+      method: [HTTP_METHODS_MAP.CREATE],
       url: URL_V1,
       handler: createCompanyHandler,
       schema: {
@@ -51,7 +50,7 @@ describe(companiesEndpointsBuilder.name, () => {
 
   it('should create GET companies list endpoint with correct configuration', () => {
     expect(createEndpoint).toHaveBeenNthCalledWith(2, mockServer, {
-      method: ['GET'],
+      method: [HTTP_METHODS_MAP.LIST],
       url: URL_V1,
       handler: listCompaniesHandler,
       schema: {
@@ -71,7 +70,7 @@ describe(companiesEndpointsBuilder.name, () => {
 
   it('should create GET single company endpoint with correct configuration', () => {
     expect(createEndpoint).toHaveBeenNthCalledWith(3, mockServer, {
-      method: ['GET'],
+      method: [HTTP_METHODS_MAP.GET],
       url: URL_WITH_ID_V1,
       handler: getCompanyHandler,
       schema: {
@@ -82,7 +81,7 @@ describe(companiesEndpointsBuilder.name, () => {
 
   it('should create PATCH company endpoint with correct configuration', () => {
     expect(createEndpoint).toHaveBeenNthCalledWith(4, mockServer, {
-      method: ['PATCH'],
+      method: [HTTP_METHODS_MAP.UPDATE],
       url: URL_WITH_ID_V1,
       handler: updateCompanyHandler,
       schema: {
@@ -94,7 +93,7 @@ describe(companiesEndpointsBuilder.name, () => {
 
   it('should create DELETE company endpoint with correct configuration', () => {
     expect(createEndpoint).toHaveBeenNthCalledWith(5, mockServer, {
-      method: ['DELETE'],
+      method: [HTTP_METHODS_MAP.DELETE],
       url: URL_WITH_ID_V1,
       handler: deleteCompanyHandler,
       schema: {

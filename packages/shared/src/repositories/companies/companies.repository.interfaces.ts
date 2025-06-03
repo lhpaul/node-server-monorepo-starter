@@ -1,13 +1,13 @@
-import { QueryOptions } from '../../definitions/listing.interfaces';
+import { IQueryInput, IQueryOptions } from '../../definitions/listing.interfaces';
 
-export interface CreateCompanyBody {
+export interface CreateCompanyInput {
   name: string;
 }
 
-export interface UpdateCompanyBody {
+export interface UpdateCompanyInput {
   name?: string;
 }
 
-export interface GetCompaniesQuery {
-  name?: QueryOptions<string>[];
+export interface GetCompaniesQuery extends IQueryInput {
+  name?: IQueryOptions<string>[];
 }

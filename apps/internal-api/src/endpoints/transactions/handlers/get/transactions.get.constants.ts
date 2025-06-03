@@ -1,3 +1,3 @@
 export const STEPS = {
-  GET_TRANSACTION: { id: 'get-transaction', obfuscatedId: '01' },
+  GET_TRANSACTION: { id: 'get-transaction' },
 };

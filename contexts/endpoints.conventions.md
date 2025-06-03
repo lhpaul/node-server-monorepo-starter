@@ -55,7 +55,7 @@ When responding to an error, the payload must follow this structure:
 
     ```json
     {
-      "code": "01",
+      "code": "1",
       "message": "An unexpected error occurred"
     }
     ```

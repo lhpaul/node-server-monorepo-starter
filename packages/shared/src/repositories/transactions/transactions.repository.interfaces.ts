@@ -1,23 +1,23 @@
-import { QueryInput, QueryOptions } from '../../definitions/listing.interfaces';
+import { IQueryInput, IQueryOptions } from '../../definitions/listing.interfaces';
 import { TransactionType } from '../../domain/models/transaction.model';
 
-export interface CreateTransactionBody {
+export interface CreateTransactionInput {
   amount: number;
   companyId: string;
   date: string;
   type: TransactionType;
 }
 
-export interface UpdateTransactionBody {
+export interface UpdateTransactionInput {
   amount?: number;
   companyId?: string;
   date?: string;
   type?: TransactionType;
 }
 
-export interface GetTransactionsQuery extends QueryInput {
-  amount?: QueryOptions<number>[];
-  companyId?: QueryOptions<string>[];
-  date?: QueryOptions<string>[];
-  type?: QueryOptions<TransactionType>[];
+export interface GetTransactionsQuery extends IQueryInput {
+  amount?: IQueryOptions<number>[];
+  companyId?: IQueryOptions<string>[];
+  date?: IQueryOptions<string>[];
+  type?: IQueryOptions<TransactionType>[];
 }

@@ -1,6 +1,6 @@
 import { FORBIDDEN_ERROR, STATUS_CODES } from '@repo/fastify';
-import { TransactionsRepository } from '@repo/shared/repositories';
 import { TransactionType } from '@repo/shared/domain';
+import { TransactionsRepository } from '@repo/shared/repositories';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { hasCompanyTransactionsCreatePermission } from '../../../../../../../utils/auth/auth.utils';
@@ -29,7 +29,7 @@ describe(createTransactionHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;
   let mockReply: Partial<FastifyReply>;
   let mockLogger: any;
-  let mockRepository: jest.Mocked<TransactionsRepository>;
+  let mockRepository: Partial<TransactionsRepository>;
 
   const mockParams = { companyId: '123' };
   const mockUser = { id: 'user123' };
@@ -63,8 +63,8 @@ describe(createTransactionHandler.name, () => {
 
     // Setup repository mock
     mockRepository = {
-      createTransaction: jest.fn(),
-    } as any;
+      createDocument: jest.fn(),
+    };
 
     (TransactionsRepository.getInstance as jest.Mock).mockReturnValue(mockRepository);
   });
@@ -88,7 +88,7 @@ describe(createTransactionHandler.name, () => {
         code: FORBIDDEN_ERROR.responseCode,
         message: FORBIDDEN_ERROR.responseMessage,
       });
-      expect(mockRepository.createTransaction).not.toHaveBeenCalled();
+      expect(mockRepository.createDocument).not.toHaveBeenCalled();
     });
   });
 
@@ -99,9 +99,7 @@ describe(createTransactionHandler.name, () => {
 
     it('should create a transaction successfully', async () => {
       const mockTransactionId = '123';
-      mockRepository.createTransaction.mockResolvedValue({
-        id: mockTransactionId,
-      });
+      jest.spyOn(mockRepository, 'createDocument').mockResolvedValue(mockTransactionId);
 
       await createTransactionHandler(
         mockRequest as FastifyRequest,
@@ -112,25 +110,22 @@ describe(createTransactionHandler.name, () => {
       expect(mockLogger.child).toHaveBeenCalledWith({
         handler: createTransactionHandler.name,
       });
-      expect(mockLogger.startStep).toHaveBeenCalledWith(
-        STEPS.CREATE_TRANSACTION.id,
-        STEPS.CREATE_TRANSACTION.obfuscatedId,
-      );
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_TRANSACTION.id);
       expect(mockLogger.endStep).toHaveBeenCalledWith(
         STEPS.CREATE_TRANSACTION.id,
       );
 
       // Verify repository call
-      expect(mockRepository.createTransaction).toHaveBeenCalledWith(
+      expect(mockRepository.createDocument).toHaveBeenCalledWith(
         {
           ...mockBody,
           companyId: mockParams.companyId,
         } as CreateCompanyTransactionBody,
-        { logger: mockLogger },
+        mockLogger,
       );
 
       // Verify response
-      expect(mockReply.code).toHaveBeenCalledWith(201);
+      expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.CREATED);
       expect(mockReply.send).toHaveBeenCalledWith({ id: mockTransactionId });
     });
   });
@@ -142,7 +137,7 @@ describe(createTransactionHandler.name, () => {
 
     it('should handle repository errors gracefully', async () => {
       const error = new Error('Repository error');
-      mockRepository.createTransaction.mockRejectedValue(error);
+      jest.spyOn(mockRepository, 'createDocument').mockRejectedValue(error);
 
       await expect(
         createTransactionHandler(
@@ -152,10 +147,7 @@ describe(createTransactionHandler.name, () => {
       ).rejects.toThrow(error);
 
       // Verify logging still occurs
-      expect(mockLogger.startStep).toHaveBeenCalledWith(
-        STEPS.CREATE_TRANSACTION.id,
-        STEPS.CREATE_TRANSACTION.obfuscatedId,
-      );
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_TRANSACTION.id);
       expect(mockLogger.endStep).toHaveBeenCalledWith(
         STEPS.CREATE_TRANSACTION.id,
       );

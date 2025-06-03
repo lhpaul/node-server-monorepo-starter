@@ -1,17 +1,17 @@
-import { QueryInput, QueryOptions } from '../../definitions/listing.interfaces';
+import { IQueryInput, IQueryOptions } from '../../definitions/listing.interfaces';
 
-export interface CreateUserBody {
+export interface CreateUserInput {
   email: string;
   currentPasswordHash: string;
 }
 
-export interface UpdateUserBody {
+export interface UpdateUserInput {
   email?: string;
   currentPasswordHash?: string;
 }
 
-export interface GetUsersQuery extends QueryInput {
-  email?: QueryOptions<string>[];
-  createdAt?: QueryOptions<Date>[];
-  updatedAt?: QueryOptions<Date>[];
+export interface GetUsersQuery extends IQueryInput {
+  email?: IQueryOptions<string>[];
+  createdAt?: IQueryOptions<Date>[];
+  updatedAt?: IQueryOptions<Date>[];
 } 

@@ -1,9 +1,9 @@
-import { QueryOptions } from '../../definitions/listing.interfaces';
+import { IQueryOptions } from '../../definitions/listing.interfaces';
 import { ERROR_MESSAGES } from './lists.constants';
 export function filterList<T, Y>(
   list: T[],
   field: string,
-  query: QueryOptions<Y>,
+  query: IQueryOptions<Y>,
 ): T[] {
   return list.filter((item) => {
     const value = item[field as keyof T] as Y;

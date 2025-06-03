@@ -3,16 +3,22 @@ import { PrivateKey } from '../../../domain/models/private-key.model';
 import { PrivateKeysRepository } from '../../../repositories/private-keys/private-keys.repository';
 import { API_KEYS_CACHE_EXPIRATION } from '../private-keys.service.constants';
 import { PrivateKeysService } from '../private-keys.service';
+import { ExecutionLogger } from '../../../definitions/logging.interfaces';
 
 jest.mock('bcrypt');
 jest.mock('../../../repositories/private-keys/private-keys.repository');
 
 describe(PrivateKeysService.name, () => {
   let service: PrivateKeysService;
+  let mockLogger: ExecutionLogger;
 
   beforeEach(() => {
     jest.clearAllMocks();
     service = new PrivateKeysService();
+    mockLogger = {
+      startStep: jest.fn(),
+      endStep: jest.fn(),
+    } as unknown as ExecutionLogger;
   });
 
   describe(PrivateKeysService.getInstance.name, () => {
@@ -45,7 +51,7 @@ describe(PrivateKeysService.name, () => {
     beforeEach(() => {
       getPrivateKeysMock = jest.fn();
       jest.spyOn(PrivateKeysRepository, 'getInstance').mockReturnValue({
-        getPrivateKeys: getPrivateKeysMock,
+        getDocumentsList: getPrivateKeysMock,
       } as unknown as PrivateKeysRepository);
     });
 
@@ -56,13 +62,13 @@ describe(PrivateKeysService.name, () => {
       (compareSync as jest.Mock).mockReturnValue(true);
 
       // Act
-      const result = await service.validatePrivateKey(mockOauthClientId, mockPrivateKeyValue);
+      const result = await service.validatePrivateKey(mockOauthClientId, mockPrivateKeyValue, mockLogger);
 
       // Assert
       expect(result.isValid).toBe(true);
       expect(getPrivateKeysMock).toHaveBeenCalledWith({
         oauthClientId: [{ operator: '==', value: mockOauthClientId }],
-      });
+      }, mockLogger);
       expect(compareSync).toHaveBeenCalledWith(mockPrivateKeyValue, mockHash);
     });
 
@@ -73,13 +79,13 @@ describe(PrivateKeysService.name, () => {
       (compareSync as jest.Mock).mockReturnValue(false);
 
       // Act
-      const result = await service.validatePrivateKey(mockOauthClientId, mockPrivateKeyValue);
+      const result = await service.validatePrivateKey(mockOauthClientId, mockPrivateKeyValue, mockLogger);
 
       // Assert
       expect(result.isValid).toBe(false);
       expect(getPrivateKeysMock).toHaveBeenCalledWith({
         oauthClientId: [{ operator: '==', value: mockOauthClientId }],
-      });
+      }, mockLogger);
       expect(compareSync).toHaveBeenCalledWith(mockPrivateKeyValue, mockHash);
     });
 
@@ -88,13 +94,13 @@ describe(PrivateKeysService.name, () => {
       getPrivateKeysMock.mockResolvedValue([]);
 
       // Act
-      const result = await service.validatePrivateKey(mockOauthClientId, mockPrivateKeyValue);
+      const result = await service.validatePrivateKey(mockOauthClientId, mockPrivateKeyValue, mockLogger);
 
       // Assert
       expect(result.isValid).toBe(false);
       expect(getPrivateKeysMock).toHaveBeenCalledWith({
         oauthClientId: [{ operator: '==', value: mockOauthClientId }],
-      });
+      }, mockLogger);
       expect(compareSync).not.toHaveBeenCalled();
     });
 
@@ -106,7 +112,7 @@ describe(PrivateKeysService.name, () => {
         (compareSync as jest.Mock).mockReturnValue(true);
 
         // Act
-        await service.validatePrivateKey(mockOauthClientId, mockPrivateKeyValue);
+        await service.validatePrivateKey(mockOauthClientId, mockPrivateKeyValue, mockLogger);
 
         // Assert
         expect(getPrivateKeysMock).toHaveBeenCalledTimes(1);
@@ -119,8 +125,8 @@ describe(PrivateKeysService.name, () => {
         (compareSync as jest.Mock).mockReturnValue(true);
 
         // Act
-        await service.validatePrivateKey(mockOauthClientId, mockPrivateKeyValue);
-        await service.validatePrivateKey(mockOauthClientId, mockPrivateKeyValue);
+        await service.validatePrivateKey(mockOauthClientId, mockPrivateKeyValue, mockLogger);
+        await service.validatePrivateKey(mockOauthClientId, mockPrivateKeyValue, mockLogger);
 
         // Assert
         expect(getPrivateKeysMock).toHaveBeenCalledTimes(1);
@@ -134,12 +140,12 @@ describe(PrivateKeysService.name, () => {
         (compareSync as jest.Mock).mockReturnValue(true);
 
         // Act
-        await service.validatePrivateKey(mockOauthClientId, mockPrivateKeyValue);
+        await service.validatePrivateKey(mockOauthClientId, mockPrivateKeyValue, mockLogger);
         
         // Move time forward past cache expiration
         jest.advanceTimersByTime(API_KEYS_CACHE_EXPIRATION + 1000);
         
-        await service.validatePrivateKey(mockOauthClientId, mockPrivateKeyValue);
+        await service.validatePrivateKey(mockOauthClientId, mockPrivateKeyValue, mockLogger);
 
         // Assert
         expect(getPrivateKeysMock).toHaveBeenCalledTimes(2);
@@ -152,8 +158,8 @@ describe(PrivateKeysService.name, () => {
         getPrivateKeysMock.mockResolvedValue(mockPrivateKeys);
 
         // Act
-        await service.validatePrivateKey(mockOauthClientId, mockPrivateKeyValue);
-        await service.validatePrivateKey(mockOauthClientId, mockPrivateKeyValue);
+        await service.validatePrivateKey(mockOauthClientId, mockPrivateKeyValue, mockLogger);
+        await service.validatePrivateKey(mockOauthClientId, mockPrivateKeyValue, mockLogger);
 
         // Assert
         expect(getPrivateKeysMock).toHaveBeenCalledTimes(2);

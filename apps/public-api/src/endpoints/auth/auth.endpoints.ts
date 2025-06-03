@@ -1,4 +1,4 @@
-import { createEndpoint } from '@repo/fastify';
+import { createEndpoint, HTTP_METHODS_MAP } from '@repo/fastify';
 import { FastifyInstance, RouteOptions } from 'fastify';
 
 import { URL_LOGIN } from './auth.endpoints.constants';
@@ -7,7 +7,7 @@ import { loginHandler } from './handlers/login.handler';
 export function authEndpointsBuilder(server: FastifyInstance): RouteOptions[] {
   return [
     createEndpoint(server, {
-      method: ['POST'],
+      method: [HTTP_METHODS_MAP.CREATE],
       url: URL_LOGIN,
       handler: loginHandler,
       schema: {

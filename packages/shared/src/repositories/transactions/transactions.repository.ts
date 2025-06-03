@@ -1,110 +1,45 @@
-import { ExecutionContext } from '../../definitions';
-import { QueryOptions } from '../../definitions/listing.interfaces';
-import { Transaction } from '../../domain/models/transaction.model';
-import { filterList } from '../../utils';
+import { ExecutionLogger } from '../../definitions';
+import { Transaction } from '../../domain';
+import { InMemoryRepository } from '../../utils/repositories/in-memory-repository.class';
+import { RepositoryError, RepositoryErrorCode } from '../../utils/repositories/repositories.errors';
+import { CompaniesRepository } from '../companies/companies.repository';
+import { ERROR_MESSAGES, MOCK_TRANSACTIONS } from './transactions.repository.constants';
 import {
-  ERROR_MESSAGES,
-  MOCK_TRANSACTIONS,
-} from './transactions.repository.constants';
-import {
-  UpdateTransactionError,
-  UpdateTransactionErrorCode,
-  DeleteTransactionError,
-  DeleteTransactionErrorCode,
-} from './transactions.repository.errors';
-import {
-  CreateTransactionBody,
+  CreateTransactionInput,
   GetTransactionsQuery,
-  UpdateTransactionBody,
+  UpdateTransactionInput,
 } from './transactions.repository.interfaces';
 
-export class TransactionsRepository {
+
+export class TransactionsRepository extends InMemoryRepository<Transaction, CreateTransactionInput, UpdateTransactionInput, GetTransactionsQuery> {
   private static instance: TransactionsRepository;
 
   public static getInstance(): TransactionsRepository {
     if (!TransactionsRepository.instance) {
-      TransactionsRepository.instance = new TransactionsRepository();
+      TransactionsRepository.instance = new TransactionsRepository(MOCK_TRANSACTIONS);
     }
     return TransactionsRepository.instance;
   }
 
-  private constructor() {}
-
-  public createTransaction(
-    body: CreateTransactionBody,
-    _context?: ExecutionContext,
-  ): Promise<{ id: string }> {
-    const id = MOCK_TRANSACTIONS.length.toString();
-    MOCK_TRANSACTIONS.push(
-      new Transaction({
-        ...body,
-        id,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }),
-    );
-    return Promise.resolve({ id });
-  }
-
-  public deleteTransaction(
-    id: string,
-    _context?: ExecutionContext,
-  ): Promise<void> {
-    const index = MOCK_TRANSACTIONS.findIndex((t) => t.id === id);
-    if (index !== -1) {
-      MOCK_TRANSACTIONS.splice(index, 1);
-    } else {
-      throw new DeleteTransactionError({
-        code: DeleteTransactionErrorCode.DOCUMENT_NOT_FOUND,
-        message: ERROR_MESSAGES[DeleteTransactionErrorCode.DOCUMENT_NOT_FOUND],
-      });
+  /**
+   * Creates a new transaction
+   * @param data - The data to create the new transaction with
+   * @param logger - Logger instance for tracking execution
+   * @returns Promise resolving to the ID of the created transaction
+   * @throws RepositoryError with code {@link RepositoryErrorCode.RELATED_DOCUMENT_NOT_FOUND} if the related company is not found
+   */
+  async createDocument(data: CreateTransactionInput, logger: ExecutionLogger): Promise<string> {
+    const { companyId } = data;
+    const company = await CompaniesRepository.getInstance().getDocument(companyId, logger);
+    if (!company) {
+      throw(new RepositoryError({
+        code: RepositoryErrorCode.RELATED_DOCUMENT_NOT_FOUND,
+        message: ERROR_MESSAGES.COMPANY_NOT_FOUND,
+        data: {
+          companyId,
+        },
+      }))
     }
-    return Promise.resolve();
-  }
-
-  public getTransactionById(
-    id: string,
-    _context?: ExecutionContext,
-  ): Promise<Transaction | null> {
-    return Promise.resolve(
-      MOCK_TRANSACTIONS.find((transaction) => transaction.id === id) ?? null,
-    );
-  }
-
-  public getTransactions(
-    query?: GetTransactionsQuery,
-    _context?: ExecutionContext,
-  ): Promise<Transaction[]> {
-    if (!query) {
-      return Promise.resolve(MOCK_TRANSACTIONS);
-    }
-    let filteredItems: Transaction[] = [...MOCK_TRANSACTIONS];
-    for (const key in query) {
-      const queries = query[
-        key as keyof GetTransactionsQuery
-      ] as QueryOptions<any>[];
-      filteredItems = queries.reduce(
-        (acc, query) => filterList(acc, key, query),
-        filteredItems,
-      );
-    }
-    return Promise.resolve(filteredItems);
-  }
-
-  public updateTransaction(
-    id: string,
-    body: UpdateTransactionBody,
-    _context?: ExecutionContext,
-  ): Promise<void> {
-    const index = MOCK_TRANSACTIONS.findIndex((t) => t.id === id);
-    if (index !== -1) {
-      MOCK_TRANSACTIONS[index] = { ...MOCK_TRANSACTIONS[index], ...body };
-    } else {
-      throw new UpdateTransactionError({
-        code: UpdateTransactionErrorCode.DOCUMENT_NOT_FOUND,
-        message: ERROR_MESSAGES[UpdateTransactionErrorCode.DOCUMENT_NOT_FOUND],
-      });
-    }
-    return Promise.resolve();
+    return super.createDocument(data, logger);
   }
 }

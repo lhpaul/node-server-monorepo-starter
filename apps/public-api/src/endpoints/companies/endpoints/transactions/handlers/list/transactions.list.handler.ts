@@ -22,12 +22,9 @@ export const listTransactionsHandler = async (
     });
   }
   const query = request.query as GetTransactionsQueryParams;
-  logger.startStep(
-    STEPS.GET_TRANSACTIONS.id,
-    STEPS.GET_TRANSACTIONS.obfuscatedId,
-  );
+  logger.startStep(STEPS.GET_TRANSACTIONS.id);
   const transactions = await repository
-    .getTransactions(transformQueryParams(query), { logger })
+    .getDocumentsList(transformQueryParams(query), logger)
     .finally(() => logger.endStep(STEPS.GET_TRANSACTIONS.id));
   return reply.code(STATUS_CODES.OK).send(transactions);
 };

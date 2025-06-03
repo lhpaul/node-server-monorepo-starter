@@ -1,8 +1,10 @@
-import { FastifyReply, FastifyRequest } from 'fastify';
+import { STATUS_CODES } from '@repo/fastify';
 import { CompaniesRepository } from '@repo/shared/repositories';
+import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { createCompanyHandler } from '../companies.create.handler';
 import { STEPS } from '../companies.create.constants';
+
 
 jest.mock('@repo/shared/repositories');
 
@@ -10,7 +12,7 @@ describe(createCompanyHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;
   let mockReply: Partial<FastifyReply>;
   let mockLogger: any;
-  let mockRepository: jest.Mocked<CompaniesRepository>;
+  let mockRepository: Partial<CompaniesRepository>;
 
   beforeEach(() => {
     mockLogger = {
@@ -32,8 +34,8 @@ describe(createCompanyHandler.name, () => {
     };
 
     mockRepository = {
-      createCompany: jest.fn(),
-    } as any;
+      createDocument: jest.fn(),
+    };
 
     (CompaniesRepository.getInstance as jest.Mock).mockReturnValue(
       mockRepository,
@@ -46,9 +48,7 @@ describe(createCompanyHandler.name, () => {
 
   it('should create a company successfully', async () => {
     const mockCompanyId = '123';
-    mockRepository.createCompany.mockResolvedValue({
-      id: mockCompanyId,
-    });
+    jest.spyOn(mockRepository, 'createDocument').mockResolvedValue(mockCompanyId);
 
     await createCompanyHandler(
       mockRequest as FastifyRequest,
@@ -58,22 +58,19 @@ describe(createCompanyHandler.name, () => {
     expect(mockLogger.child).toHaveBeenCalledWith({
       handler: createCompanyHandler.name,
     });
-    expect(mockLogger.startStep).toHaveBeenCalledWith(
-      STEPS.CREATE_COMPANY.id,
-      STEPS.CREATE_COMPANY.obfuscatedId,
-    );
-    expect(mockRepository.createCompany).toHaveBeenCalledWith(
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_COMPANY.id);
+    expect(mockRepository.createDocument).toHaveBeenCalledWith(
       mockRequest.body,
-      { logger: mockLogger },
+      mockLogger,
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.CREATE_COMPANY.id);
-    expect(mockReply.code).toHaveBeenCalledWith(201);
+    expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.CREATED);
     expect(mockReply.send).toHaveBeenCalledWith({ id: mockCompanyId });
   });
 
   it('should handle repository errors', async () => {
     const mockError = new Error('Repository error');
-    mockRepository.createCompany.mockRejectedValue(mockError);
+    jest.spyOn(mockRepository, 'createDocument').mockRejectedValue(mockError);
 
     await expect(
       createCompanyHandler(
@@ -82,10 +79,7 @@ describe(createCompanyHandler.name, () => {
       ),
     ).rejects.toThrow(mockError);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(
-      STEPS.CREATE_COMPANY.id,
-      STEPS.CREATE_COMPANY.obfuscatedId,
-    );
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_COMPANY.id);
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.CREATE_COMPANY.id);
     expect(mockReply.code).not.toHaveBeenCalled();
     expect(mockReply.send).not.toHaveBeenCalled();

@@ -1,4 +1,4 @@
-import { createEndpoint } from '@repo/fastify';
+import { createEndpoint, HTTP_METHODS_MAP } from '@repo/fastify';
 import { FastifyInstance, RouteOptions } from 'fastify';
 import {
   COMPANY_ENDPOINTS_PARAMS_JSON_SCHEMA,
@@ -17,12 +17,12 @@ import { listCompaniesHandler } from './handlers/list/companies.list.handler';
 export function companiesEndpointsBuilder(server: FastifyInstance): RouteOptions[] {
   return [
     createEndpoint(server, {
-      method: ['GET'],
+      method: [HTTP_METHODS_MAP.LIST],
       url: URL_V1,
       handler: listCompaniesHandler,
     }),
     createEndpoint(server, {
-      method: ['GET'],
+      method: [HTTP_METHODS_MAP.GET],
       url: URL_WITH_ID_V1,
       handler: getCompanyHandler,
       schema: {
@@ -30,7 +30,7 @@ export function companiesEndpointsBuilder(server: FastifyInstance): RouteOptions
       },
     }),
     createEndpoint(server, {
-      method: ['PATCH'],
+      method: [HTTP_METHODS_MAP.UPDATE],
       url: URL_WITH_ID_V1,
       handler: updateCompanyHandler,
       schema: {

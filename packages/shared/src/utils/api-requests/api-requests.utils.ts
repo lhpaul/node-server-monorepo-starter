@@ -1,5 +1,4 @@
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
-import { processLoggerMock } from '../../mocks/process-logger.mocks';
 import { maskFields } from '../mask/mask.utils';
 import {
   ApiResponse,
@@ -13,10 +12,10 @@ import { DEFAULT_ERROR_CODE, LOGS } from './api-requests.utils.constants';
  */
 export async function apiRequest<T>(
   values: ApiRequestValues,
-  options?: IRequestOptions,
+  options: IRequestOptions,
 ): Promise<ApiResponse<T>> {
   const { method, url, payload: data, headers, params } = values;
-  const logger = options?.logger ?? processLoggerMock;
+  const { logger } = options;
   const maskOptions = {
     params: [],
     requestHeaders: [],

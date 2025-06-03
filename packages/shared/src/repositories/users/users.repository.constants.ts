@@ -1,5 +1,4 @@
 import { User } from '../../domain/models/user.model';
-import { DeleteUserErrorCode } from './users.repository.errors';
 
 export const MOCK_USERS: User[] = [
   new User({
@@ -17,7 +16,3 @@ export const MOCK_USERS: User[] = [
     updatedAt: new Date(),
   }),
 ];
-
-export const ERROR_MESSAGES = {
-  [DeleteUserErrorCode.NOT_FOUND]: 'User not found',
-}; 

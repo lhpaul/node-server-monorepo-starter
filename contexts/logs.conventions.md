@@ -36,17 +36,17 @@ To effectively monitor performance, wrap asynchronous calls with the `startStep`
 /*
 lets assume that the STEPS constant is defined like this:
 export const STEPS = {
-  UPDATE_USER: { id: 'proxy-request', obfuscatedId: '01' },
-  NOTIFY_USER: { id: 'notify-user', obfuscatedId: '02' }
+  UPDATE_USER: { id: 'proxy-request' },
+  NOTIFY_USER: { id: 'notify-user' }
 };
 */
 try {
-  logger.startStep(STEPS.UPDATE_USER.id, STEPS.UPDATE_USER.obfuscatedId);
+  logger.startStep(STEPS.UPDATE_USER.id);
   await usersService
     .updateUser()
     .finally(() => logger.endStep(STEPS.UPDATE_USER.id));
   logger.endStep(STEPS.UPDATE_USER.id);
-  logger.startStep(STEPS.NOTIFY_USER.id, STEPS.NOTIFY_USER.obfuscatedId);
+  logger.startStep(STEPS.NOTIFY_USER.id);
   await usersService
     .notifyUser()
     .finally(() => logger.endStep(STEPS.NOTIFY_USER.id));

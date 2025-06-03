@@ -1,20 +1,16 @@
-import { AuthService } from '@repo/shared/services';
-import { User } from '@repo/shared/domain';
-import { UserPermissions } from '@repo/shared/services';
+import { STATUS_CODES } from '@repo/fastify';
+import { AuthService, UserPermissions } from '@repo/shared/services';
 import { FastifyReply, FastifyRequest, FastifyInstance } from 'fastify';
+
 import { loginHandler } from '../login.handler';
 import { ERROR_RESPONSES, STEPS } from '../login.constants';
 
-jest.mock('@repo/shared/services', () => ({
-  AuthService: {
-    getInstance: jest.fn(),
-  },
-}));
+jest.mock('@repo/shared/services');
 
 describe(loginHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;
   let mockReply: Partial<FastifyReply>;
-  let mockAuthService: jest.Mocked<AuthService>;
+  let mockAuthService: Partial<AuthService>;
   let mockLogger: any;
 
   beforeEach(() => {
@@ -55,7 +51,7 @@ describe(loginHandler.name, () => {
     mockAuthService = {
       validateCredentials: jest.fn(),
       getUserPermissions: jest.fn(),
-    } as any;
+    };
 
     (AuthService.getInstance as jest.Mock).mockReturnValue(mockAuthService);
   });
@@ -78,27 +74,21 @@ describe(loginHandler.name, () => {
       },
     };
 
-    mockAuthService.validateCredentials.mockResolvedValue(mockUser);
-    mockAuthService.getUserPermissions.mockResolvedValue(mockPermissions);
+    jest.spyOn(mockAuthService, 'validateCredentials').mockResolvedValue(mockUser);
+    jest.spyOn(mockAuthService, 'getUserPermissions').mockResolvedValue(mockPermissions);
 
     await loginHandler(mockRequest as FastifyRequest, mockReply as FastifyReply);
 
     expect(mockAuthService.validateCredentials).toHaveBeenCalledWith({
       email: 'test@example.com',
       password: 'password123',
-    });
+    }, mockLogger);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(
-      STEPS.VALIDATE_CREDENTIALS.id,
-      STEPS.VALIDATE_CREDENTIALS.obfuscatedId
-    );
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.VALIDATE_CREDENTIALS.id);
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.VALIDATE_CREDENTIALS.id);
 
-    expect(mockAuthService.getUserPermissions).toHaveBeenCalledWith('user-123');
-    expect(mockLogger.startStep).toHaveBeenCalledWith(
-      STEPS.GET_PERMISSIONS.id,
-      STEPS.GET_PERMISSIONS.obfuscatedId
-    );
+    expect(mockAuthService.getUserPermissions).toHaveBeenCalledWith('user-123', mockLogger);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_PERMISSIONS.id);
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_PERMISSIONS.id);
 
     expect(mockRequest.server?.jwt.sign).toHaveBeenCalledWith({
@@ -106,30 +96,27 @@ describe(loginHandler.name, () => {
       ...mockPermissions,
     });
 
-    expect(mockReply.status).toHaveBeenCalledWith(200);
+    expect(mockReply.status).toHaveBeenCalledWith(STATUS_CODES.OK);
     expect(mockReply.send).toHaveBeenCalledWith({ token: 'mock-jwt-token' });
   });
 
   it('should return 401 for invalid credentials', async () => {
-    mockAuthService.validateCredentials.mockResolvedValue(null);
+    jest.spyOn(mockAuthService, 'validateCredentials').mockResolvedValue(null);
 
     await loginHandler(mockRequest as FastifyRequest, mockReply as FastifyReply);
 
     expect(mockAuthService.validateCredentials).toHaveBeenCalledWith({
       email: 'test@example.com',
       password: 'password123',
-    });
+    }, mockLogger);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(
-      STEPS.VALIDATE_CREDENTIALS.id,
-      STEPS.VALIDATE_CREDENTIALS.obfuscatedId
-    );
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.VALIDATE_CREDENTIALS.id);
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.VALIDATE_CREDENTIALS.id);
 
     expect(mockAuthService.getUserPermissions).not.toHaveBeenCalled();
     expect(mockRequest.server?.jwt.sign).not.toHaveBeenCalled();
 
-    expect(mockReply.status).toHaveBeenCalledWith(401);
+    expect(mockReply.status).toHaveBeenCalledWith(STATUS_CODES.UNAUTHORIZED);
     expect(mockReply.send).toHaveBeenCalledWith(ERROR_RESPONSES.INVALID_CREDENTIALS);
   });
 });

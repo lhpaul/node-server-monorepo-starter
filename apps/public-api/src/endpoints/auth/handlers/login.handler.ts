@@ -1,3 +1,4 @@
+import { STATUS_CODES } from '@repo/fastify';
 import { AuthService } from '@repo/shared/services';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
@@ -12,18 +13,18 @@ export const loginHandler = async (
   const logger = request.log.child({ handler: loginHandler.name });
   const body = request.body as LoginBody;
   const { email, password } = body;
-  logger.startStep(STEPS.VALIDATE_CREDENTIALS.id, STEPS.VALIDATE_CREDENTIALS.obfuscatedId);
-  const user = await AuthService.getInstance().validateCredentials({ email, password });
+  logger.startStep(STEPS.VALIDATE_CREDENTIALS.id);
+  const user = await AuthService.getInstance().validateCredentials({ email, password }, logger);
   logger.endStep(STEPS.VALIDATE_CREDENTIALS.id);
   if (!user) {
-    return reply.status(401).send(ERROR_RESPONSES.INVALID_CREDENTIALS);
+    return reply.status(STATUS_CODES.UNAUTHORIZED).send(ERROR_RESPONSES.INVALID_CREDENTIALS);
   }
-  const permissions = await AuthService.getInstance().getUserPermissions(user.id);
-  logger.startStep(STEPS.GET_PERMISSIONS.id, STEPS.GET_PERMISSIONS.obfuscatedId);
+  const permissions = await AuthService.getInstance().getUserPermissions(user.id, logger);
+  logger.startStep(STEPS.GET_PERMISSIONS.id);
   const token = await request.server.jwt.sign({
     userId: user.id,
     ...permissions,
   });
   logger.endStep(STEPS.GET_PERMISSIONS.id);
-  return reply.status(200).send({ token });
+  return reply.status(STATUS_CODES.OK).send({ token });
 };

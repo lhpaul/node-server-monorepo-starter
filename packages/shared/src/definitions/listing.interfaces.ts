@@ -7,11 +7,11 @@ export type QueryOperator =
   | '<='
   | 'in'
   | 'not-in';
-export type QueryOptions<T> = {
+export type IQueryOptions<T> = {
   value: T | T[];
   operator: QueryOperator;
 };
 
-export interface QueryInput {
-  [key: string]: QueryOptions<any>[] | undefined;
+export interface IQueryInput {
+  [key: string]: IQueryOptions<any>[] | undefined;
 }

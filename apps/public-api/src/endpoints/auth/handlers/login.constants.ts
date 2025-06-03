@@ -1,6 +1,6 @@
 export const STEPS = {
-  VALIDATE_CREDENTIALS: { id: 'validate-credentials', obfuscatedId: '01' },
-  GET_PERMISSIONS: { id: 'get-permissions', obfuscatedId: '02' },
+  VALIDATE_CREDENTIALS: { id: 'validate-credentials' },
+  GET_PERMISSIONS: { id: 'get-permissions' },
 };
 
 export const ERROR_RESPONSES = {

@@ -2,7 +2,10 @@ import {
   Transaction,
   TransactionType,
 } from '../../domain/models/transaction.model';
-import { UpdateTransactionErrorCode } from './transactions.repository.errors';
+
+export const ERROR_MESSAGES = {
+  COMPANY_NOT_FOUND: 'Related company not found',
+}
 
 export const MOCK_TRANSACTIONS: Transaction[] = [
   new Transaction({
@@ -33,7 +36,3 @@ export const MOCK_TRANSACTIONS: Transaction[] = [
     updatedAt: new Date(),
   }),
 ];
-
-export const ERROR_MESSAGES: Record<UpdateTransactionErrorCode, string> = {
-  [UpdateTransactionErrorCode.DOCUMENT_NOT_FOUND]: 'Transaction not found',
-};
