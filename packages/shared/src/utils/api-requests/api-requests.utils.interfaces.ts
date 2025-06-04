@@ -16,8 +16,7 @@ export interface MaskRequestOptions {
   responsePayloadFields?: string[];
   responseHeaders?: string[];
 }
-export interface IRequestOptions {
-  logger: ExecutionLogger;
+export interface RequestOptions {
   maskOptions?: MaskRequestOptions;
 }
 

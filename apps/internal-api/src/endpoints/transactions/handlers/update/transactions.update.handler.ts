@@ -1,5 +1,6 @@
 import { STATUS_CODES } from '@repo/fastify';
 import { TransactionsRepository } from '@repo/shared/repositories';
+import { RepositoryError, RepositoryErrorCode } from '@repo/shared/utils';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { ERROR_RESPONSES } from '../../transactions.endpoints.constants';
@@ -8,8 +9,6 @@ import {
   UpdateTransactionBody,
   UpdateTransactionParams,
 } from './transactions.update.interfaces';
-import { RepositoryError } from '@repo/shared/utils';
-import { RepositoryErrorCode } from '@repo/shared/utils';
 
 export const updateTransactionHandler = async (
   request: FastifyRequest,

@@ -1,14 +1,13 @@
 import { FORBIDDEN_ERROR, STATUS_CODES } from '@repo/fastify';
 import { TransactionsRepository } from '@repo/shared/repositories';
 import { UserPermissions } from '@repo/shared/services';
+import { RepositoryError, RepositoryErrorCode } from '@repo/shared/utils';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
 import { hasCompanyTransactionsUpdatePermission } from '../../../../../../../utils/auth/auth.utils';
 import { ERROR_RESPONSES } from '../../../transactions.endpoints.constants';
 import { STEPS } from '../transactions.update.constants';
 import { updateTransactionHandler } from '../transactions.update.handler';
-import { RepositoryError } from '@repo/shared/utils';
-import { RepositoryErrorCode } from '@repo/shared/utils';
 
 
 jest.mock('@repo/fastify', () => ({

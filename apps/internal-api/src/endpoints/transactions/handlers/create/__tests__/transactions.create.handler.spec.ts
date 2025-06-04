@@ -1,8 +1,10 @@
 import { STATUS_CODES } from '@repo/fastify';
 import { TransactionType } from '@repo/shared/domain';
 import { TransactionsRepository } from '@repo/shared/repositories';
+import { RepositoryError, RepositoryErrorCode } from '@repo/shared/utils';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
+import { ERROR_RESPONSES } from '../../../transactions.endpoints.constants';
 import { createTransactionHandler } from '../transactions.create.handler';
 import { STEPS } from '../transactions.create.constants';
 
@@ -72,7 +74,26 @@ describe(createTransactionHandler.name, () => {
     expect(mockReply.send).toHaveBeenCalledWith({ id: mockTransactionId });
   });
 
-  it('should handle repository errors', async () => {
+  it('should handle company not found', async () => {
+    const mockError = new RepositoryError({
+      code: RepositoryErrorCode.RELATED_DOCUMENT_NOT_FOUND,
+      message: 'Related document not found',
+    });
+    jest.spyOn(mockRepository, 'createDocument').mockRejectedValue(mockError);
+
+    await createTransactionHandler(
+      mockRequest as FastifyRequest,
+      mockReply as FastifyReply,
+    );
+
+    expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.BAD_REQUEST);
+    expect(mockReply.send).toHaveBeenCalledWith({
+      code: ERROR_RESPONSES.COMPANY_NOT_FOUND.code,
+      message: ERROR_RESPONSES.COMPANY_NOT_FOUND.message((mockRequest.body as any).companyId as string),
+    });
+  });
+
+  it('should handle repository unknown errors', async () => {
     const mockError = new Error('Repository error');
     jest.spyOn(mockRepository, 'createDocument').mockRejectedValue(mockError);
 

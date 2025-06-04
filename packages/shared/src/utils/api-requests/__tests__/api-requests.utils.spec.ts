@@ -5,7 +5,7 @@ import { ExecutionLogger } from '../../../definitions/logging.interfaces';
 import { DEFAULT_ERROR_CODE, LOGS } from '../api-requests.utils.constants';
 import {
   ApiRequestValues,
-  IRequestOptions,
+  RequestOptions,
 } from '../api-requests.utils.interfaces';
 import { apiRequest } from '../api-requests.utils';
 
@@ -75,7 +75,7 @@ describe(apiRequest.name, () => {
       (mockedAxios as unknown as jest.Mock).mockResolvedValueOnce(mockResponse);
 
       // Make the request
-      const result = await apiRequest(baseRequestValues, { logger: mockLogger });
+      const result = await apiRequest(baseRequestValues, mockLogger);
 
       // Verify axios was called with correct config
       expect(mockedAxios).toHaveBeenCalledWith({
@@ -136,8 +136,7 @@ describe(apiRequest.name, () => {
       };
       (mockedAxios as unknown as jest.Mock).mockResolvedValueOnce(mockResponse);
 
-      const options: IRequestOptions = {
-        logger: mockLogger,
+      const options: RequestOptions = {
         maskOptions: {
           requestHeaders: ['Authorization'],
           params: ['id'],
@@ -147,7 +146,7 @@ describe(apiRequest.name, () => {
         },
       };
 
-      await apiRequest(baseRequestValues, options);
+      await apiRequest(baseRequestValues, mockLogger, options);
 
       const maskOptions = options.maskOptions!;
       expect(maskFields).toHaveBeenCalledWith(
@@ -192,7 +191,7 @@ describe(apiRequest.name, () => {
       } as AxiosError;
       (mockedAxios as unknown as jest.Mock).mockRejectedValueOnce(mockError);
 
-      const result = await apiRequest(baseRequestValues, { logger: mockLogger });
+      const result = await apiRequest(baseRequestValues, mockLogger);
 
       expect(mockLogger.error).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -237,7 +236,7 @@ describe(apiRequest.name, () => {
       } as AxiosError;
       (mockedAxios as unknown as jest.Mock).mockRejectedValueOnce(mockError);
 
-      const result = await apiRequest(baseRequestValues, { logger: mockLogger });
+      const result = await apiRequest(baseRequestValues, mockLogger);
 
       expect(mockLogger.error).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -278,7 +277,7 @@ describe(apiRequest.name, () => {
       const mockError = new Error('Unexpected error');
       (mockedAxios as unknown as jest.Mock).mockRejectedValueOnce(mockError);
 
-      const result = await apiRequest(baseRequestValues, { logger: mockLogger });
+      const result = await apiRequest(baseRequestValues, mockLogger);
 
       expect(mockLogger.error).toHaveBeenCalledWith(
         expect.objectContaining({

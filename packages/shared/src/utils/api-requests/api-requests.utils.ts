@@ -1,9 +1,11 @@
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
+
+import { ExecutionLogger } from '../../definitions/logging.interfaces';
 import { maskFields } from '../mask/mask.utils';
 import {
   ApiResponse,
   ApiRequestValues,
-  IRequestOptions,
+  RequestOptions,
 } from './api-requests.utils.interfaces';
 import { DEFAULT_ERROR_CODE, LOGS } from './api-requests.utils.constants';
 
@@ -12,10 +14,10 @@ import { DEFAULT_ERROR_CODE, LOGS } from './api-requests.utils.constants';
  */
 export async function apiRequest<T>(
   values: ApiRequestValues,
-  options: IRequestOptions,
+  logger: ExecutionLogger,
+  options?: RequestOptions,
 ): Promise<ApiResponse<T>> {
   const { method, url, payload: data, headers, params } = values;
-  const { logger } = options;
   const maskOptions = {
     params: [],
     requestHeaders: [],
