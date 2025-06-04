@@ -67,7 +67,7 @@ describe(setServerErrorHandlers.name, () => {
     
     const errorHandler = mockServer.setErrorHandler.mock.calls[0][0] as Function;
     const validationError = {
-      statusCode: STATUS_CODES.VALIDATION_ERROR,
+      statusCode: STATUS_CODES.BAD_REQUEST,
       code: VALIDATION_ERROR_CODE,
       validation: [{ message: 'Invalid input' }],
     };
@@ -81,7 +81,7 @@ describe(setServerErrorHandlers.name, () => {
       },
       VALIDATION_ERROR.logMessage({ error: validationError }),
     );
-    expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.VALIDATION_ERROR);
+    expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.BAD_REQUEST);
     expect(mockReply.send).toHaveBeenCalledWith({
       code: VALIDATION_ERROR.responseCode,
       message: VALIDATION_ERROR.responseMessage,

@@ -1,5 +1,3 @@
-import { ExecutionLogger } from '../../definitions/logging.interfaces';
-
 export interface ApiRequestValues {
   method: string;
   url: string;
