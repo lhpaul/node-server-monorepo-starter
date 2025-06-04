@@ -36,7 +36,7 @@ export function setServerErrorHandlers(server: FastifyInstance): void {
   // Handle validation and unhandled errors
   server.setErrorHandler((error, request, reply) => {
     const lastStep = request.log.lastStep;
-    const errorCode = lastStep?.obfuscatedId ?? '-1';
+    const obfuscatedErrorCode = request.log.stepsCounter.toString(); // This is to return a code to the user that doesn't give away any internal information but can be later used to identify the step that caused the error in case the user reports it
     if (error.statusCode === STATUS_CODES.VALIDATION_ERROR && error.code === VALIDATION_ERROR_CODE) {
       request.log.warn(
         {
@@ -54,14 +54,14 @@ export function setServerErrorHandlers(server: FastifyInstance): void {
     request.log.error(
       {
         logId: INTERNAL_ERROR_VALUES.logId,
-        errorCode,
+        errorCode: lastStep?.id ?? null,
         error,
         step: lastStep ?? null,
       },
       INTERNAL_ERROR_VALUES.logMessage({ error, step: lastStep?.id ?? null }),
     );
     return reply.code(STATUS_CODES.INTERNAL_ERROR).send({
-      code: errorCode,
+      code: obfuscatedErrorCode,
       message: INTERNAL_ERROR_VALUES.responseMessage,
     });
   });

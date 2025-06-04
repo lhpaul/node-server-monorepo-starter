@@ -1,7 +1,3 @@
 export const STEPS = {
-  UPDATE_TRANSACTION: { id: 'update-transaction', obfuscatedId: '01' },
+  UPDATE_TRANSACTION: { id: 'update-transaction' },
 };
-
-export const ERROR_RESPONSES = {
-  TRANSACTION_NOT_FOUND: 'Transaction not found',
-}

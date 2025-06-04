@@ -1,4 +1,4 @@
-import { createEndpoint } from '@repo/fastify';
+import { createEndpoint, HTTP_METHODS_MAP } from '@repo/fastify';
 import { FastifyInstance } from 'fastify';
 import { LOGIN_BODY_JSON_SCHEMA, URL_LOGIN, URL_UPDATE_CLAIMS } from '../auth.endpoints.constants';
 import { updateClaimsHandler } from '../handlers/update-claims/update-claims.handler';
@@ -6,6 +6,7 @@ import { authEndpointsBuilder } from '../auth.endpoints';
 import { loginHandler } from '../handlers/login/login.handler';
 
 jest.mock('@repo/fastify', () => ({
+  ...jest.requireActual('@repo/fastify'),
   createEndpoint: jest.fn(),
 }));
 
@@ -30,7 +31,7 @@ describe(authEndpointsBuilder.name, () => {
     expect(createEndpoint).toHaveBeenCalledWith(
       mockServer,
       {
-        method: ['POST'],
+        method: [HTTP_METHODS_MAP.CREATE],
         url: URL_LOGIN,
         handler: loginHandler,
         schema: {

@@ -1,11 +1,9 @@
 export const STEPS = {
   FIND_USER: {
     id: 'find-user',
-    obfuscatedId: '01',
   },
   UPDATE_CLAIMS: {
     id: 'update-claims',
-    obfuscatedId: '02',
   },
 };
 

@@ -60,6 +60,7 @@ export class FirestoreCollectionRepository<DocumentModel, CreateDocumentInput, U
    * @param config.id - Optional custom document ID
    * @param config.parentIds - Optional parent collection IDs for nested collections
    * @returns Promise<string> - The ID of the created document
+   * @throws {RepositoryError} with code RepositoryErrorCode.RELATED_DOCUMENT_NOT_FOUND if the parent document does not exist.
    */
   public async createDocument(data: CreateDocumentInput, logger: ExecutionLogger, config?: CreateDocumentConfig): Promise<string> {
     const { documentRef, documentData } = this._prepareCreate(data, config);
@@ -254,7 +255,7 @@ export class FirestoreCollectionRepository<DocumentModel, CreateDocumentInput, U
    * @param config.ignoreTimestamp - Optional flag to ignore updating the timestamp
    * @param config.parentIds - Optional parent collection IDs for nested collections
    * @returns Promise<void>
-   * @throws {RepositoryError} If the document is not found
+   * @throws {RepositoryError} with code RepositoryErrorCode.DOCUMENT_NOT_FOUND if the document is not found
    */
   public async updateDocument(id: string, updateData: UpdateDocumentInput, logger: ExecutionLogger, config?: UpdateDocumentConfig): Promise<void> {
     const { documentRef, documentData } = this._prepareUpdate(id, updateData, config);

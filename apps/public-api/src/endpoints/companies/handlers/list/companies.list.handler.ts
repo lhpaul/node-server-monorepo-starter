@@ -14,10 +14,13 @@ export const listCompaniesHandler = async (
   const user = request.user as AuthUser;
 
   // Get all company IDs the user has permission for
-  const companyIds = user.companies ? Object.keys(user.companies) : [];
+  if (!user.companies) {
+    return reply.code(STATUS_CODES.OK).send([]);
+  }
+  const companyIds = Object.keys(user.companies);
   
   // Get company information for each ID in parallel
-  logger.startStep(STEPS.GET_COMPANIES.id, STEPS.GET_COMPANIES.obfuscatedId);
+  logger.startStep(STEPS.GET_COMPANIES.id);
   const companies = await Promise.all(
     companyIds.map((id) => repository.getDocument(id, logger)),
   ).finally(() => logger.endStep(STEPS.GET_COMPANIES.id));

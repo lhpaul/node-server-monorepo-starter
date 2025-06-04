@@ -17,10 +17,10 @@ export const loginHandler = async (
   const authService = AuthService.getInstance();
 
   try {
-    logger.startStep(STEPS.DECODE_EMAIL_TOKEN.id, STEPS.DECODE_EMAIL_TOKEN.obfuscatedId);
+    logger.startStep(STEPS.DECODE_EMAIL_TOKEN.id);
     const { email } = await authService.decodeEmailToken(emailToken);
     logger.endStep(STEPS.DECODE_EMAIL_TOKEN.id);
-    logger.startStep(STEPS.FIND_USER.id, STEPS.FIND_USER.obfuscatedId);
+    logger.startStep(STEPS.FIND_USER.id);
     const [user, ..._rest] = await UsersRepository.getInstance().getDocumentsList(
       {
         email: [{ value: email, operator: '==' }],
@@ -36,8 +36,8 @@ export const loginHandler = async (
       });
     }
 
-    logger.startStep(STEPS.GENERATE_USER_TOKEN.id, STEPS.GENERATE_USER_TOKEN.obfuscatedId);
-    const token = await authService.generateUserToken(user.id, { logger });
+    logger.startStep(STEPS.GENERATE_USER_TOKEN.id);
+    const token = await authService.generateUserToken(user.id, logger);
     logger.endStep(STEPS.GENERATE_USER_TOKEN.id);
 
     return reply.status(STATUS_CODES.OK).send({ token });

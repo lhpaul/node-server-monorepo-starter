@@ -1,7 +1,7 @@
 export const STEPS = {
-  DECODE_EMAIL_TOKEN: { id: 'decode-email-token', obfuscatedId: '01' },
-  FIND_USER: { id: 'find-user', obfuscatedId: '02' },
-  GENERATE_USER_TOKEN: { id: 'generate-user-token', obfuscatedId: '03' },
+  DECODE_EMAIL_TOKEN: { id: 'decode-email-token'},
+  FIND_USER: { id: 'find-user' },
+  GENERATE_USER_TOKEN: { id: 'generate-user-token' },
 };
 
 export const ERROR_RESPONSES = {

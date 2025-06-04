@@ -17,7 +17,7 @@ export const updateClaimsHandler = async (request: FastifyRequest, reply: Fastif
         message: ERROR_RESPONSES.INVALID_TOKEN.message,
       });
     }
-    logger.startStep(STEPS.FIND_USER.id, STEPS.FIND_USER.obfuscatedId);
+    logger.startStep(STEPS.FIND_USER.id);
     const [user, ..._rest] = await UsersRepository.getInstance().getDocumentsList(
       {
         email: [{ value: email, operator: '==' }],
@@ -33,11 +33,11 @@ export const updateClaimsHandler = async (request: FastifyRequest, reply: Fastif
     }
     app_user_id = user.id;
   }
-  logger.startStep(STEPS.UPDATE_CLAIMS.id, STEPS.UPDATE_CLAIMS.obfuscatedId);
+  logger.startStep(STEPS.UPDATE_CLAIMS.id);
   await AuthService.getInstance().updatePermissionsToUser({
     userId: app_user_id,
     uid: request.user.uid,
-  }, { logger });
+  }, logger);
   logger.endStep(STEPS.UPDATE_CLAIMS.id);
   return reply.status(STATUS_CODES.NO_CONTENT).send();
 };

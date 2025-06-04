@@ -1,8 +1,8 @@
 import { ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { RequestLogger } from '@repo/fastify';
-import { FastifyBaseLogger } from 'fastify';
 import { Transaction, TransactionType } from '@repo/shared/domain';
 import { TransactionsRepository } from '@repo/shared/repositories';
+import { FastifyBaseLogger } from 'fastify';
 
 import { transactionsResourceBuilder } from '../transactions.resource';
 import { RESOURCE_NAME, RESOURCE_PATH, STEPS } from '../transactions.resource.constants';
@@ -18,7 +18,7 @@ jest.mock('@repo/shared/repositories', () => ({
 describe(transactionsResourceBuilder.name, () => {
   let mockServerLogger: jest.Mocked<FastifyBaseLogger>;
   let mockRequestLogger: jest.Mocked<RequestLogger>;
-  let mockTransactionsRepo: jest.Mocked<TransactionsRepository>;
+  let mockTransactionsRepo: Partial<TransactionsRepository>;
 
   beforeEach(() => {
     mockServerLogger = {
@@ -29,7 +29,7 @@ describe(transactionsResourceBuilder.name, () => {
       debug: jest.fn(),
       trace: jest.fn(),
       fatal: jest.fn(),
-    } as any;
+    } as unknown as jest.Mocked<FastifyBaseLogger>;
 
     mockRequestLogger = {
       child: jest.fn().mockReturnThis(),
@@ -64,7 +64,7 @@ describe(transactionsResourceBuilder.name, () => {
       createdAt: new Date(),
       updatedAt: new Date(),
     }];
-    mockTransactionsRepo.getDocumentsList.mockResolvedValue(mockTransactions);
+    jest.spyOn(mockTransactionsRepo, 'getDocumentsList').mockResolvedValue(mockTransactions);
 
     const variables = {
       companyId: 'company123',
@@ -81,16 +81,16 @@ describe(transactionsResourceBuilder.name, () => {
 
     const result = await resource.handler(uri, variables, extra);
 
-    expect(mockRequestLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id, STEPS.GET_TRANSACTIONS.obfuscatedId);
+    expect(mockRequestLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id);
     expect(mockTransactionsRepo.getDocumentsList).toHaveBeenCalledWith(
       {
+        companyId: [{ value: variables.companyId, operator: '==' }],
         date: [
           { value: variables.dateFrom, operator: '>=' },
           { value: variables.dateTo, operator: '<=' },
         ],
       },
-      mockRequestLogger,
-      { parentIds: { companyId: variables.companyId } },
+      mockRequestLogger
     );
     expect(mockRequestLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id);
     expect(result.contents[0]).toEqual({
@@ -111,7 +111,7 @@ describe(transactionsResourceBuilder.name, () => {
       createdAt: new Date(),
       updatedAt: new Date(),
     }];
-    mockTransactionsRepo.getDocumentsList.mockResolvedValue(mockTransactions);
+    jest.spyOn(mockTransactionsRepo, 'getDocumentsList').mockResolvedValue(mockTransactions);
     const variables = {
       companyId: mockTransactions[0].companyId,
     };
@@ -126,9 +126,11 @@ describe(transactionsResourceBuilder.name, () => {
     const result = await resource.handler(uri, variables, extra);
 
     expect(mockTransactionsRepo.getDocumentsList).toHaveBeenCalledWith(
-      { date: [] },
-      mockRequestLogger,
-      { parentIds: { companyId: variables.companyId } },
+      {
+        companyId: [{ value: variables.companyId, operator: '==' }],
+        date: [],
+      },
+      mockRequestLogger
     );
     expect(result.contents[0].text).toBe(JSON.stringify(mockTransactions));
   });
@@ -144,7 +146,7 @@ describe(transactionsResourceBuilder.name, () => {
       createdAt: new Date(),
       updatedAt: new Date(),
     }];
-    mockTransactionsRepo.getDocumentsList.mockResolvedValue(mockTransactions);
+    jest.spyOn(mockTransactionsRepo, 'getDocumentsList').mockResolvedValue(mockTransactions);
 
     const variables = {
       companyId: mockTransactions[0].companyId,
@@ -162,10 +164,10 @@ describe(transactionsResourceBuilder.name, () => {
 
     expect(mockTransactionsRepo.getDocumentsList).toHaveBeenCalledWith(
       {
+        companyId: [{ value: variables.companyId, operator: '==' }],
         date: [{ value: variables.dateFrom, operator: '>=' }],
       },
-      mockRequestLogger,
-      { parentIds: { companyId: variables.companyId } },
+      mockRequestLogger
     );
     expect(result.contents[0].text).toBe(JSON.stringify(mockTransactions));
   });
@@ -181,7 +183,7 @@ describe(transactionsResourceBuilder.name, () => {
       createdAt: new Date(),
       updatedAt: new Date(),
     }];
-    mockTransactionsRepo.getDocumentsList.mockResolvedValue(mockTransactions)
+    jest.spyOn(mockTransactionsRepo, 'getDocumentsList').mockResolvedValue(mockTransactions);
 
     const variables = {
       companyId: mockTransactions[0].companyId,
@@ -199,10 +201,10 @@ describe(transactionsResourceBuilder.name, () => {
 
     expect(mockTransactionsRepo.getDocumentsList).toHaveBeenCalledWith(
       {
+        companyId: [{ value: variables.companyId, operator: '==' }],
         date: [{ value: variables.dateTo, operator: '<=' }],
       },
-      mockRequestLogger,
-      { parentIds: { companyId: variables.companyId } },
+      mockRequestLogger
     );
     expect(result.contents[0].text).toBe(JSON.stringify(mockTransactions));
   });
@@ -210,7 +212,7 @@ describe(transactionsResourceBuilder.name, () => {
   it('should handle repository errors gracefully', async () => {
     const resource = transactionsResourceBuilder(mockServerLogger);
     const error = new Error('Database error');
-    mockTransactionsRepo.getDocumentsList.mockRejectedValue(error);
+    jest.spyOn(mockTransactionsRepo, 'getDocumentsList').mockRejectedValue(error);
 
     const variables = {
       companyId: 'company123',

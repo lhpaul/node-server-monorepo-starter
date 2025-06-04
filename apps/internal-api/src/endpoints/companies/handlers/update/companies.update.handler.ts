@@ -19,14 +19,11 @@ export const updateCompanyHandler = async (
   const { id } = request.params as UpdateCompanyParams;
   const body = request.body as UpdateCompanyBody;
   try {
-    logger.startStep(
-      STEPS.UPDATE_COMPANY.id,
-      STEPS.UPDATE_COMPANY.obfuscatedId,
-    );
+    logger.startStep(STEPS.UPDATE_COMPANY.id);
     await repository.updateDocument(id, body, logger);
     logger.endStep(STEPS.UPDATE_COMPANY.id);
     return reply.code(STATUS_CODES.NO_CONTENT).send();
-  } catch (error: any) {
+  } catch (error) {
     logger.endStep(STEPS.UPDATE_COMPANY.id);
     if (
       error instanceof RepositoryError &&

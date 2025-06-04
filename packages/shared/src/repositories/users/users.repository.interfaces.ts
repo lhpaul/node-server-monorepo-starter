@@ -1,4 +1,4 @@
-import { QueryInput, QueryOptions } from '../../definitions/listing.interfaces';
+import { QueryInput, QueryItem } from '../../definitions/listing.interfaces';
 
 export interface CreateUserInput {
   email: string;
@@ -11,7 +11,7 @@ export interface UpdateUserInput {
 }
 
 export interface GetUsersQuery extends QueryInput {
-  email?: QueryOptions<string>[];
-  createdAt?: QueryOptions<Date>[];
-  updatedAt?: QueryOptions<Date>[];
+  email?: QueryItem<string>[];
+  createdAt?: QueryItem<Date>[];
+  updatedAt?: QueryItem<Date>[];
 } 

@@ -16,7 +16,7 @@ export async function authenticateApiKey(request: FastifyRequest, reply: Fastify
     return reply.code(STATUS_CODES.UNAUTHORIZED).send({ code: UNAUTHORIZED_ERROR.responseCode, message: UNAUTHORIZED_ERROR.responseMessage });
   }
   const [oauthClientId, privateKeyValue] = Buffer.from(apiKey, 'base64').toString().split(':');
-  const { isValid } = await PrivateKeysService.getInstance().validatePrivateKey(oauthClientId, privateKeyValue, { logger: request.log });
+  const { isValid } = await PrivateKeysService.getInstance().validatePrivateKey(oauthClientId, privateKeyValue, request.log);
   if (!isValid) {
     request.log.warn({
       logId: FORBIDDEN_ERROR.logId

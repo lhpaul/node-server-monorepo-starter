@@ -6,7 +6,6 @@ jest.mock('../../../utils/firestore/firestore-collection-repository.class');
 
 describe(PrivateKeysRepository.name, () => {
 
-
   beforeEach(() => {
     jest.clearAllMocks();
   });

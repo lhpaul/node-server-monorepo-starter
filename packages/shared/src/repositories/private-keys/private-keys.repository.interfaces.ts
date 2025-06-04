@@ -1,4 +1,4 @@
-import { QueryInput, QueryOptions } from '../../definitions/listing.interfaces';
+import { QueryInput, QueryItem } from '../../definitions/listing.interfaces';
 
 export interface CreatePrivateKeyInput {
   oauthClientId: string;
@@ -12,6 +12,6 @@ export interface UpdatePrivateKeyInput {
 }
 
 export interface GetPrivateKeysQuery extends QueryInput {
-  oauthClientId?: QueryOptions<string>[];
-  label?: QueryOptions<string>[];
+  oauthClientId?: QueryItem<string>[];
+  label?: QueryItem<string>[];
 } 

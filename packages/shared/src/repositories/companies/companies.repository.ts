@@ -2,13 +2,13 @@ import { Company } from '../../domain/models/company.model';
 import { FirestoreCollectionRepository } from '../../utils/firestore/firestore-collection-repository.class';
 import { COLLECTION_PATH } from './companies.repository.constants';
 import {
-  CreateCompanyBody,
+  CreateCompanyInput,
   GetCompaniesQuery,
-  UpdateCompanyBody,
+  UpdateCompanyInput,
 } from './companies.repository.interfaces';
 
 
-export class CompaniesRepository extends FirestoreCollectionRepository<Company, CreateCompanyBody, UpdateCompanyBody, GetCompaniesQuery> {
+export class CompaniesRepository extends FirestoreCollectionRepository<Company, CreateCompanyInput, UpdateCompanyInput, GetCompaniesQuery> {
   private static instance: CompaniesRepository;
 
   public static getInstance(): CompaniesRepository {

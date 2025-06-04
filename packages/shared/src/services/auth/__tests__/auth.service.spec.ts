@@ -115,7 +115,7 @@ describe(AuthService.name, () => {
     });
 
     it('should generate token with user permissions', async () => {
-      const result = await authService.generateUserToken(mockUserId, { logger: mockLogger });
+      const result = await authService.generateUserToken(mockUserId, mockLogger);
 
       expect(result).toBe(mockToken);
       expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_USER_COMPANY_RELATIONS.id);
@@ -155,7 +155,7 @@ describe(AuthService.name, () => {
       await authService.updatePermissionsToUser({
         userId: mockUserId,
         uid: mockUid,
-      }, { logger: mockLogger });
+      }, mockLogger);
 
       expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_USER_COMPANY_RELATIONS.id);
       expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_USER_COMPANY_RELATIONS.id);

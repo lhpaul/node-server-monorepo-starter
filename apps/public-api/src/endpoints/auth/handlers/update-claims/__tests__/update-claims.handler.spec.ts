@@ -13,9 +13,7 @@ describe(updateClaimsHandler.name, () => {
   let mockRequest: FastifyRequest;
   let mockReply: FastifyReply;
   let mockLogger: any;
-  let mockUsersRepository: {
-    getDocumentsList: jest.Mock;
-  };
+  let mockUsersRepository: Partial<UsersRepository>;
 
   beforeEach(() => {
     mockLogger = {
@@ -47,7 +45,7 @@ describe(updateClaimsHandler.name, () => {
       getDocumentsList: jest.fn(),
     };
 
-    jest.spyOn(UsersRepository, 'getInstance').mockReturnValue(mockUsersRepository as unknown as UsersRepository);
+    jest.spyOn(UsersRepository, 'getInstance').mockReturnValue(mockUsersRepository as UsersRepository);
   });
 
   describe('when app_user_id is present', () => {
@@ -67,10 +65,10 @@ describe(updateClaimsHandler.name, () => {
       expect(mockUpdatePermissions).toHaveBeenCalledWith({
         userId: 'test-user-id',
         uid: 'test-uid',
-      }, { logger: mockLogger });
+      }, mockLogger);
       expect(mockReply.status).toHaveBeenCalledWith(STATUS_CODES.NO_CONTENT);
       expect(mockReply.send).toHaveBeenCalled();
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_CLAIMS.id, STEPS.UPDATE_CLAIMS.obfuscatedId);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_CLAIMS.id);
       expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_CLAIMS.id);
     });
   });
@@ -113,7 +111,7 @@ describe(updateClaimsHandler.name, () => {
 
         await updateClaimsHandler(mockRequest, mockReply);
 
-        expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.FIND_USER.id, STEPS.FIND_USER.obfuscatedId);
+        expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.FIND_USER.id);
         expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.FIND_USER.id);
         expect(mockReply.status).toHaveBeenCalledWith(STATUS_CODES.FORBIDDEN);
         expect(mockReply.send).toHaveBeenCalledWith({
@@ -137,12 +135,12 @@ describe(updateClaimsHandler.name, () => {
 
         await updateClaimsHandler(mockRequest, mockReply);
 
-        expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.FIND_USER.id, STEPS.FIND_USER.obfuscatedId);
+        expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.FIND_USER.id);
         expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.FIND_USER.id);
         expect(mockUpdatePermissions).toHaveBeenCalledWith({
-          userId: 'found-user-id',
+          userId: mockUser.id,
           uid: 'test-uid',
-        }, { logger: mockLogger });
+        }, mockLogger);
         expect(mockReply.status).toHaveBeenCalledWith(STATUS_CODES.NO_CONTENT);
         expect(mockReply.send).toHaveBeenCalled();
       });

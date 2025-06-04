@@ -1,7 +1,7 @@
 import { STATUS_CODES } from '@repo/fastify';
 import { TransactionType } from '@repo/shared/domain';
 import { TransactionsRepository } from '@repo/shared/repositories';
-import { FastifyReply, FastifyRequest } from 'fastify';
+import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
 import { listTransactionsHandler } from '../transactions.list.handler';
 import { STEPS } from '../transactions.list.constants';
@@ -11,8 +11,8 @@ jest.mock('@repo/shared/repositories');
 describe(listTransactionsHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;
   let mockReply: Partial<FastifyReply>;
-  let mockRepository: jest.Mocked<TransactionsRepository>;
-  let mockLogger: any;
+  let mockRepository: Partial<TransactionsRepository>;
+  let mockLogger: Partial<FastifyBaseLogger>;
   const mockTransactions = [
     {
       id: '1',
@@ -51,7 +51,7 @@ describe(listTransactionsHandler.name, () => {
     };
 
     mockRequest = {
-      log: mockLogger,
+      log: mockLogger as FastifyBaseLogger,
       query: {},
     };
 
@@ -62,7 +62,7 @@ describe(listTransactionsHandler.name, () => {
 
     mockRepository = {
       getDocumentsList: jest.fn(),
-    } as any;
+    };
 
     (TransactionsRepository.getInstance as jest.Mock).mockReturnValue(
       mockRepository,
@@ -74,17 +74,14 @@ describe(listTransactionsHandler.name, () => {
   });
 
   it('should return all transactions when no query parameters are provided', async () => {
-    mockRepository.getDocumentsList.mockResolvedValue(mockTransactions);
+    jest.spyOn(mockRepository, 'getDocumentsList').mockResolvedValue(mockTransactions);
 
     await listTransactionsHandler(
       mockRequest as FastifyRequest,
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(
-      STEPS.GET_TRANSACTIONS.id,
-      STEPS.GET_TRANSACTIONS.obfuscatedId,
-    );
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id);
     expect(mockRepository.getDocumentsList).toHaveBeenCalledWith(
       {},
       mockLogger,
@@ -101,17 +98,14 @@ describe(listTransactionsHandler.name, () => {
     };
     mockRequest.query = queryParams;
     const filteredTransactions = [mockTransactions[0]];
-    mockRepository.getDocumentsList.mockResolvedValue(filteredTransactions);
+    jest.spyOn(mockRepository, 'getDocumentsList').mockResolvedValue(filteredTransactions);
 
     await listTransactionsHandler(
       mockRequest as FastifyRequest,
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(
-      STEPS.GET_TRANSACTIONS.id,
-      STEPS.GET_TRANSACTIONS.obfuscatedId,
-    );
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id);
     expect(mockRepository.getDocumentsList).toHaveBeenCalledWith(
       {
         amount: [{ operator: '==', value: 100 }],
@@ -125,17 +119,14 @@ describe(listTransactionsHandler.name, () => {
   });
 
   it('should handle empty result set', async () => {
-    mockRepository.getDocumentsList.mockResolvedValue([]);
+    jest.spyOn(mockRepository, 'getDocumentsList').mockResolvedValue([]);
 
     await listTransactionsHandler(
       mockRequest as FastifyRequest,
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(
-      STEPS.GET_TRANSACTIONS.id,
-      STEPS.GET_TRANSACTIONS.obfuscatedId,
-    );
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id);
     expect(mockRepository.getDocumentsList).toHaveBeenCalledWith(
       {},
       mockLogger,
@@ -147,7 +138,7 @@ describe(listTransactionsHandler.name, () => {
 
   it('should handle repository errors', async () => {
     const error = new Error('Repository error');
-    mockRepository.getDocumentsList.mockRejectedValue(error);
+    jest.spyOn(mockRepository, 'getDocumentsList').mockRejectedValue(error);
 
     await expect(
       listTransactionsHandler(
@@ -156,10 +147,7 @@ describe(listTransactionsHandler.name, () => {
       ),
     ).rejects.toThrow(error);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(
-      STEPS.GET_TRANSACTIONS.id,
-      STEPS.GET_TRANSACTIONS.obfuscatedId,
-    );
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id);
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id);
     expect(mockReply.code).not.toHaveBeenCalled();
     expect(mockReply.send).not.toHaveBeenCalled();

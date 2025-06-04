@@ -1,16 +1,24 @@
+import { STATUS_CODES } from '@repo/fastify';
 import { TransactionsRepository } from '@repo/shared/repositories';
-import { FastifyReply, FastifyRequest } from 'fastify';
+import { RepositoryError, RepositoryErrorCode } from '@repo/shared/utils';
+import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
+import { ERROR_RESPONSES } from '../../../transactions.endpoints.constants';
 import { STEPS } from '../transactions.delete.constants';
 import { deleteTransactionHandler } from '../transactions.delete.handler';
 
 jest.mock('@repo/shared/repositories');
+jest.mock('@repo/shared/utils', () => ({
+  ...jest.requireActual('@repo/shared/utils'),
+  RepositoryError: jest.fn(),
+  RepositoryErrorCode: jest.fn(),
+}));
 
 describe(deleteTransactionHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;
   let mockReply: Partial<FastifyReply>;
-  let mockRepository: jest.Mocked<TransactionsRepository>;
-  let mockLogger: any;
+  let mockRepository: Partial<TransactionsRepository>;
+  let mockLogger: Partial<FastifyBaseLogger>;
 
   const mockParams = { id: 'test-id' };
 
@@ -22,7 +30,7 @@ describe(deleteTransactionHandler.name, () => {
     };
 
     mockRequest = {
-      log: mockLogger,
+      log: mockLogger as FastifyBaseLogger,
       params: mockParams,
     };
 
@@ -33,7 +41,7 @@ describe(deleteTransactionHandler.name, () => {
 
     mockRepository = {
       deleteDocument: jest.fn(),
-    } as any;
+    };
 
     (TransactionsRepository.getInstance as jest.Mock).mockReturnValue(
       mockRepository,
@@ -45,17 +53,14 @@ describe(deleteTransactionHandler.name, () => {
   });
 
   it('should successfully delete a transaction', async () => {
-    mockRepository.deleteDocument.mockResolvedValueOnce(undefined as never);
+    jest.spyOn(mockRepository, 'deleteDocument').mockResolvedValue();
 
     await deleteTransactionHandler(
       mockRequest as FastifyRequest,
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(
-      STEPS.DELETE_TRANSACTION.id,
-      STEPS.DELETE_TRANSACTION.obfuscatedId,
-    );
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DELETE_TRANSACTION.id);
     expect(mockRepository.deleteDocument).toHaveBeenCalledWith(
       mockParams.id,
       mockLogger,
@@ -63,7 +68,57 @@ describe(deleteTransactionHandler.name, () => {
     expect(mockLogger.endStep).toHaveBeenCalledWith(
       STEPS.DELETE_TRANSACTION.id,
     );
-    expect(mockReply.code).toHaveBeenCalledWith(204);
+    expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.NO_CONTENT);
     expect(mockReply.send).toHaveBeenCalled();
+  });
+
+  it('should handle non-existent transaction', async () => {
+    jest.spyOn(mockRepository, 'deleteDocument').mockRejectedValue(
+      new RepositoryError({
+        code: RepositoryErrorCode.DOCUMENT_NOT_FOUND,
+        message: 'Transaction not found',
+      }),
+    );
+
+    await deleteTransactionHandler(
+      mockRequest as FastifyRequest,
+      mockReply as FastifyReply,
+    );
+
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DELETE_TRANSACTION.id);
+    expect(mockRepository.deleteDocument).toHaveBeenCalledWith(
+      mockParams.id,
+      mockLogger,
+    );
+    expect(mockLogger.endStep).toHaveBeenCalledWith(
+      STEPS.DELETE_TRANSACTION.id,
+    );
+    expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.NOT_FOUND);
+    expect(mockReply.send).toHaveBeenCalledWith(
+      ERROR_RESPONSES.TRANSACTION_NOT_FOUND,
+    );
+  });
+
+  it('should rethrow non-DeleteTransactionError errors', async () => {
+    const error = new Error('Unexpected error');
+    jest.spyOn(mockRepository, 'deleteDocument').mockRejectedValue(error);
+
+    await expect(
+      deleteTransactionHandler(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+      ),
+    ).rejects.toThrow(error);
+
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DELETE_TRANSACTION.id);
+    expect(mockRepository.deleteDocument).toHaveBeenCalledWith(
+      mockParams.id,
+      mockLogger,
+    );
+    expect(mockLogger.endStep).toHaveBeenCalledWith(
+      STEPS.DELETE_TRANSACTION.id,
+    );
+    expect(mockReply.code).not.toHaveBeenCalled();
+    expect(mockReply.send).not.toHaveBeenCalled();
   });
 });

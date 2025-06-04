@@ -1,4 +1,4 @@
-import { IMaskConfig } from './mask.utils.interfaces';
+import { MaskOptions } from './mask.utils.interfaces';
 
 /**
  * Masks a given string by replacing the last `maskLength` characters with the specified `maskChar`.
@@ -8,7 +8,7 @@ import { IMaskConfig } from './mask.utils.interfaces';
  * @param config - An optional configuration object containing `maskChar` (default: '*') and `maskLength` (default: 4).
  * @returns The masked string with the specified number of characters replaced by the mask character.
  */
-export function maskString(str: string, config?: IMaskConfig): string {
+export function maskString(str: string, config?: MaskOptions): string {
   const { maskChar = '*', maskLength = 4 } = config || {};
   if (!config?.maskLength || str.length <= maskLength) {
     return str.replace(/./g, maskChar);
@@ -32,7 +32,7 @@ export function maskString(str: string, config?: IMaskConfig): string {
 export function maskFields(
   jsonObject: any,
   fieldsToMask: string[],
-  config?: IMaskConfig,
+  config?: MaskOptions,
 ): Record<string, any> {
   if (typeof jsonObject !== 'object' || jsonObject === null) {
     return jsonObject;

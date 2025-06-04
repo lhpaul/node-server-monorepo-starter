@@ -3,8 +3,12 @@ import { TransactionsRepository } from '@repo/shared/repositories';
 import { RepositoryError, RepositoryErrorCode } from '@repo/shared/utils';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
-import { ERROR_RESPONSES, STEPS } from './transactions.update.constants';
-import { UpdateTransactionBody, UpdateTransactionParams } from './transactions.update.interfaces';
+import { ERROR_RESPONSES } from '../../transactions.endpoints.constants';
+import { STEPS } from './transactions.update.constants';
+import {
+  UpdateTransactionBody,
+  UpdateTransactionParams,
+} from './transactions.update.interfaces';
 
 export const updateTransactionHandler = async (
   request: FastifyRequest,
@@ -15,10 +19,7 @@ export const updateTransactionHandler = async (
   const { id } = request.params as UpdateTransactionParams;
   const body = request.body as UpdateTransactionBody;
   try {
-    logger.startStep(
-      STEPS.UPDATE_TRANSACTION.id,
-      STEPS.UPDATE_TRANSACTION.obfuscatedId,
-    );
+    logger.startStep(STEPS.UPDATE_TRANSACTION.id);
     await repository.updateDocument(id, body, logger);
     logger.endStep(STEPS.UPDATE_TRANSACTION.id);
     return reply.code(STATUS_CODES.NO_CONTENT).send();

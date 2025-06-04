@@ -20,10 +20,7 @@ export const getTransactionHandler = async (
       message: FORBIDDEN_ERROR.responseMessage,
     });
   }
-  logger.startStep(
-    STEPS.GET_TRANSACTION.id,
-    STEPS.GET_TRANSACTION.obfuscatedId,
-  );
+  logger.startStep(STEPS.GET_TRANSACTION.id);
   const transaction = await repository
     .getDocument(id, logger)
     .finally(() => logger.endStep(STEPS.GET_TRANSACTION.id));

@@ -13,7 +13,7 @@ export const getCompanyHandler = async (
   const logger = request.log.child({ handler: getCompanyHandler.name });
   const repository = CompaniesRepository.getInstance();
   const { id } = request.params as GetCompanyParams;
-  logger.startStep(STEPS.GET_COMPANY.id, STEPS.GET_COMPANY.obfuscatedId);
+  logger.startStep(STEPS.GET_COMPANY.id);
   const company = await repository
     .getDocument(id, logger)
     .finally(() => logger.endStep(STEPS.GET_COMPANY.id));

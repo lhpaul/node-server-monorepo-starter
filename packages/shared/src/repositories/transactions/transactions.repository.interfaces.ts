@@ -1,4 +1,4 @@
-import { QueryInput, QueryOptions } from '../../definitions/listing.interfaces';
+import { QueryInput, QueryItem } from '../../definitions/listing.interfaces';
 import { TransactionType } from '../../domain/models/transaction.model';
 
 export interface CreateTransactionInput {
@@ -16,8 +16,8 @@ export interface UpdateTransactionInput {
 }
 
 export interface GetTransactionsQuery extends QueryInput {
-  amount?: QueryOptions<number>[];
-  companyId?: QueryOptions<string>[];
-  date?: QueryOptions<string>[];
-  type?: QueryOptions<TransactionType>[];
+  amount?: QueryItem<number>[];
+  companyId?: QueryItem<string>[];
+  date?: QueryItem<string>[];
+  type?: QueryItem<TransactionType>[];
 }

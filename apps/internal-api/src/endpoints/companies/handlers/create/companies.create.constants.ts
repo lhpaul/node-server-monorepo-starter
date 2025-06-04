@@ -1,3 +1,3 @@
 export const STEPS = {
-  CREATE_COMPANY: { id: 'create-company', obfuscatedId: '01' },
+  CREATE_COMPANY: { id: 'create-company' },
 };

@@ -29,6 +29,11 @@ jest.mock('@repo/fastify', () => ({
 
 jest.mock('@repo/shared/repositories');
 
+jest.mock('@repo/shared/utils', () => ({
+  RepositoryError: jest.fn(),
+  RepositoryErrorCode: jest.fn(),
+}));
+
 jest.mock('../../../../../../../utils/auth/auth.utils', () => ({
   hasCompanyTransactionsUpdatePermission: jest.fn(),
 }));
@@ -40,7 +45,7 @@ describe(updateTransactionHandler.name, () => {
     startStep: jest.Mock;
     endStep: jest.Mock;
   } & Partial<FastifyBaseLogger>;
-  let mockRepository: { updateDocument: jest.Mock };
+  let mockRepository: Partial<TransactionsRepository>;
 
   const mockParams = { companyId: 'company123', id: 'transaction123' };
   const mockBody = { amount: 100, date: '2024-03-20', type: 'INCOME' };
@@ -85,17 +90,14 @@ describe(updateTransactionHandler.name, () => {
   });
 
   it('should successfully update a transaction', async () => {
-    mockRepository.updateDocument.mockResolvedValue(undefined);
+    jest.spyOn(mockRepository, 'updateDocument').mockResolvedValue(undefined);
 
     await updateTransactionHandler(
       mockRequest as FastifyRequest,
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(
-      STEPS.UPDATE_TRANSACTION.id,
-      STEPS.UPDATE_TRANSACTION.obfuscatedId,
-    );
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION.id);
     expect(mockRepository.updateDocument).toHaveBeenCalledWith(
       mockParams.id,
       mockBody,
@@ -107,10 +109,10 @@ describe(updateTransactionHandler.name, () => {
   });
 
   it('should handle transaction not found', async () => {
-    mockRepository.updateDocument.mockRejectedValue(
+    jest.spyOn(mockRepository, 'updateDocument').mockRejectedValue(
       new RepositoryError({
         code: RepositoryErrorCode.DOCUMENT_NOT_FOUND,
-        message: 'Document not found',
+        message: 'Transaction not found',
       }),
     );
 
@@ -119,10 +121,7 @@ describe(updateTransactionHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(
-      STEPS.UPDATE_TRANSACTION.id,
-      STEPS.UPDATE_TRANSACTION.obfuscatedId,
-    );
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION.id);
     expect(mockRepository.updateDocument).toHaveBeenCalledWith(
       mockParams.id,
       mockBody,
@@ -135,7 +134,7 @@ describe(updateTransactionHandler.name, () => {
 
   it('should handle repository errors', async () => {
     const error = new Error('Repository error');
-    mockRepository.updateDocument.mockRejectedValue(error);
+    jest.spyOn(mockRepository, 'updateDocument').mockRejectedValue(error);
 
     await expect(
       updateTransactionHandler(
@@ -144,10 +143,7 @@ describe(updateTransactionHandler.name, () => {
       ),
     ).rejects.toThrow(error);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(
-      STEPS.UPDATE_TRANSACTION.id,
-      STEPS.UPDATE_TRANSACTION.obfuscatedId,
-    );
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION.id);
     expect(mockRepository.updateDocument).toHaveBeenCalledWith(
       mockParams.id,
       mockBody,

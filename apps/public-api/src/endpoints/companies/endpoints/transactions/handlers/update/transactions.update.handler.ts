@@ -29,10 +29,7 @@ export const updateTransactionHandler = async (
     });
   }
   try {
-    logger.startStep(
-      STEPS.UPDATE_TRANSACTION.id,
-      STEPS.UPDATE_TRANSACTION.obfuscatedId,
-    );
+    logger.startStep(STEPS.UPDATE_TRANSACTION.id);
     await repository.updateDocument(id, body, logger)
     .finally(() => logger.endStep(STEPS.UPDATE_TRANSACTION.id));
     return reply.code(STATUS_CODES.NO_CONTENT).send();

@@ -1,6 +1,6 @@
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
 
-import { ExecutionContext } from '../../definitions/executions.interfaces';
+import { ExecutionLogger } from '../../definitions/logging.interfaces';
 import { maskFields } from '../mask/mask.utils';
 import {
   ApiResponse,
@@ -14,11 +14,10 @@ import { DEFAULT_ERROR_CODE, LOGS } from './api-requests.utils.constants';
  */
 export async function apiRequest<T>(
   values: ApiRequestValues,
-  context: ExecutionContext,
+  logger: ExecutionLogger,
   options?: IRequestOptions,
 ): Promise<ApiResponse<T>> {
   const { method, url, payload: data, headers, params } = values;
-  const { logger } = context;
   const maskOptions = {
     params: [],
     requestHeaders: [],

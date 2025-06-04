@@ -69,11 +69,11 @@ describe(loginHandler.name, () => {
     await loginHandler(mockRequest as FastifyRequest, mockReply as FastifyReply);
 
     // Assert
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DECODE_EMAIL_TOKEN.id, STEPS.DECODE_EMAIL_TOKEN.obfuscatedId);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DECODE_EMAIL_TOKEN.id);
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.DECODE_EMAIL_TOKEN.id);
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.FIND_USER.id, STEPS.FIND_USER.obfuscatedId);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.FIND_USER.id);
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.FIND_USER.id);
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GENERATE_USER_TOKEN.id, STEPS.GENERATE_USER_TOKEN.obfuscatedId);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GENERATE_USER_TOKEN.id);
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GENERATE_USER_TOKEN.id);
     expect(mockReply.status).toHaveBeenCalledWith(STATUS_CODES.OK);
     expect(mockReply.send).toHaveBeenCalledWith({ token: mockUserToken });

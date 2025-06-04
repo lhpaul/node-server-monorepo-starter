@@ -12,7 +12,7 @@ export const listCompaniesHandler = async (
   const logger = request.log.child({ handler: listCompaniesHandler.name });
   const repository = CompaniesRepository.getInstance();
   const query = request.query as GetCompaniesQueryParams;
-  logger.startStep(STEPS.GET_COMPANIES.id, STEPS.GET_COMPANIES.obfuscatedId);
+  logger.startStep(STEPS.GET_COMPANIES.id);
   const companies = await repository
     .getDocumentsList(transformQueryParams(query), logger)
     .finally(() => logger.endStep(STEPS.GET_COMPANIES.id));

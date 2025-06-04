@@ -1,6 +1,6 @@
-import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 import { FORBIDDEN_ERROR, STATUS_CODES } from '@repo/fastify';
 import { CompaniesRepository } from '@repo/shared/repositories';
+import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../definitions/auth.interfaces';
 import { hasCompanyReadPermission } from '../../../../../utils/auth/auth.utils';
@@ -19,13 +19,7 @@ jest.mock('@repo/fastify', () => ({
   }
 }));
 
-jest.mock('@repo/shared/repositories', () => ({
-  CompaniesRepository: {
-    getInstance: jest.fn().mockImplementation(() => ({
-      getDocument: jest.fn(),
-    })),
-  },
-}));
+jest.mock('@repo/shared/repositories');
 
 jest.mock('../../../../../utils/auth/auth.utils', () => ({
   hasCompanyReadPermission: jest.fn(),
@@ -38,7 +32,7 @@ describe(getCompanyHandler.name, () => {
     startStep: jest.Mock;
     endStep: jest.Mock;
   } & Partial<FastifyBaseLogger>;
-  let mockRepository: { getDocument: jest.Mock };
+  let mockRepository: Partial<CompaniesRepository>;
 
   const mockParams = { id: '123' };
   const mockUser: AuthUser = {
@@ -82,9 +76,11 @@ describe(getCompanyHandler.name, () => {
     const mockCompany = {
       id: mockParams.id,
       name: 'Test Company',
+      createdAt: new Date(),
+      updatedAt: new Date(),
     };
 
-    mockRepository.getDocument.mockResolvedValue(mockCompany);
+    jest.spyOn(mockRepository, 'getDocument').mockResolvedValue(mockCompany);
 
     await getCompanyHandler(
       mockRequest as FastifyRequest,
@@ -92,10 +88,7 @@ describe(getCompanyHandler.name, () => {
     );
 
     expect(hasCompanyReadPermission).toHaveBeenCalledWith(mockParams.id, mockUser);
-    expect(mockLogger.startStep).toHaveBeenCalledWith(
-      STEPS.GET_COMPANY.id,
-      STEPS.GET_COMPANY.obfuscatedId,
-    );
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANY.id);
     expect(mockRepository.getDocument).toHaveBeenCalledWith(mockParams.id, mockLogger);
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANY.id);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
@@ -120,7 +113,7 @@ describe(getCompanyHandler.name, () => {
   });
 
   it('should throw error when company not found', async () => {
-    mockRepository.getDocument.mockResolvedValue(null);
+    jest.spyOn(mockRepository, 'getDocument').mockResolvedValue(null);
 
     await expect(
       getCompanyHandler(
@@ -130,10 +123,7 @@ describe(getCompanyHandler.name, () => {
     ).rejects.toThrow(COMPANY_NOT_FOUND_ERROR(mockParams.id));
 
     expect(hasCompanyReadPermission).toHaveBeenCalledWith(mockParams.id, mockUser);
-    expect(mockLogger.startStep).toHaveBeenCalledWith(
-      STEPS.GET_COMPANY.id,
-      STEPS.GET_COMPANY.obfuscatedId,
-    );
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANY.id);
     expect(mockRepository.getDocument).toHaveBeenCalledWith(mockParams.id, mockLogger);
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANY.id);
     expect(mockReply.code).not.toHaveBeenCalled();
@@ -142,7 +132,7 @@ describe(getCompanyHandler.name, () => {
 
   it('should handle repository errors', async () => {
     const error = new Error('Repository error');
-    mockRepository.getDocument.mockRejectedValue(error);
+    jest.spyOn(mockRepository, 'getDocument').mockRejectedValue(error);
 
     await expect(
       getCompanyHandler(
@@ -152,10 +142,7 @@ describe(getCompanyHandler.name, () => {
     ).rejects.toThrow(error);
 
     expect(hasCompanyReadPermission).toHaveBeenCalledWith(mockParams.id, mockUser);
-    expect(mockLogger.startStep).toHaveBeenCalledWith(
-      STEPS.GET_COMPANY.id,
-      STEPS.GET_COMPANY.obfuscatedId,
-    );
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANY.id);
     expect(mockRepository.getDocument).toHaveBeenCalledWith(mockParams.id, mockLogger);
     expect(mockReply.code).not.toHaveBeenCalled();
     expect(mockReply.send).not.toHaveBeenCalled();

@@ -2,7 +2,7 @@ import * as admin from 'firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { FirestoreCollectionRepository } from '../firestore-collection-repository.class';
 import { ExecutionLogger } from '../../../definitions/logging.interfaces';
-import { QueryInput, QueryOptions } from '../../../definitions/listing.interfaces';
+import { QueryInput, QueryItem } from '../../../definitions/listing.interfaces';
 import { RepositoryError, RepositoryErrorCode } from '../../../utils/repositories/repositories.errors';
 import { FIRESTORE_ERROR_CODE } from '../../../constants/firestore.constants';
 import { ERROR_MESSAGES, STEPS } from '../firestore-collection-repository.class.constants';
@@ -618,8 +618,8 @@ describe(FirestoreCollectionRepository.name, () => {
         expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_DOCUMENTS.id);
         expect(subCollectionRefMock.where).toHaveBeenCalledTimes(3);
         expect(subCollectionRefMock.where).toHaveBeenCalledWith('name', '==', query.name);
-        expect(subCollectionRefMock.where).toHaveBeenCalledWith('field1', '==', (query.field1 as QueryOptions<any>).value);
-        expect(subCollectionRefMock.where).toHaveBeenCalledWith('field2', '==', (query.field2 as QueryOptions<any>[])[0].value);
+        expect(subCollectionRefMock.where).toHaveBeenCalledWith('field1', '==', (query.field1 as QueryItem<any>).value);
+        expect(subCollectionRefMock.where).toHaveBeenCalledWith('field2', '==', (query.field2 as QueryItem<any>[])[0].value);
         expect(result).toHaveLength(2);
         expect(result[0]).toEqual({
           id: `${mainDocumentRefMock.id}-${subCollectionDocumentRefMock.id}`,

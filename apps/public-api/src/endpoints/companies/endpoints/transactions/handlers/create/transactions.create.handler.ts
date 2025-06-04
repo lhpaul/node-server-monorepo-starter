@@ -7,7 +7,6 @@ import { hasCompanyTransactionsCreatePermission } from '../../../../../../utils/
 import { STEPS } from './transactions.create.constants';
 import { CreateCompanyTransactionBody, CreateCompanyTransactionParams } from './transactions.create.interfaces';
 
-
 export const createTransactionHandler = async (
   request: FastifyRequest,
   reply: FastifyReply,
@@ -21,13 +20,10 @@ export const createTransactionHandler = async (
       message: FORBIDDEN_ERROR.responseMessage,
     });
   }
-  const transactionsSvc = TransactionsRepository.getInstance();
+  const repository = TransactionsRepository.getInstance();
   const body = request.body as CreateCompanyTransactionBody;
-  logger.startStep(
-    STEPS.CREATE_TRANSACTION.id,
-    STEPS.CREATE_TRANSACTION.obfuscatedId,
-  );
-  const id = await transactionsSvc
+  logger.startStep(STEPS.CREATE_TRANSACTION.id);
+  const id = await repository
     .createDocument({
       ...body,
       companyId,

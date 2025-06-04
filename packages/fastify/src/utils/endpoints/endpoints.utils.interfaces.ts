@@ -1,4 +1,4 @@
-export interface IEndpointOptions {
+export interface EndpointOptions {
   authenticate?: boolean;
   maskOptions?: {
     params?: string[];

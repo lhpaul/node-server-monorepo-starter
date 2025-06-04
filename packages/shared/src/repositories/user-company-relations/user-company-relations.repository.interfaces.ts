@@ -1,4 +1,4 @@
-import { QueryInput, QueryOptions } from '../../definitions/listing.interfaces';
+import { QueryInput, QueryItem } from '../../definitions/listing.interfaces';
 import { UserCompanyRole } from '../../domain/models/user-company-relation.model';
 
 export interface CreateUserCompanyRelationInput {
@@ -12,9 +12,9 @@ export interface UpdateUserCompanyRelationInput {
 }
 
 export interface GetUserCompanyRelationsQuery extends QueryInput {
-  companyId?: QueryOptions<string>[];
-  userId?: QueryOptions<string>[];
-  role?: QueryOptions<UserCompanyRole>[];
-  createdAt?: QueryOptions<Date>[];
-  updatedAt?: QueryOptions<Date>[];
+  companyId?: QueryItem<string>[];
+  userId?: QueryItem<string>[];
+  role?: QueryItem<UserCompanyRole>[];
+  createdAt?: QueryItem<Date>[];
+  updatedAt?: QueryItem<Date>[];
 } 

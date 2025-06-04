@@ -11,6 +11,7 @@ export class RequestLogger implements ExecutionLogger {
   private _logger: FastifyBaseLogger;
   private _lastStep: ExecutionStep = { id: '' };
   private _parent?: RequestLogger;
+  private _stepsCounter = 0;
   constructor(options: { logger: FastifyBaseLogger; parent?: RequestLogger }) {
     this._logger = options.logger;
     this.initTime = new Date().getTime();
@@ -23,6 +24,10 @@ export class RequestLogger implements ExecutionLogger {
 
   get level(): string {
     return this._logger.level;
+  }
+
+  get stepsCounter(): number {
+    return this._stepsCounter;
   }
 
   public info = (data: any, message?: string) =>
@@ -58,7 +63,6 @@ export class RequestLogger implements ExecutionLogger {
 
   startStep(
     label: string,
-    obfuscatedId?: string,
     config?: { silent?: boolean },
   ): void {
     const now = new Date().getTime();
@@ -70,10 +74,11 @@ export class RequestLogger implements ExecutionLogger {
         totalElapsedTime: now - this.initTime,
       });
     }
-    this._lastStep = { id: label, obfuscatedId };
+    this._lastStep = { id: label };
     if (this._parent) {
-      this._parent.startStep(label, obfuscatedId, { silent: true });
+      this._parent.startStep(label, { silent: true });
     }
+    this._stepsCounter++;
   }
 
   endStep(label: string, config?: { silent?: boolean }): void {

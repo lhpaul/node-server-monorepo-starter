@@ -4,8 +4,8 @@
   "scripts": {
     "build": "turbo run build",
     "check-types": "turbo run check-types",
-    "dev:internal-api": "turbo run dev --filter=internal-api",
-    "dev:public-api": "turbo run dev --filter=public-api",
+    "dev:internal-api": "turbo watch dev --filter=internal-api",
+    "dev:public-api": "turbo watch dev --filter=public-api",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "lint": "turbo run lint",
     "lint:staged": "lint-staged",
@@ -14,10 +14,10 @@
   "devDependencies": {
     "lint-staged": "^16.0.0",
     "prettier": "^3.5.3",
-    "turbo": "^2.5.3",
+    "turbo": "^2.5.4",
     "typescript": "5.8.2"
   },
-  "packageManager": "pnpm@10.11.0",
+  "packageManager": "pnpm@10.11.1",
   "engines": {
     "node": "22"
   }

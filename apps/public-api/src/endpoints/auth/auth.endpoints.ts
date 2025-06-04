@@ -1,4 +1,4 @@
-import { createEndpoint } from '@repo/fastify';
+import { createEndpoint, HTTP_METHODS_MAP } from '@repo/fastify';
 import { FastifyInstance, RouteOptions } from 'fastify';
 
 import { LOGIN_BODY_JSON_SCHEMA, URL_LOGIN, URL_UPDATE_CLAIMS } from './auth.endpoints.constants';
@@ -8,7 +8,7 @@ import { updateClaimsHandler } from './handlers/update-claims/update-claims.hand
 export function authEndpointsBuilder(server: FastifyInstance): RouteOptions[] {
   return [
     createEndpoint(server, {
-      method: ['POST'],
+      method: [HTTP_METHODS_MAP.CREATE],
       url: URL_LOGIN,
       handler: loginHandler,
       schema: {
@@ -22,7 +22,7 @@ export function authEndpointsBuilder(server: FastifyInstance): RouteOptions[] {
       },
     }),
     createEndpoint(server, {
-      method: ['PATCH'],
+      method: [HTTP_METHODS_MAP.UPDATE],
       url: URL_UPDATE_CLAIMS,
       handler: updateClaimsHandler,
     })

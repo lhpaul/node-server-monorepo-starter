@@ -12,10 +12,7 @@ export const listTransactionsHandler = async (
   const logger = request.log.child({ handler: listTransactionsHandler.name });
   const repository = TransactionsRepository.getInstance();
   const query = request.query as GetTransactionsQueryParams;
-  logger.startStep(
-    STEPS.GET_TRANSACTIONS.id,
-    STEPS.GET_TRANSACTIONS.obfuscatedId,
-  );
+  logger.startStep(STEPS.GET_TRANSACTIONS.id);
   const transactions = await repository
     .getDocumentsList(transformQueryParams(query), logger)
     .finally(() => logger.endStep(STEPS.GET_TRANSACTIONS.id));

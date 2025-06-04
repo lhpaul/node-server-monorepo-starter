@@ -1,10 +1,11 @@
 import { ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { QueryItem } from '@repo/shared/definitions';
 import { RequestLogger } from '@repo/fastify';
 
 import { McpResourceConfig } from '../../../definitions/mcp.interfaces';
 import { RESOURCE_NAME, RESOURCE_PATH, STEPS } from './transactions.resource.constants';
 import { TransactionsRepository } from '@repo/shared/repositories';
-import { QueryOptions } from '@repo/shared/definitions';
+
 import { FastifyBaseLogger } from 'fastify';
 export function transactionsResourceBuilder(serverLogger: FastifyBaseLogger): McpResourceConfig {
   return {
@@ -20,8 +21,8 @@ export function transactionsResourceBuilder(serverLogger: FastifyBaseLogger): Mc
       const requestLogger = new RequestLogger({ logger: serverLogger })
       .child({ requestId: extra.requestId, resource: RESOURCE_NAME, uri, variables });
 
-      requestLogger.startStep(STEPS.GET_TRANSACTIONS.id, STEPS.GET_TRANSACTIONS.obfuscatedId);
-      const dateFilters: QueryOptions<string>[] = [];
+      requestLogger.startStep(STEPS.GET_TRANSACTIONS.id);
+      const dateFilters: QueryItem<string>[] = [];
       if (dateFrom) {
         dateFilters.push({ value: dateFrom as string, operator: '>=' });
       }
@@ -29,13 +30,10 @@ export function transactionsResourceBuilder(serverLogger: FastifyBaseLogger): Mc
         dateFilters.push({ value: dateTo as string, operator: '<=' });
       }
       const transactionsRepo = TransactionsRepository.getInstance();
-      const transactions = await transactionsRepo.getDocumentsList(
-        {
-          date: dateFilters,
-        },
-        requestLogger,
-        { parentIds: { companyId: companyId as string } },
-      )
+      const transactions = await transactionsRepo.getDocumentsList({
+        companyId: [{ value: companyId, operator: '==' }],
+        date: dateFilters,
+      }, requestLogger)
       .finally(() => requestLogger.endStep(STEPS.GET_TRANSACTIONS.id));
       return {
         contents: [{

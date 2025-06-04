@@ -1,4 +1,4 @@
-import { createEndpoint } from '@repo/fastify';
+import { createEndpoint, HTTP_METHODS_MAP } from '@repo/fastify';
 import { FastifyInstance } from 'fastify';
 import {
   COMPANY_ENDPOINTS_PARAMS_JSON_SCHEMA,
@@ -15,9 +15,8 @@ import { transactionsEndpointsBuilder } from '../endpoints/transactions/transact
 import { listCompaniesHandler } from '../handlers/list/companies.list.handler';
 
 jest.mock('@repo/fastify', () => ({
+  ...jest.requireActual('@repo/fastify'),
   createEndpoint: jest.fn(),
-  buildSchemaForQueryParamsProperty:
-    jest.requireActual('@repo/fastify').buildSchemaForQueryParamsProperty,
 }));
 
 jest.mock('../endpoints/transactions/transactions.endpoints', () => ({
@@ -29,7 +28,7 @@ describe(companiesEndpointsBuilder.name, () => {
   let mockServer: FastifyInstance;
   const transactionsEndpointsMock = [
     {
-      method: ['POST'],
+      method: [HTTP_METHODS_MAP.CREATE],
       url: '/v1/companies/:companyId/transactions',
       handler: jest.fn(),
     },
@@ -51,7 +50,7 @@ describe(companiesEndpointsBuilder.name, () => {
 
   it('should create GET companies endpoint with correct configuration', () => {
     expect(createEndpoint).toHaveBeenNthCalledWith(1, mockServer, {
-      method: ['GET'],
+      method: [HTTP_METHODS_MAP.LIST],
       url: URL_V1,
       handler: listCompaniesHandler,
     });
@@ -59,7 +58,7 @@ describe(companiesEndpointsBuilder.name, () => {
 
   it('should create GET single company endpoint with correct configuration', () => {
     expect(createEndpoint).toHaveBeenNthCalledWith(2, mockServer, {
-      method: ['GET'],
+      method: [HTTP_METHODS_MAP.GET],
       url: URL_WITH_ID_V1,
       handler: getCompanyHandler,
       schema: {
@@ -70,7 +69,7 @@ describe(companiesEndpointsBuilder.name, () => {
 
   it('should create PATCH company endpoint with correct configuration', () => {
     expect(createEndpoint).toHaveBeenNthCalledWith(3, mockServer, {
-      method: ['PATCH'],
+      method: [HTTP_METHODS_MAP.UPDATE],
       url: URL_WITH_ID_V1,
       handler: updateCompanyHandler,
       schema: {

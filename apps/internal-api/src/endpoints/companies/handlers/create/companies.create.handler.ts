@@ -12,7 +12,7 @@ export const createCompanyHandler = async (
   const logger = request.log.child({ handler: createCompanyHandler.name });
   const repository = CompaniesRepository.getInstance();
   const body = request.body as CreateCompanyBody;
-  logger.startStep(STEPS.CREATE_COMPANY.id, STEPS.CREATE_COMPANY.obfuscatedId);
+  logger.startStep(STEPS.CREATE_COMPANY.id);
   const id = await repository
     .createDocument(body, logger)
     .finally(() => logger.endStep(STEPS.CREATE_COMPANY.id));

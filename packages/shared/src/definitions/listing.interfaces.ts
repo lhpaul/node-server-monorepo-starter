@@ -1,9 +1,19 @@
-export type QueryOperator = '==' | '!=' | '<' | '<=' | '>=' | '>' | 'array-contains' | 'array-contains-any' | 'in' | 'not-in';
-export type QueryOptions<T> = {
+export type QueryOperator =
+  | '=='
+  | '!='
+  | '>'
+  | '>='
+  | '<'
+  | '<='
+  | 'in'
+  | 'not-in'
+  | 'array-contains'
+  | 'array-contains-any';
+export type QueryItem<T> = {
   value: T | T[];
   operator: QueryOperator;
 };
 
 export interface QueryInput {
-  [field: string]: boolean | null | number | string | QueryOptions<any> | QueryOptions<any>[] | undefined;
+  [key: string]: boolean | null | number | string | QueryItem<any> | QueryItem<any>[] | undefined;
 }

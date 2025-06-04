@@ -1,4 +1,5 @@
 import { FORBIDDEN_ERROR, STATUS_CODES, transformQueryParams } from '@repo/fastify';
+import { TransactionType } from '@repo/shared/domain';
 import { TransactionsRepository } from '@repo/shared/repositories';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
@@ -19,13 +20,7 @@ jest.mock('@repo/fastify', () => ({
   transformQueryParams: jest.fn(),
 }));
 
-jest.mock('@repo/shared/repositories', () => ({
-  TransactionsRepository: {
-    getInstance: jest.fn().mockImplementation(() => ({
-      getDocumentsList: jest.fn(),
-    })),
-  },
-}));
+jest.mock('@repo/shared/repositories');
 
 jest.mock('../../../../../../../utils/auth/auth.utils', () => ({
   hasCompanyTransactionsReadPermission: jest.fn(),
@@ -39,7 +34,7 @@ describe(listTransactionsHandler.name, () => {
     endStep: jest.Mock;
     child: jest.Mock;
   } & Partial<FastifyBaseLogger>;
-  let mockRepository: { getDocumentsList: jest.Mock };
+  let mockRepository: Partial<TransactionsRepository>;
 
   const mockParams = { companyId: 'company123' };
   const mockQuery = { amount: { eq: 100 } };
@@ -82,23 +77,19 @@ describe(listTransactionsHandler.name, () => {
   });
 
   it('should successfully list transactions', async () => {
-    const mockTransactions = [{ id: '1', amount: 100 }];
-    mockRepository.getDocumentsList.mockResolvedValue(mockTransactions);
+    const mockTransactions = [{ id: '1', amount: 100, companyId: 'company123', createdAt: new Date(), date: '2024-03-20', type: TransactionType.CREDIT, updatedAt: new Date() }];
+    jest.spyOn(mockRepository, 'getDocumentsList').mockResolvedValue(mockTransactions);
 
     await listTransactionsHandler(
       mockRequest as FastifyRequest,
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(
-      STEPS.GET_TRANSACTIONS.id,
-      STEPS.GET_TRANSACTIONS.obfuscatedId,
-    );
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id);
     expect(transformQueryParams).toHaveBeenCalledWith(mockQuery);
     expect(mockRepository.getDocumentsList).toHaveBeenCalledWith(
       { amount: { eq: 100 } },
       mockLogger,
-      { parentIds: { companyId: mockParams.companyId } },
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
@@ -123,7 +114,7 @@ describe(listTransactionsHandler.name, () => {
 
   it('should handle repository errors', async () => {
     const error = new Error('Repository error');
-    mockRepository.getDocumentsList.mockRejectedValue(error);
+    jest.spyOn(mockRepository, 'getDocumentsList').mockRejectedValue(error);
 
     await expect(
       listTransactionsHandler(
@@ -132,14 +123,10 @@ describe(listTransactionsHandler.name, () => {
       ),
     ).rejects.toThrow(error);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(
-      STEPS.GET_TRANSACTIONS.id,
-      STEPS.GET_TRANSACTIONS.obfuscatedId,
-    );
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id);
     expect(mockRepository.getDocumentsList).toHaveBeenCalledWith(
       { amount: { eq: 100 } },
       mockLogger,
-      { parentIds: { companyId: mockParams.companyId } },
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id);
     expect(mockReply.code).not.toHaveBeenCalled();

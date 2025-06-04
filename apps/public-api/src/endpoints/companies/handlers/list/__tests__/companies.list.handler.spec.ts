@@ -12,19 +12,13 @@ jest.mock('@repo/fastify', () => ({
   },
 }));
 
-jest.mock('@repo/shared/repositories', () => ({
-  CompaniesRepository: {
-    getInstance: jest.fn().mockImplementation(() => ({
-      getDocument: jest.fn(),
-    })),
-  },
-}));
+jest.mock('@repo/shared/repositories');
 
 describe(listCompaniesHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;
   let mockReply: Partial<FastifyReply>;
   let mockLogger: Partial<FastifyBaseLogger>;
-  let mockRepository: { getDocument: jest.Mock };
+  let mockRepository: Partial<CompaniesRepository>;
   let mockUser: AuthUser;
 
   beforeEach(() => {
@@ -61,7 +55,30 @@ describe(listCompaniesHandler.name, () => {
     );
   });
 
-  it('should handle user without companies', async () => {
+  it('should return list of companies user has access to', async () => {
+    const mockCompanies = [
+      { id: 'company-1', name: 'Company 1', createdAt: new Date(), updatedAt: new Date() },
+      { id: 'company-2', name: 'Company 2', createdAt: new Date(), updatedAt: new Date() },
+      { id: 'company-3', name: 'Company 3', createdAt: new Date(), updatedAt: new Date() },
+    ];
+    jest.spyOn(mockRepository, 'getDocument').mockImplementation((id) => Promise.resolve(mockCompanies.find((company) => company.id === id) ?? null));
+
+    await listCompaniesHandler(
+      mockRequest as FastifyRequest,
+      mockReply as FastifyReply,
+    );
+
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
+    expect(mockRepository.getDocument).toHaveBeenCalledTimes(3);
+    expect(mockRepository.getDocument).toHaveBeenCalledWith('company-1', mockLogger);
+    expect(mockRepository.getDocument).toHaveBeenCalledWith('company-2', mockLogger);
+    expect(mockRepository.getDocument).toHaveBeenCalledWith('company-3', mockLogger);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
+    expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
+    expect(mockReply.send).toHaveBeenCalledWith(mockCompanies);
+  });
+
+  it('should handle user with no companies', async () => {
     mockUser.companies = undefined;
     mockRequest.user = mockUser;
 
@@ -70,38 +87,9 @@ describe(listCompaniesHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(
-      STEPS.GET_COMPANIES.id,
-      STEPS.GET_COMPANIES.obfuscatedId,
-    );
     expect(mockRepository.getDocument).not.toHaveBeenCalled();
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
-  });
-
-  it('should return list of companies user has access to', async () => {
-    const mockCompanies = [
-      { id: 'company-1', name: 'Company 1', createdAt: new Date(), updatedAt: new Date() },
-      { id: 'company-2', name: 'Company 2', createdAt: new Date(), updatedAt: new Date() },
-      { id: 'company-3', name: 'Company 3', createdAt: new Date(), updatedAt: new Date() },
-    ];
-    mockRepository.getDocument.mockImplementation((id) => Promise.resolve(mockCompanies.find((company) => company.id === id) ?? null));
-
-    await listCompaniesHandler(
-      mockRequest as FastifyRequest,
-      mockReply as FastifyReply,
-    );
-
-    expect(mockLogger.startStep).toHaveBeenCalledWith(
-      STEPS.GET_COMPANIES.id,
-      STEPS.GET_COMPANIES.obfuscatedId,
-    );
-    expect(mockRepository.getDocument).toHaveBeenCalledTimes(3);
-    expect(mockRepository.getDocument).toHaveBeenCalledWith('company-1', mockLogger);
-    expect(mockRepository.getDocument).toHaveBeenCalledWith('company-2', mockLogger);
-    expect(mockRepository.getDocument).toHaveBeenCalledWith('company-3', mockLogger);
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
-    expect(mockReply.send).toHaveBeenCalledWith(mockCompanies);
+    expect(mockReply.send).toHaveBeenCalledWith([]);
   });
 
   it('should handle empty permissions', async () => {
@@ -113,10 +101,7 @@ describe(listCompaniesHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(
-      STEPS.GET_COMPANIES.id,
-      STEPS.GET_COMPANIES.obfuscatedId,
-    );
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
     expect(mockRepository.getDocument).not.toHaveBeenCalled();
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
@@ -129,7 +114,7 @@ describe(listCompaniesHandler.name, () => {
       { id: 'company-3', name: 'Company 3', createdAt: new Date(), updatedAt: new Date() },
     ];
 
-    mockRepository.getDocument
+    jest.spyOn(mockRepository, 'getDocument')
       .mockResolvedValueOnce(mockCompanies[0])
       .mockResolvedValueOnce(null)
       .mockResolvedValueOnce(mockCompanies[1]);
@@ -139,10 +124,7 @@ describe(listCompaniesHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(
-      STEPS.GET_COMPANIES.id,
-      STEPS.GET_COMPANIES.obfuscatedId,
-    );
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
     expect(mockRepository.getDocument).toHaveBeenCalledTimes(3);
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
@@ -151,7 +133,7 @@ describe(listCompaniesHandler.name, () => {
 
   it('should handle repository errors', async () => {
     const error = new Error('Repository error');
-    mockRepository.getDocument.mockRejectedValue(error);
+    jest.spyOn(mockRepository, 'getDocument').mockRejectedValue(error);
 
     await expect(
       listCompaniesHandler(
@@ -160,10 +142,7 @@ describe(listCompaniesHandler.name, () => {
       ),
     ).rejects.toThrow(error);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(
-      STEPS.GET_COMPANIES.id,
-      STEPS.GET_COMPANIES.obfuscatedId,
-    );
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
     expect(mockRepository.getDocument).toHaveBeenCalled();
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
     expect(mockReply.code).not.toHaveBeenCalled();
