@@ -1,12 +1,11 @@
 import { ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { QueryItem } from '@repo/shared/definitions';
 import { RequestLogger } from '@repo/fastify';
+import { QueryItem } from '@repo/shared/definitions';
+import { TransactionsRepository } from '@repo/shared/repositories';
+import { FastifyBaseLogger } from 'fastify';
 
 import { McpResourceConfig } from '../../../definitions/mcp.interfaces';
 import { RESOURCE_NAME, RESOURCE_PATH, STEPS } from './transactions.resource.constants';
-import { TransactionsRepository } from '@repo/shared/repositories';
-
-import { FastifyBaseLogger } from 'fastify';
 export function transactionsResourceBuilder(serverLogger: FastifyBaseLogger): McpResourceConfig {
   return {
     name: RESOURCE_NAME,

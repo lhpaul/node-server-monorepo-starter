@@ -37,7 +37,7 @@ export function setServerErrorHandlers(server: FastifyInstance): void {
   server.setErrorHandler((error, request, reply) => {
     const lastStep = request.log.lastStep;
     const obfuscatedErrorCode = request.log.stepsCounter.toString(); // This is to return a code to the user that doesn't give away any internal information but can be later used to identify the step that caused the error in case the user reports it
-    if (error.statusCode === STATUS_CODES.VALIDATION_ERROR && error.code === VALIDATION_ERROR_CODE) {
+    if (error.statusCode === STATUS_CODES.BAD_REQUEST && error.code === VALIDATION_ERROR_CODE) {
       request.log.warn(
         {
           logId: VALIDATION_ERROR.logId,

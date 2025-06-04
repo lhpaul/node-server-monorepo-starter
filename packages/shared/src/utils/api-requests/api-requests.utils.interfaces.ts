@@ -1,5 +1,3 @@
-import { ExecutionLogger } from '../../definitions/logging.interfaces';
-
 export interface ApiRequestValues {
   method: string;
   url: string;
@@ -16,7 +14,7 @@ export interface MaskRequestOptions {
   responsePayloadFields?: string[];
   responseHeaders?: string[];
 }
-export interface IRequestOptions {
+export interface RequestOptions {
   maskOptions?: MaskRequestOptions;
 }
 

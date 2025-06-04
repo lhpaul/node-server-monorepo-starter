@@ -5,7 +5,7 @@ import { maskFields } from '../mask/mask.utils';
 import {
   ApiResponse,
   ApiRequestValues,
-  IRequestOptions,
+  RequestOptions,
 } from './api-requests.utils.interfaces';
 import { DEFAULT_ERROR_CODE, LOGS } from './api-requests.utils.constants';
 
@@ -15,7 +15,7 @@ import { DEFAULT_ERROR_CODE, LOGS } from './api-requests.utils.constants';
 export async function apiRequest<T>(
   values: ApiRequestValues,
   logger: ExecutionLogger,
-  options?: IRequestOptions,
+  options?: RequestOptions,
 ): Promise<ApiResponse<T>> {
   const { method, url, payload: data, headers, params } = values;
   const maskOptions = {

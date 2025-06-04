@@ -2,7 +2,8 @@ import { STATUS_CODES } from '@repo/fastify';
 import { TransactionsRepository } from '@repo/shared/repositories';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
-import { ERROR_RESPONSES, STEPS } from './transactions.create.constants';
+import { ERROR_RESPONSES } from '../../transactions.endpoints.constants';
+import { STEPS } from './transactions.create.constants';
 import { CreateTransactionBody } from './transactions.create.interfaces';
 import { RepositoryError, RepositoryErrorCode } from '@repo/shared/utils';
 
@@ -21,7 +22,10 @@ export const createTransactionHandler = async (
     return reply.code(STATUS_CODES.CREATED).send({ id });
   } catch (error) {
     if (error instanceof RepositoryError && error.code === RepositoryErrorCode.RELATED_DOCUMENT_NOT_FOUND) {
-      return reply.code(STATUS_CODES.BAD_REQUEST).send(ERROR_RESPONSES.COMPANY_NOT_FOUND);
+      return reply.code(STATUS_CODES.BAD_REQUEST).send({
+        code: ERROR_RESPONSES.COMPANY_NOT_FOUND.code,
+        message: ERROR_RESPONSES.COMPANY_NOT_FOUND.message(body.companyId),
+      });
     }
     throw error;
   }

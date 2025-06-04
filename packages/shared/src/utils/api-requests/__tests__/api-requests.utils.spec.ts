@@ -5,7 +5,7 @@ import { ExecutionLogger } from '../../../definitions/logging.interfaces';
 import { DEFAULT_ERROR_CODE, LOGS } from '../api-requests.utils.constants';
 import {
   ApiRequestValues,
-  IRequestOptions,
+  RequestOptions,
 } from '../api-requests.utils.interfaces';
 import { apiRequest } from '../api-requests.utils';
 
@@ -136,7 +136,7 @@ describe(apiRequest.name, () => {
       };
       (mockedAxios as unknown as jest.Mock).mockResolvedValueOnce(mockResponse);
 
-      const options: IRequestOptions = {
+      const options: RequestOptions = {
         maskOptions: {
           requestHeaders: ['Authorization'],
           params: ['id'],

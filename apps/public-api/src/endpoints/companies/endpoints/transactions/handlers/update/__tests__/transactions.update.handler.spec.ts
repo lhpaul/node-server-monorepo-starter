@@ -10,7 +10,6 @@ import { STEPS } from '../transactions.update.constants';
 import { updateTransactionHandler } from '../transactions.update.handler';
 
 
-
 jest.mock('@repo/fastify', () => ({
   STATUS_CODES: {
     NO_CONTENT: 204,
