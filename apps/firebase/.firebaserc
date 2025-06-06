@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "default": "node-starter-project-dev",
+    "dev": "node-starter-project-dev",
+    "stg": "node-starter-project-stg",
+    "prod": "node-starter-project-prod"
+  }
+}

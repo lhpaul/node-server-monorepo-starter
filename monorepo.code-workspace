@@ -5,6 +5,14 @@
 			"path": "."
 		},
 		{
+			"name": "Firebase",
+			"path": "apps/firebase"
+		},
+		{
+			"name": "Functions",
+			"path": "apps/functions"
+		},
+		{
 			"name": "Internal API",
 			"path": "apps/internal-api"
 		},
