@@ -28,6 +28,10 @@ export function hasCompanyTransactionsDeletePermission(companyId: string, permis
   return permissions.companies[companyId]?.some((permission) => permission === 'transactions:delete' || permission === 'transactions:write');
 }
 
+export function hasCompanySubscriptionsReadPermission(companyId: string, permissions: UserPermissions) {
+  return permissions.companies[companyId]?.some((permission) => permission === 'subscriptions:read');
+}
+
 
 
 
