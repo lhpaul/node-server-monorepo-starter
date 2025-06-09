@@ -6,7 +6,7 @@ import { TransactionsRepository } from '../transactions.repository';
 import { CompaniesRepository } from '../../companies/companies.repository';
 
 jest.mock('../../../utils/repositories/in-memory-repository.class');
-jest.mock('../../../repositories/companies/companies.repository');
+jest.mock('../../companies/companies.repository');
 
 describe(TransactionsRepository.name, () => {
 
@@ -65,11 +65,7 @@ describe(TransactionsRepository.name, () => {
       };
       jest.spyOn(CompaniesRepository, 'getInstance').mockReturnValue({
         getDocument: jest.fn().mockResolvedValue({
-          id: mockData.companyId,
-          name: 'Test Company',
-          ownerId: '123',
-          createdAt: new Date(),
-          updatedAt: new Date(),
+          id: mockData.companyId
         }),
       } as unknown as CompaniesRepository);
       const newTransactionId = '1';
