@@ -2,7 +2,7 @@ import { FORBIDDEN_ERROR, mapDateQueryParams, STATUS_CODES, transformQueryParams
 import { SubscriptionsRepository } from '@repo/shared/repositories';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
-import { AuthUser } from '../../../../../../../definitions/auth.types';
+import { AuthUser } from '../../../../../../../definitions/auth.interfaces';
 import { hasCompanySubscriptionsReadPermission } from '../../../../../../../utils/auth/auth.utils';
 import { STEPS } from '../subscriptions.list.handler.constants';
 import { listSubscriptionsHandler } from '../subscriptions.list.handler';
@@ -37,11 +37,11 @@ describe(listSubscriptionsHandler.name, () => {
   const mockQuery = { startsAt: '2024-03-20', endsAt: '2024-03-20' };
   const mockMappedQuery = { startsAt: new Date(mockQuery.startsAt), endsAt: new Date(mockQuery.endsAt) };
   const transformedQuery = { companyId: mockParams.companyId, ...mockMappedQuery };
-  const mockUser: AuthUser = {
+  const mockUser = {
     companies: {
       [mockParams.companyId]: ['subscriptions:read'],
     },
-  };
+  } as unknown as AuthUser;
 
   beforeEach(() => {
     mockLogger = {

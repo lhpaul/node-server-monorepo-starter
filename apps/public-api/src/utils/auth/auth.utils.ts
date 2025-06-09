@@ -13,7 +13,7 @@ export function hasCompanyDeletePermission(companyId: string, permissions: UserP
 }
 
 export function hasCompanySubscriptionsReadPermission(companyId: string, permissions: UserPermissions) {
-  return permissions.companies[companyId]?.some((permission) => permission === 'subscriptions:read');
+  return permissions.companies?.[companyId]?.some((permission) => permission === 'subscriptions:read');
 }
 
 export function hasCompanyTransactionsCreatePermission(companyId: string, permissions: UserPermissions) {
