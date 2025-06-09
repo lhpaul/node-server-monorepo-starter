@@ -10,7 +10,7 @@ export const ERROR_MESSAGES = {
 export const MOCK_TRANSACTIONS: Transaction[] = [
   new Transaction({
     amount: 100,
-    companyId: '1',
+    companyId: '0',
     createdAt: new Date(),
     date: '2021-01-01',
     id: '0',
@@ -19,7 +19,7 @@ export const MOCK_TRANSACTIONS: Transaction[] = [
   }),
   new Transaction({
     amount: 200,
-    companyId: '1',
+    companyId: '0',
     createdAt: new Date(),
     date: '2021-01-02',
     id: '1',

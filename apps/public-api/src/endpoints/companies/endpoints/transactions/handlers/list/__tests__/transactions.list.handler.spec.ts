@@ -40,7 +40,7 @@ describe(listTransactionsHandler.name, () => {
   const mockQuery = { amount: { eq: 100 } };
   const mockUser: AuthUser = {
     companies: {
-      'company123': ['transaction:read'],
+      [mockParams.companyId]: ['transaction:read'],
     },
   };
 
@@ -76,26 +76,6 @@ describe(listTransactionsHandler.name, () => {
     jest.clearAllMocks();
   });
 
-  it('should successfully list transactions', async () => {
-    const mockTransactions = [{ id: '1', amount: 100, companyId: 'company123', createdAt: new Date(), date: '2024-03-20', type: TransactionType.CREDIT, updatedAt: new Date() }];
-    jest.spyOn(mockRepository, 'getDocumentsList').mockResolvedValue(mockTransactions);
-
-    await listTransactionsHandler(
-      mockRequest as FastifyRequest,
-      mockReply as FastifyReply,
-    );
-
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id);
-    expect(transformQueryParams).toHaveBeenCalledWith(mockQuery);
-    expect(mockRepository.getDocumentsList).toHaveBeenCalledWith(
-      { amount: { eq: 100 } },
-      mockLogger,
-    );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id);
-    expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
-    expect(mockReply.send).toHaveBeenCalledWith(mockTransactions);
-  });
-
   it('should return forbidden when user lacks read permission', async () => {
     (hasCompanyTransactionsReadPermission as jest.Mock).mockReturnValue(false);
 
@@ -112,10 +92,33 @@ describe(listTransactionsHandler.name, () => {
     expect(mockRepository.getDocumentsList).not.toHaveBeenCalled();
   });
 
+  it('should successfully list transactions', async () => {
+    const transformedQuery = { companyId: mockParams.companyId, ...mockQuery };
+    const mockTransactions = [{ id: '1', amount: 100, companyId: 'company123', createdAt: new Date(), date: '2024-03-20', type: TransactionType.CREDIT, updatedAt: new Date() }];
+    (transformQueryParams as jest.Mock).mockReturnValue(transformedQuery);
+    jest.spyOn(mockRepository, 'getDocumentsList').mockResolvedValue(mockTransactions);
+
+    await listTransactionsHandler(
+      mockRequest as FastifyRequest,
+      mockReply as FastifyReply,
+    );
+
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id);
+    expect(transformQueryParams).toHaveBeenCalledWith(transformedQuery);
+    expect(mockRepository.getDocumentsList).toHaveBeenCalledWith(
+      transformedQuery,
+      mockLogger,
+    );
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id);
+    expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
+    expect(mockReply.send).toHaveBeenCalledWith(mockTransactions);
+  });
+
   it('should handle repository errors', async () => {
+    const transformedQuery = { companyId: mockParams.companyId, ...mockQuery };
+    (transformQueryParams as jest.Mock).mockReturnValue(transformedQuery);
     const error = new Error('Repository error');
     jest.spyOn(mockRepository, 'getDocumentsList').mockRejectedValue(error);
-
     await expect(
       listTransactionsHandler(
         mockRequest as FastifyRequest,
@@ -125,7 +128,7 @@ describe(listTransactionsHandler.name, () => {
 
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id);
     expect(mockRepository.getDocumentsList).toHaveBeenCalledWith(
-      { amount: { eq: 100 } },
+      transformedQuery,
       mockLogger,
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id);

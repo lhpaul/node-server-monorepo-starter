@@ -39,7 +39,7 @@ export function companiesEndpointsBuilder(server: FastifyInstance): RouteOptions
         params: COMPANY_ENDPOINTS_PARAMS_JSON_SCHEMA,
       },
     }),
-    ...transactionsEndpointsBuilder(server),
     ...subscriptionsEndpointsBuilder(server),
+    ...transactionsEndpointsBuilder(server),
   ];
 }

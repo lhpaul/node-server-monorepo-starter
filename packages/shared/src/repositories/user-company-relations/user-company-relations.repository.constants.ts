@@ -2,25 +2,25 @@ import { UserCompanyRelation, UserCompanyRole } from '../../domain/models/user-c
 
 export const MOCK_USER_COMPANY_RELATIONS: UserCompanyRelation[] = [
   new UserCompanyRelation({
+    id: '0',
+    companyId: '0',
+    userId: '0',
+    role: UserCompanyRole.ADMIN,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  }),
+  new UserCompanyRelation({
     id: '1',
     companyId: '1',
-    userId: '1',
+    userId: '0',
     role: UserCompanyRole.ADMIN,
     createdAt: new Date(),
     updatedAt: new Date(),
   }),
   new UserCompanyRelation({
     id: '2',
-    companyId: '2',
+    companyId: '0',
     userId: '1',
-    role: UserCompanyRole.ADMIN,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  }),
-  new UserCompanyRelation({
-    id: '3',
-    companyId: '1',
-    userId: '2',
     role: UserCompanyRole.MEMBER,
     createdAt: new Date(),
     updatedAt: new Date(),
