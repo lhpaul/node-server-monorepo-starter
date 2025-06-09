@@ -1,12 +1,11 @@
 import { FORBIDDEN_ERROR, RESOURCE_NOT_FOUND_ERROR, STATUS_CODES } from '@repo/fastify';
-import { TransactionType } from '@repo/shared/domain';
-import { TransactionsRepository } from '@repo/shared/repositories';
+import { SubscriptionsRepository } from '@repo/shared/repositories';
 import { UserPermissions } from '@repo/shared/services';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
-import { STEPS } from '../transactions.get.constants';
-import { getTransactionHandler } from '../transactions.get.handler';
-import { hasCompanyTransactionsReadPermission } from '../../../../../../../utils/auth/auth.utils';
+import { STEPS } from '../subscriptions.get.handler.constants';
+import { getSubscriptionHandler } from '../subscriptions.get.handler';
+import { hasCompanySubscriptionsReadPermission } from '../../../../../../../utils/auth/auth.utils';
 
 jest.mock('@repo/fastify', () => ({
   STATUS_CODES: {
@@ -26,30 +25,30 @@ jest.mock('@repo/fastify', () => ({
 
 jest.mock('@repo/shared/repositories', () => ({
   ...jest.requireActual('@repo/shared/repositories'),
-  TransactionsRepository: {
+  SubscriptionsRepository: {
     getInstance: jest.fn().mockImplementation(() => ({
-      getTransactionById: jest.fn(),
+      getDocument: jest.fn(),
     })),
   },
 }));
 
 jest.mock('../../../../../../../utils/auth/auth.utils', () => ({
-  hasCompanyTransactionsReadPermission: jest.fn(),
+  hasCompanySubscriptionsReadPermission: jest.fn(),
 }));
 
-describe(getTransactionHandler.name, () => {
+describe(getSubscriptionHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;
   let mockReply: Partial<FastifyReply>;
   let mockLogger: {
     startStep: jest.Mock;
     endStep: jest.Mock;
   } & Partial<FastifyBaseLogger>;
-  let mockRepository: Partial<TransactionsRepository>;
+  let mockRepository: Partial<SubscriptionsRepository>;
 
-  const mockParams = { companyId: 'company123', id: 'transaction123' };
+  const mockParams = { companyId: 'company123', id: 'subscription123' };
   const mockUser: UserPermissions = {
     companies: {
-      'company123': ['transaction:read'],
+      'company123': ['subscription:read'],
     },
   };
 
@@ -75,11 +74,11 @@ describe(getTransactionHandler.name, () => {
       getDocument: jest.fn(),
     };
 
-    (TransactionsRepository.getInstance as jest.Mock).mockReturnValue(
+    (SubscriptionsRepository.getInstance as jest.Mock).mockReturnValue(
       mockRepository,
     );
 
-    (hasCompanyTransactionsReadPermission as jest.Mock).mockReturnValue(true);
+    (hasCompanySubscriptionsReadPermission as jest.Mock).mockReturnValue(true);
   });
 
   afterEach(() => {
@@ -87,9 +86,9 @@ describe(getTransactionHandler.name, () => {
   });
 
   it('should return forbidden when user lacks read permission', async () => {
-    (hasCompanyTransactionsReadPermission as jest.Mock).mockReturnValue(false);
+    (hasCompanySubscriptionsReadPermission as jest.Mock).mockReturnValue(false);
 
-    await getTransactionHandler(
+    await getSubscriptionHandler(
       mockRequest as FastifyRequest,
       mockReply as FastifyReply,
     );
@@ -102,48 +101,47 @@ describe(getTransactionHandler.name, () => {
     expect(mockRepository.getDocument).not.toHaveBeenCalled();
   });
 
-  it('should successfully get a transaction', async () => {
-    const mockTransaction = {
+  it('should successfully get a subscription', async () => {
+    const mockSubscription = {
       id: mockParams.id,
       companyId: mockParams.companyId,
-      amount: 100,
-      date: '2024-03-20',
-      type: TransactionType.CREDIT,
+      startsAt: new Date(),
+      endsAt: new Date(),
       createdAt: new Date(),
       updatedAt: new Date(),
     };
 
-    jest.spyOn(mockRepository, 'getDocument').mockResolvedValue(mockTransaction);
+    jest.spyOn(mockRepository, 'getDocument').mockResolvedValue(mockSubscription);
 
-    await getTransactionHandler(
+    await getSubscriptionHandler(
       mockRequest as FastifyRequest,
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTION.id);
     expect(mockRepository.getDocument).toHaveBeenCalledWith(
       mockParams.id,
       mockLogger,
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTION.id);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
-    expect(mockReply.send).toHaveBeenCalledWith(mockTransaction);
+    expect(mockReply.send).toHaveBeenCalledWith(mockSubscription);
   });
 
-  it('should handle transaction not found', async () => {
+  it('should handle subscription not found', async () => {
     jest.spyOn(mockRepository, 'getDocument').mockResolvedValue(null);
 
-    await getTransactionHandler(
+    await getSubscriptionHandler(
       mockRequest as FastifyRequest,
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTION.id);
     expect(mockRepository.getDocument).toHaveBeenCalledWith(
       mockParams.id,
       mockLogger,
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTION.id);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.NOT_FOUND);
     expect(mockReply.send).toHaveBeenCalledWith({
       code: RESOURCE_NOT_FOUND_ERROR.responseCode,
@@ -156,19 +154,19 @@ describe(getTransactionHandler.name, () => {
     jest.spyOn(mockRepository, 'getDocument').mockRejectedValue(error);
 
     await expect(
-      getTransactionHandler(
+      getSubscriptionHandler(
         mockRequest as FastifyRequest,
         mockReply as FastifyReply,
       ),
     ).rejects.toThrow(error);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTION.id);
     expect(mockRepository.getDocument).toHaveBeenCalledWith(
       mockParams.id,
       mockLogger,
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTION.id);
     expect(mockReply.code).not.toHaveBeenCalled();
     expect(mockReply.send).not.toHaveBeenCalled();
   });
-});
+}); 
