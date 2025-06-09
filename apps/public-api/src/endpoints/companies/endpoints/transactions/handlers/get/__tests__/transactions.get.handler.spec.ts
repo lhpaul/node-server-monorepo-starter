@@ -4,9 +4,9 @@ import { TransactionsRepository } from '@repo/shared/repositories';
 import { UserPermissions } from '@repo/shared/services';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
+import { hasCompanyTransactionsReadPermission } from '../../../../../../../utils/auth/auth.utils';
 import { STEPS } from '../transactions.get.handler.constants';
 import { getTransactionHandler } from '../transactions.get.handler';
-import { hasCompanyTransactionsReadPermission } from '../../../../../../../utils/auth/auth.utils';
 
 jest.mock('@repo/fastify', () => ({
   STATUS_CODES: {

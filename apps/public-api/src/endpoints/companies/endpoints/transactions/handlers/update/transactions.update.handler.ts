@@ -1,5 +1,6 @@
 import { STATUS_CODES, FORBIDDEN_ERROR } from '@repo/fastify';
 import { TransactionsRepository } from '@repo/shared/repositories';
+import { RepositoryErrorCode, RepositoryError } from '@repo/shared/utils';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../../definitions/auth.interfaces';
@@ -10,9 +11,6 @@ import {
   UpdateTransactionBody,
   UpdateTransactionParams,
 } from './transactions.update.handler.interfaces';
-import { RepositoryErrorCode } from '@repo/shared/utils';
-import { RepositoryError } from '@repo/shared/utils';
-
 
 export const updateTransactionHandler = async (
   request: FastifyRequest,
