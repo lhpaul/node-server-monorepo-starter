@@ -45,6 +45,7 @@ export class AuthService {
     }, logger);
     logger.endStep(STEPS.GET_USER_COMPANY_RELATIONS.id);
     const response: UserPermissions = { companies: {} };
+    // get subscriptions of this companies
     for (const userCompanyRelation of userCompanyRelations) {
       response.companies[userCompanyRelation.companyId] = PERMISSIONS_BY_ROLE[userCompanyRelation.role];
     }

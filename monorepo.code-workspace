@@ -1,10 +1,6 @@
 {
 	"folders": [
 		{
-			"name": "Root",
-			"path": "."
-		},
-		{
 			"name": "Internal API",
 			"path": "apps/internal-api"
 		},
@@ -23,6 +19,10 @@
 		{
 			"name": "Shared Package",
 			"path": "packages/shared"
+		},
+		{
+			"name": "Root",
+			"path": "."
 		}
 	],
 	"settings": {}
