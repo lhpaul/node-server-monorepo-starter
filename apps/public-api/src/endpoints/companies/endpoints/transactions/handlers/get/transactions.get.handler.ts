@@ -5,7 +5,7 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import { AuthUser } from '../../../../../../definitions/auth.types';
 import { hasCompanyTransactionsReadPermission } from '../../../../../../utils/auth/auth.utils';
 import { STEPS } from './transactions.get.handler.constants';
-import { GetTransactionParams } from './transactions.get.interfaces';
+import { GetTransactionParams } from './transactions.get.handler.interfaces';
 export const getTransactionHandler = async (
   request: FastifyRequest,
   reply: FastifyReply,

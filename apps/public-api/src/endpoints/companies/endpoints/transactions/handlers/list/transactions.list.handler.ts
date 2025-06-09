@@ -3,7 +3,7 @@ import { TransactionsRepository } from '@repo/shared/repositories';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { STEPS } from './transactions.list.handler.constants';
-import { GetTransactionsParams, GetTransactionsQueryParams } from './transactions.list.interfaces';
+import { GetTransactionsParams, GetTransactionsQueryParams } from './transactions.list.handler.interfaces';
 import { hasCompanyTransactionsReadPermission } from '../../../../../../utils/auth/auth.utils';
 import { AuthUser } from '../../../../../../definitions/auth.types';
 

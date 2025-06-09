@@ -9,7 +9,7 @@ import { STEPS } from './transactions.update.handler.constants';
 import {
   UpdateTransactionBody,
   UpdateTransactionParams,
-} from './transactions.update.interfaces';
+} from './transactions.update.handler.interfaces';
 import { RepositoryErrorCode } from '@repo/shared/utils';
 import { RepositoryError } from '@repo/shared/utils';
 
