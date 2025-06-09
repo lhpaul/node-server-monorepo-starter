@@ -2,13 +2,14 @@ export const ERROR_MESSAGES = {
   COMPANY_NOT_FOUND: 'Company not found',
 } as const;
 
+const now = new Date();
 export const MOCK_SUBSCRIPTIONS = [
   {
     id: '0',
     companyId: '0',
-    startsAt: new Date('2024-01-01'),
-    endsAt: new Date('2024-12-31'),
-    createdAt: new Date('2024-01-01'),
-    updatedAt: new Date('2024-01-01'),
+    startsAt: new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1),
+    endsAt: new Date(now.getFullYear(), now.getMonth() + 1, now.getDate()),
+    createdAt: now,
+    updatedAt: now,
   },
 ]; 

@@ -1,12 +1,14 @@
 import { compare } from 'bcrypt';
 
+import { ExecutionLogger } from '../../definitions/logging.interfaces';
 import { User } from '../../domain/models/user.model';
 import { PERMISSIONS_BY_ROLE } from '../../domain/models/user-company-relation.model';
+import { SubscriptionsRepository } from '../../repositories/subscriptions/subscriptions.repository';
 import { UserCompanyRelationsRepository } from '../../repositories/user-company-relations/user-company-relations.repository';
 import { UsersRepository } from '../../repositories/users/users.repository';
+import { STEPS, WRITE_PERMISSION_SUFFIX } from './auth.service.constants';
 import { UserPermissions, ValidateCredentialsInput } from './auth.service.interfaces';
-import { STEPS } from './auth.service.constants';
-import { ExecutionLogger } from '../../definitions/logging.interfaces';
+
 export class AuthService {
   private static instance: AuthService;
 
@@ -45,8 +47,23 @@ export class AuthService {
     }, logger).finally(() => logger.endStep(STEPS.GET_USER_COMPANY_RELATIONS.id));
     const response: UserPermissions = { companies: {} };
     // get subscriptions of this companies
-    for (const userCompanyRelation of userCompanyRelations) {
+    const now = new Date();
+    const companySubscriptions = await Promise.all(userCompanyRelations.map(async (relation) => {
+      const subscriptions = await SubscriptionsRepository.getInstance().getDocumentsList({
+        companyId: [{ operator: '==', value: relation.companyId }],
+        startsAt: [{ operator: '<=', value: now }],
+        endsAt: [{ operator: '>=', value: now }],
+      }, logger);
+      return subscriptions;
+    }));
+    
+    for (const index in userCompanyRelations) {
+      const userCompanyRelation = userCompanyRelations[index];
+      const subscriptions = companySubscriptions[index];
       response.companies[userCompanyRelation.companyId] = PERMISSIONS_BY_ROLE[userCompanyRelation.role];
+      if (!subscriptions.length) { // if no subscription, remove write permissions
+        response.companies[userCompanyRelation.companyId] = response.companies[userCompanyRelation.companyId].filter((permission) => !permission.includes(WRITE_PERMISSION_SUFFIX));
+      }
     }
     return response;
   }

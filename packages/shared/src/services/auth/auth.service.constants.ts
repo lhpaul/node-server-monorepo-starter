@@ -9,3 +9,5 @@ export const STEPS = {
     id: 'get-user-company-relations'
   },
 };
+
+export const WRITE_PERMISSION_SUFFIX = 'write';
