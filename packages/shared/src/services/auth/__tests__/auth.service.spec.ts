@@ -2,11 +2,12 @@ import { compare } from 'bcrypt';
 
 import { ExecutionLogger } from '../../../definitions';
 import { User, UserCompanyRole, PERMISSIONS_BY_ROLE } from '../../../domain';
-import { UsersRepository, UserCompanyRelationsRepository } from '../../../repositories';
+import { SubscriptionsRepository, UsersRepository, UserCompanyRelationsRepository } from '../../../repositories';
 import { AuthService } from '../auth.service';
-import { STEPS } from '../auth.service.constants';
+import { STEPS, WRITE_PERMISSION_SUFFIX } from '../auth.service.constants';
 
 jest.mock('bcrypt');
+jest.mock('../../../repositories/subscriptions/subscriptions.repository');
 jest.mock('../../../repositories/users/users.repository');
 jest.mock('../../../repositories/user-company-relations/user-company-relations.repository');
 
@@ -14,6 +15,7 @@ describe(AuthService.name, () => {
   let authService: AuthService;
   let mockUsersRepository: Partial<UsersRepository>;
   let mockUserCompanyRelationsRepository: Partial<UserCompanyRelationsRepository>;
+  let mockSubscriptionsRepository: Partial<SubscriptionsRepository>;
   const mockLogger: jest.Mocked<ExecutionLogger> = {
     info: jest.fn(),
     error: jest.fn(),
@@ -40,8 +42,12 @@ describe(AuthService.name, () => {
     mockUserCompanyRelationsRepository = {
       getDocumentsList: jest.fn(),
     };
+    mockSubscriptionsRepository = {
+      getDocumentsList: jest.fn(),
+    };
     (UsersRepository.getInstance as jest.Mock).mockReturnValue(mockUsersRepository);
     (UserCompanyRelationsRepository.getInstance as jest.Mock).mockReturnValue(mockUserCompanyRelationsRepository);
+    (SubscriptionsRepository.getInstance as jest.Mock).mockReturnValue(mockSubscriptionsRepository);
   });
 
   describe(AuthService.getInstance.name, () => {
@@ -100,17 +106,36 @@ describe(AuthService.name, () => {
   });
 
   describe('getUserPermissions', () => {
+    const userId = 'user-1';
     const mockUserCompanyRelations = [
       {
-        userId: 'user-1',
+        userId,
         companyId: 'company-1',
         role: UserCompanyRole.ADMIN,
       },
       {
-        userId: 'user-1',
+        userId,
         companyId: 'company-2',
+        role: UserCompanyRole.ADMIN,
+      },
+      {
+        userId,
+        companyId: 'company-3',
         role: UserCompanyRole.MEMBER,
       },
+    ];
+    const mockSubscriptions = [
+      {
+        companyId: 'company-1',
+        startsAt: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() - 1),
+        endsAt: new Date(new Date().getFullYear(), new Date().getMonth() + 1, new Date().getDate()),
+      },
+      {
+        companyId: 'company-2',
+        startsAt: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() - 1),
+        endsAt: new Date(new Date().getFullYear(), new Date().getMonth() + 1, new Date().getDate()),
+      },
+      
     ];
 
     beforeEach(() => {
@@ -120,11 +145,15 @@ describe(AuthService.name, () => {
     });
 
     it('should return user permissions for all companies', async () => {
-      const result = await authService.getUserPermissions('user-1', mockLogger);
+      (mockSubscriptionsRepository.getDocumentsList as jest.Mock).mockResolvedValueOnce([mockSubscriptions[0]]);
+      (mockSubscriptionsRepository.getDocumentsList as jest.Mock).mockResolvedValueOnce([mockSubscriptions[1]]);
+      (mockSubscriptionsRepository.getDocumentsList as jest.Mock).mockResolvedValueOnce([]);
+      const result = await authService.getUserPermissions(userId, mockLogger);
       expect(result).toEqual({
         companies: {
           'company-1': PERMISSIONS_BY_ROLE[UserCompanyRole.ADMIN],
-          'company-2': PERMISSIONS_BY_ROLE[UserCompanyRole.MEMBER],
+          'company-2': PERMISSIONS_BY_ROLE[UserCompanyRole.ADMIN],
+          'company-3': PERMISSIONS_BY_ROLE[UserCompanyRole.MEMBER],
         },
       });
       expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_USER_COMPANY_RELATIONS.id);
@@ -133,8 +162,25 @@ describe(AuthService.name, () => {
 
     it('should return empty companies object when user has no company relations', async () => {
       (mockUserCompanyRelationsRepository.getDocumentsList as jest.Mock).mockResolvedValue([]);
-      const result = await authService.getUserPermissions('user-1', mockLogger);
+      const result = await authService.getUserPermissions(userId, mockLogger);
       expect(result).toEqual({ companies: {} });
+    });
+    
+    it('should remove write permissions to companies without active subscriptions', async () => {
+      (mockUserCompanyRelationsRepository.getDocumentsList as jest.Mock).mockResolvedValue(
+        mockUserCompanyRelations
+      );
+      (mockSubscriptionsRepository.getDocumentsList as jest.Mock).mockResolvedValueOnce([mockSubscriptions[0]]);
+      (mockSubscriptionsRepository.getDocumentsList as jest.Mock).mockResolvedValueOnce([]);
+      (mockSubscriptionsRepository.getDocumentsList as jest.Mock).mockResolvedValueOnce([]);
+      const result = await authService.getUserPermissions(userId, mockLogger);
+      expect(result).toEqual({
+        companies: {
+          'company-1': PERMISSIONS_BY_ROLE[UserCompanyRole.ADMIN],
+          'company-2': PERMISSIONS_BY_ROLE[UserCompanyRole.ADMIN].filter((permission) => !permission.includes(WRITE_PERMISSION_SUFFIX)),
+          'company-3': PERMISSIONS_BY_ROLE[UserCompanyRole.MEMBER].filter((permission) => !permission.includes(WRITE_PERMISSION_SUFFIX)),
+        },
+      });
     });
   });
 }); 
