@@ -224,9 +224,6 @@ importers:
       firebase-admin:
         specifier: 13.4.0
         version: 13.4.0
-      pino:
-        specifier: 9.6.0
-        version: 9.6.0
     devDependencies:
       '@repo/configs':
         specifier: workspace:*

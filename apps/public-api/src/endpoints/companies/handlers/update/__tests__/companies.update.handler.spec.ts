@@ -6,7 +6,7 @@ import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 import { AuthUser } from '../../../../../definitions/auth.interfaces';
 import { hasCompanyUpdatePermission } from '../../../../../utils/auth/auth.utils';
 import { COMPANY_NOT_FOUND_ERROR } from '../../../companies.endpoints.constants';
-import { STEPS } from '../companies.update.constants';
+import { STEPS } from '../companies.update.handler.constants';
 import { updateCompanyHandler } from '../companies.update.handler';
 
 jest.mock('@repo/fastify', () => ({

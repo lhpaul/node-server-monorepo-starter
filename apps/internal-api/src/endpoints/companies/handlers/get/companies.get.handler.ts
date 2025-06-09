@@ -3,8 +3,8 @@ import { CompaniesRepository } from '@repo/shared/repositories';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { ERROR_RESPONSES } from '../../companies.endpoints.constants';
-import { STEPS } from './companies.get.constants';
-import { GetCompanyParams } from './companies.get.interfaces';
+import { STEPS } from './companies.get.handler.constants';
+import { GetCompanyParams } from './companies.get.handler.interfaces';
 
 export const getCompanyHandler = async (
   request: FastifyRequest,

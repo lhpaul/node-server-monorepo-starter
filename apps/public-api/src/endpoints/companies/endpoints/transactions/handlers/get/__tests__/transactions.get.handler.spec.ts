@@ -5,7 +5,7 @@ import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../../../definitions/auth.interfaces';
 import { hasCompanyTransactionsReadPermission } from '../../../../../../../utils/auth/auth.utils';
-import { STEPS } from '../transactions.get.constants';
+import { STEPS } from '../transactions.get.handler.constants';
 import { getTransactionHandler } from '../transactions.get.handler';
 
 
@@ -87,6 +87,22 @@ describe(getTransactionHandler.name, () => {
     jest.clearAllMocks();
   });
 
+  it('should return forbidden when user lacks read permission', async () => {
+    (hasCompanyTransactionsReadPermission as jest.Mock).mockReturnValue(false);
+
+    await getTransactionHandler(
+      mockRequest as FastifyRequest,
+      mockReply as FastifyReply,
+    );
+
+    expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.FORBIDDEN);
+    expect(mockReply.send).toHaveBeenCalledWith({
+      code: FORBIDDEN_ERROR.responseCode,
+      message: FORBIDDEN_ERROR.responseMessage,
+    });
+    expect(mockRepository.getDocument).not.toHaveBeenCalled();
+  });
+
   it('should successfully get a transaction', async () => {
     const mockTransaction = {
       id: mockParams.id,
@@ -155,21 +171,5 @@ describe(getTransactionHandler.name, () => {
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION.id);
     expect(mockReply.code).not.toHaveBeenCalled();
     expect(mockReply.send).not.toHaveBeenCalled();
-  });
-
-  it('should return forbidden when user lacks read permission', async () => {
-    (hasCompanyTransactionsReadPermission as jest.Mock).mockReturnValue(false);
-
-    await getTransactionHandler(
-      mockRequest as FastifyRequest,
-      mockReply as FastifyReply,
-    );
-
-    expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.FORBIDDEN);
-    expect(mockReply.send).toHaveBeenCalledWith({
-      code: FORBIDDEN_ERROR.responseCode,
-      message: FORBIDDEN_ERROR.responseMessage,
-    });
-    expect(mockRepository.getDocument).not.toHaveBeenCalled();
   });
 });

@@ -6,7 +6,7 @@ import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 import { AuthUser } from '../../../../../../../definitions/auth.interfaces';
 import { hasCompanyTransactionsUpdatePermission } from '../../../../../../../utils/auth/auth.utils';
 import { ERROR_RESPONSES } from '../../../transactions.endpoints.constants';
-import { STEPS } from '../transactions.update.constants';
+import { STEPS } from '../transactions.update.handler.constants';
 import { updateTransactionHandler } from '../transactions.update.handler';
 
 

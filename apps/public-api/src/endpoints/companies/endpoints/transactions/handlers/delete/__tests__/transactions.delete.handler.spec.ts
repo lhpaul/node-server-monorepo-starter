@@ -5,7 +5,7 @@ import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../../../definitions/auth.interfaces';
 import { hasCompanyTransactionsDeletePermission } from '../../../../../../../utils/auth/auth.utils';
-import { STEPS } from '../transactions.delete.constants';
+import { STEPS } from '../transactions.delete.handler.constants';
 import { deleteTransactionHandler } from '../transactions.delete.handler';
 
 

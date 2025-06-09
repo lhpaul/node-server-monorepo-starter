@@ -2,8 +2,8 @@ import { STATUS_CODES } from '@repo/fastify';
 import { CompaniesRepository } from '@repo/shared/repositories';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
-import { STEPS } from './companies.create.constants';
-import { CreateCompanyBody } from './companies.create.interfaces';
+import { STEPS } from './companies.create.handler.constants';
+import { CreateCompanyBody } from './companies.create.handler.interfaces';
 
 export const createCompanyHandler = async (
   request: FastifyRequest,

@@ -3,8 +3,8 @@ import { TransactionsRepository } from '@repo/shared/repositories';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { ERROR_RESPONSES } from '../../transactions.endpoints.constants';
-import { STEPS } from './transactions.get.constants';
-import { GetTransactionParams } from './transactions.get.interfaces';
+import { STEPS } from './transactions.get.handler.constants';
+import { GetTransactionParams } from './transactions.get.handler.interfaces';
 export const getTransactionHandler = async (
   request: FastifyRequest,
   reply: FastifyReply,

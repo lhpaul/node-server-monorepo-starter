@@ -3,7 +3,7 @@ import { CompaniesRepository } from '@repo/shared/repositories';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../definitions/auth.interfaces';
-import { STEPS } from '../companies.list.constants';
+import { STEPS } from '../companies.list.handler.constants';
 import { listCompaniesHandler } from '../companies.list.handler';
 
 jest.mock('@repo/fastify', () => ({

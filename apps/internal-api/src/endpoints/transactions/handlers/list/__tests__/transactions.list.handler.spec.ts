@@ -4,7 +4,7 @@ import { TransactionsRepository } from '@repo/shared/repositories';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
 import { listTransactionsHandler } from '../transactions.list.handler';
-import { STEPS } from '../transactions.list.constants';
+import { STEPS } from '../transactions.list.handler.constants';
 
 jest.mock('@repo/shared/repositories');
 

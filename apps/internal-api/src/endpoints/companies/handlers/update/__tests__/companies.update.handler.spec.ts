@@ -4,7 +4,7 @@ import { RepositoryError, RepositoryErrorCode } from '@repo/shared/utils';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
 import { ERROR_RESPONSES } from '../../../companies.endpoints.constants';
-import { STEPS } from '../companies.update.constants';
+import { STEPS } from '../companies.update.handler.constants';
 import { updateCompanyHandler } from '../companies.update.handler';
 
 jest.mock('@repo/shared/repositories');

@@ -2,8 +2,8 @@ import { STATUS_CODES, transformQueryParams } from '@repo/fastify';
 import { TransactionsRepository } from '@repo/shared/repositories';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
-import { STEPS } from './transactions.list.constants';
-import { GetTransactionsQueryParams } from './transactions.list.interfaces';
+import { STEPS } from './transactions.list.handler.constants';
+import { GetTransactionsQueryParams } from './transactions.list.handler.interfaces';
 
 export const listTransactionsHandler = async (
   request: FastifyRequest,

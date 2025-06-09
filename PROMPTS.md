@@ -65,15 +65,29 @@ Do not write the unit tests.
 Add the unit tests for the created files. As before, use "/companies" endpoint as guidance
 ```
 
-## Writing Unit Tests
+## Writing Unit Tests Option 1: From Scratch
 
 ```markdown
-Write the unit tests for <file to be tested> file
+Write the unit tests for this file file
 ```
 
 `Files as context:`
 
 - <file to be tested>
+- contexts/code.conventions.md
+- contexts/tests.conventions.md
+
+## Writing Unit Tests Option 2: Based On a Similar File
+
+```markdown
+Create the unit tests for this file. Use as guidance what was done in <similar file> and <unit tests file from similar file>
+```
+
+`Files as context:`
+
+- <file to be tested>
+- <similar file>
+- <unit tests file from similar file>
 - contexts/code.conventions.md
 - contexts/tests.conventions.md
 

@@ -2,8 +2,8 @@ import { FORBIDDEN_ERROR, STATUS_CODES, transformQueryParams } from '@repo/fasti
 import { TransactionsRepository } from '@repo/shared/repositories';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
-import { STEPS } from './transactions.list.constants';
-import { GetTransactionsParams, GetTransactionsQueryParams } from './transactions.list.interfaces';
+import { STEPS } from './transactions.list.handler.constants';
+import { GetTransactionsParams, GetTransactionsQueryParams } from './transactions.list.handler.interfaces';
 import { hasCompanyTransactionsReadPermission } from '../../../../../../utils/auth/auth.utils';
 import { AuthUser } from '../../../../../../definitions/auth.interfaces';
 
@@ -24,7 +24,10 @@ export const listTransactionsHandler = async (
   const query = request.query as GetTransactionsQueryParams;
   logger.startStep(STEPS.GET_TRANSACTIONS.id);
   const transactions = await repository
-    .getDocumentsList(transformQueryParams(query), logger)
+    .getDocumentsList(transformQueryParams({
+      companyId,
+      ...query
+    }), logger)
     .finally(() => logger.endStep(STEPS.GET_TRANSACTIONS.id));
   return reply.code(STATUS_CODES.OK).send(transactions);
 };

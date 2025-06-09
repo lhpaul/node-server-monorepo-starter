@@ -6,11 +6,11 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import { AuthUser } from '../../../../../../definitions/auth.interfaces';
 import { hasCompanyTransactionsUpdatePermission } from '../../../../../../utils/auth/auth.utils';
 import { ERROR_RESPONSES } from '../../transactions.endpoints.constants';
-import { STEPS } from './transactions.update.constants';
+import { STEPS } from './transactions.update.handler.constants';
 import {
   UpdateTransactionBody,
   UpdateTransactionParams,
-} from './transactions.update.interfaces';
+} from './transactions.update.handler.interfaces';
 
 
 export const updateTransactionHandler = async (

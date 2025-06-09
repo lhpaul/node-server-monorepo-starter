@@ -10,6 +10,7 @@ export enum UserCompanyPermission {
   COMPANY_UPDATE = 'company:update',
   COMPANY_DELETE = 'company:delete',
   COMPANY_WRITE = 'company:write',
+  COMPANY_SUBSCRIPTIONS_READ = 'subscriptions:read',
   COMPANY_TRANSACTIONS_READ = 'transactions:read',
   COMPANY_TRANSACTIONS_UPDATE = 'transactions:update',
   COMPANY_TRANSACTIONS_DELETE = 'transactions:delete',
@@ -19,6 +20,7 @@ export enum UserCompanyPermission {
 export const PERMISSIONS_BY_ROLE: Record<UserCompanyRole, string[]> = {
   [UserCompanyRole.ADMIN]: [
     UserCompanyPermission.COMPANY_WRITE,
+    UserCompanyPermission.COMPANY_SUBSCRIPTIONS_READ,
     UserCompanyPermission.COMPANY_TRANSACTIONS_WRITE,
   ],
   [UserCompanyRole.MEMBER]: [

@@ -3,9 +3,9 @@ import { CompaniesRepository } from '@repo/shared/repositories';
 import { RepositoryError, RepositoryErrorCode } from '@repo/shared/utils';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
-import { STEPS } from '../companies.delete.constants';
-import { deleteCompanyHandler } from '../companies.delete.handler';
 import { ERROR_RESPONSES } from '../../../companies.endpoints.constants';
+import { STEPS } from '../companies.delete.handler.constants';
+import { deleteCompanyHandler } from '../companies.delete.handler';
 
 jest.mock('@repo/shared/repositories');
 jest.mock('@repo/shared/utils', () => ({
