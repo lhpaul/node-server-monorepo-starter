@@ -2,7 +2,7 @@ import { STATUS_CODES, FORBIDDEN_ERROR, RESOURCE_NOT_FOUND_ERROR } from '@repo/f
 import { TransactionsRepository } from '@repo/shared/repositories';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
-import { AuthUser } from '../../../../../../definitions/auth.types';
+import { AuthUser } from '../../../../../../definitions/auth.interfaces';
 import { hasCompanyTransactionsReadPermission } from '../../../../../../utils/auth/auth.utils';
 import { STEPS } from './transactions.get.handler.constants';
 import { GetTransactionParams } from './transactions.get.handler.interfaces';

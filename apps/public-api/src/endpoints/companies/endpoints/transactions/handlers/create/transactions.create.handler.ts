@@ -2,7 +2,7 @@ import { FORBIDDEN_ERROR, STATUS_CODES } from '@repo/fastify';
 import { TransactionsRepository } from '@repo/shared/repositories';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
-import { AuthUser } from '../../../../../../definitions/auth.types';
+import { AuthUser } from '../../../../../../definitions/auth.interfaces';
 import { hasCompanyTransactionsCreatePermission } from '../../../../../../utils/auth/auth.utils';
 import { STEPS } from './transactions.create.handler.constants';
 import { CreateCompanyTransactionBody, CreateCompanyTransactionParams } from './transactions.create.handler.interfaces';

@@ -1,7 +1,7 @@
 import { ExecutionLogger } from '@repo/shared/definitions';
 import { FromSchema } from 'json-schema-to-ts';
 
-import { AuthUser } from './auth.types';
+import { AuthUser } from './auth.interfaces';
 import { FASTIFY_ENV_SCHEMA } from '../constants/server.constants';
 
 

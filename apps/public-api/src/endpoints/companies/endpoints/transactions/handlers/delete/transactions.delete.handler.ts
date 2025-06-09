@@ -3,7 +3,7 @@ import { TransactionsRepository } from '@repo/shared/repositories';
 import { RepositoryError, RepositoryErrorCode } from '@repo/shared/utils';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
-import { AuthUser } from '../../../../../../definitions/auth.types';
+import { AuthUser } from '../../../../../../definitions/auth.interfaces';
 import { hasCompanyTransactionsDeletePermission } from '../../../../../../utils/auth/auth.utils';
 import { STEPS } from './transactions.delete.handler.constants';
 import { DeleteTransactionParams } from './transactions.delete.handler.interfaces';

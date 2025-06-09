@@ -2,7 +2,7 @@ import { FORBIDDEN_ERROR, mapDateQueryParams, STATUS_CODES, transformQueryParams
 import { SubscriptionsRepository } from '@repo/shared/repositories';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
-import { AuthUser } from '../../../../../../../definitions/auth.types';
+import { AuthUser } from '../../../../../../../definitions/auth.interfaces';
 import { hasCompanySubscriptionsReadPermission } from '../../../../../../../utils/auth/auth.utils';
 import { STEPS } from '../subscriptions.list.handler.constants';
 import { listSubscriptionsHandler } from '../subscriptions.list.handler';
