@@ -4,8 +4,8 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../../definitions/auth.types';
 import { hasCompanyTransactionsCreatePermission } from '../../../../../../utils/auth/auth.utils';
-import { STEPS } from './transactions.create.constants';
-import { CreateCompanyTransactionBody, CreateCompanyTransactionParams } from './transactions.create.interfaces';
+import { STEPS } from './transactions.create.handler.constants';
+import { CreateCompanyTransactionBody, CreateCompanyTransactionParams } from './transactions.create.handler.interfaces';
 
 export const createTransactionHandler = async (
   request: FastifyRequest,

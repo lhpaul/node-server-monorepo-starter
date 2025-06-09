@@ -4,7 +4,7 @@ import { TransactionsRepository } from '@repo/shared/repositories';
 import { UserPermissions } from '@repo/shared/services';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
-import { STEPS } from '../transactions.get.constants';
+import { STEPS } from '../transactions.get.handler.constants';
 import { getTransactionHandler } from '../transactions.get.handler';
 import { hasCompanyTransactionsReadPermission } from '../../../../../../../utils/auth/auth.utils';
 

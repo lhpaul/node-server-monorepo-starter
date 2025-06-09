@@ -4,8 +4,8 @@ import { RepositoryError, RepositoryErrorCode } from '@repo/shared/utils';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { ERROR_RESPONSES } from '../../companies.endpoints.constants';
-import { STEPS } from './companies.delete.constants';
-import { DeleteCompanyParams } from './companies.delete.interfaces';
+import { STEPS } from './companies.delete.handler.constants';
+import { DeleteCompanyParams } from './companies.delete.handler.interfaces';
 
 
 export const deleteCompanyHandler = async (

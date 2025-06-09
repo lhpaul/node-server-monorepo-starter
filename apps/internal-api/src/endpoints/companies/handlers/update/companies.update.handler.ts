@@ -4,11 +4,11 @@ import { RepositoryError, RepositoryErrorCode } from '@repo/shared/utils';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { ERROR_RESPONSES } from '../../companies.endpoints.constants';
-import { STEPS } from './companies.update.constants';
+import { STEPS } from './companies.update.handler.constants';
 import {
   UpdateCompanyBody,
   UpdateCompanyParams,
-} from './companies.update.interfaces';
+} from './companies.update.handler.interfaces';
 
 export const updateCompanyHandler = async (
   request: FastifyRequest,

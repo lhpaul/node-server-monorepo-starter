@@ -4,9 +4,9 @@ import { TransactionsRepository } from '@repo/shared/repositories';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { hasCompanyTransactionsCreatePermission } from '../../../../../../../utils/auth/auth.utils';
-import { STEPS } from '../transactions.create.constants';
+import { STEPS } from '../transactions.create.handler.constants';
 import { createTransactionHandler } from '../transactions.create.handler';
-import { CreateCompanyTransactionBody } from '../transactions.create.interfaces';
+import { CreateCompanyTransactionBody } from '../transactions.create.handler.interfaces';
 
 // Mock dependencies
 jest.mock('@repo/fastify', () => ({

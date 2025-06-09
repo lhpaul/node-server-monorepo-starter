@@ -4,8 +4,8 @@ import { RepositoryError, RepositoryErrorCode } from '@repo/shared/utils';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { ERROR_RESPONSES } from '../../transactions.endpoints.constants';
-import { STEPS } from './transactions.create.constants';
-import { CreateTransactionBody } from './transactions.create.interfaces';
+import { STEPS } from './transactions.create.handler.constants';
+import { CreateTransactionBody } from './transactions.create.handler.interfaces';
 
 export const createTransactionHandler = async (
   request: FastifyRequest,

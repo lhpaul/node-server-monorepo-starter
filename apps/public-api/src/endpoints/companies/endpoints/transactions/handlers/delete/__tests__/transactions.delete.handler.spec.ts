@@ -4,7 +4,7 @@ import { UserPermissions } from '@repo/shared/services';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
 import { hasCompanyTransactionsDeletePermission } from '../../../../../../../utils/auth/auth.utils';
-import { STEPS } from '../transactions.delete.constants';
+import { STEPS } from '../transactions.delete.handler.constants';
 import { deleteTransactionHandler } from '../transactions.delete.handler';
 import { RepositoryError } from '@repo/shared/utils';
 import { RepositoryErrorCode } from '@repo/shared/utils';

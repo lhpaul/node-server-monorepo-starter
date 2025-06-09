@@ -6,7 +6,7 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import { AuthUser } from '../../../../definitions/auth.types';
 import { hasCompanyUpdatePermission } from '../../../../utils/auth/auth.utils';
 import { COMPANY_NOT_FOUND_ERROR } from '../../companies.endpoints.constants';
-import { STEPS } from './companies.update.constants';
+import { STEPS } from './companies.update.handler.constants';
 import { UpdateCompanyBody, UpdateCompanyParams } from './companies.update.interfaces';
 
 export const updateCompanyHandler = async (

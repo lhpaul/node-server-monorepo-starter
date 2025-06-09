@@ -5,7 +5,7 @@ import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../../../definitions/auth.types';
 import { hasCompanyTransactionsReadPermission } from '../../../../../../../utils/auth/auth.utils';
-import { STEPS } from '../transactions.list.constants';
+import { STEPS } from '../transactions.list.handler.constants';
 import { listTransactionsHandler } from '../transactions.list.handler';
 
 jest.mock('@repo/fastify', () => ({
