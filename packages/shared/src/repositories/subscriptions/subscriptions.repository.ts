@@ -1,16 +1,16 @@
 import { ExecutionLogger } from '../../definitions';
-import { Subscription } from '../../domain/models/subscription.model';
 import { InMemoryRepository } from '../../utils/repositories/in-memory-repository.class';
 import { RepositoryError, RepositoryErrorCode } from '../../utils/repositories/repositories.errors';
 import { CompaniesRepository } from '../companies/companies.repository';
 import { ERROR_MESSAGES, MOCK_SUBSCRIPTIONS } from './subscriptions.repository.constants';
 import {
+  SubscriptionDocument,
   CreateSubscriptionDocumentInput,
   GetSubscriptionsQuery,
   UpdateSubscriptionDocumentInput,
 } from './subscriptions.repository.interfaces';
 
-export class SubscriptionsRepository extends InMemoryRepository<Subscription, CreateSubscriptionDocumentInput, UpdateSubscriptionDocumentInput, GetSubscriptionsQuery> {
+export class SubscriptionsRepository extends InMemoryRepository<SubscriptionDocument, CreateSubscriptionDocumentInput, UpdateSubscriptionDocumentInput, GetSubscriptionsQuery> {
   private static instance: SubscriptionsRepository;
 
   public static getInstance(): SubscriptionsRepository {
