@@ -4,7 +4,7 @@ import { ExecutionLogger } from '../../../definitions';
 import { User, UserCompanyRole, PERMISSIONS_BY_ROLE } from '../../../domain';
 import { SubscriptionsRepository, UsersRepository, UserCompanyRelationsRepository } from '../../../repositories';
 import { AuthService } from '../auth.service';
-import { STEPS, WRITE_PERMISSION_SUFFIX } from '../auth.service.constants';
+import { PERMISSION_SUFFIXES, STEPS } from '../auth.service.constants';
 
 jest.mock('bcrypt');
 jest.mock('../../../repositories/subscriptions/subscriptions.repository');
@@ -51,6 +51,10 @@ describe(AuthService.name, () => {
   });
 
   describe(AuthService.getInstance.name, () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
     it('should return the same instance when called multiple times', () => {
       const instance1 = AuthService.getInstance();
       const instance2 = AuthService.getInstance();
@@ -105,7 +109,7 @@ describe(AuthService.name, () => {
     });
   });
 
-  describe('getUserPermissions', () => {
+  describe(AuthService.prototype.getUserPermissions.name, () => {
     const userId = 'user-1';
     const mockUserCompanyRelations = [
       {
@@ -135,20 +139,45 @@ describe(AuthService.name, () => {
         startsAt: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() - 1),
         endsAt: new Date(new Date().getFullYear(), new Date().getMonth() + 1, new Date().getDate()),
       },
-      
     ];
-
-    beforeEach(() => {
-      (mockUserCompanyRelationsRepository.getDocumentsList as jest.Mock).mockResolvedValue(
-        mockUserCompanyRelations
-      );
+    const now = new Date();
+    beforeAll(() => {
+      jest.useFakeTimers().setSystemTime(now);
+    });
+    afterAll(() => {
+      jest.useRealTimers();
     });
 
     it('should return user permissions for all companies', async () => {
+      (mockUserCompanyRelationsRepository.getDocumentsList as jest.Mock).mockResolvedValue(
+        mockUserCompanyRelations
+      );
       (mockSubscriptionsRepository.getDocumentsList as jest.Mock).mockResolvedValueOnce([mockSubscriptions[0]]);
       (mockSubscriptionsRepository.getDocumentsList as jest.Mock).mockResolvedValueOnce([mockSubscriptions[1]]);
       (mockSubscriptionsRepository.getDocumentsList as jest.Mock).mockResolvedValueOnce([]);
       const result = await authService.getUserPermissions(userId, mockLogger);
+      expect(mockLogger.startStep).toHaveBeenNthCalledWith(1, STEPS.GET_USER_COMPANY_RELATIONS.id);
+      expect(mockLogger.endStep).toHaveBeenNthCalledWith(1, STEPS.GET_USER_COMPANY_RELATIONS.id);
+      expect(mockLogger.startStep).toHaveBeenNthCalledWith(2, STEPS.GET_SUBSCRIPTIONS.id);
+      expect(mockLogger.endStep).toHaveBeenNthCalledWith(2, STEPS.GET_SUBSCRIPTIONS.id);
+      expect(mockUserCompanyRelationsRepository.getDocumentsList).toHaveBeenCalledWith({
+        userId: [{ operator: '==', value: userId }],
+      }, mockLogger);
+      expect(mockSubscriptionsRepository.getDocumentsList).toHaveBeenCalledWith({
+        companyId: [{ operator: '==', value: mockUserCompanyRelations[0].companyId }],
+        startsAt: [{ operator: '<=', value: now }],
+        endsAt: [{ operator: '>=', value: now }],
+      }, mockLogger);
+      expect(mockSubscriptionsRepository.getDocumentsList).toHaveBeenCalledWith({
+        companyId: [{ operator: '==', value: mockUserCompanyRelations[1].companyId }],
+        startsAt: [{ operator: '<=', value: now }],
+        endsAt: [{ operator: '>=', value: now }],
+      }, mockLogger);
+      expect(mockSubscriptionsRepository.getDocumentsList).toHaveBeenCalledWith({
+        companyId: [{ operator: '==', value: mockUserCompanyRelations[2].companyId }],
+        startsAt: [{ operator: '<=', value: now }],
+        endsAt: [{ operator: '>=', value: now }],
+      }, mockLogger);
       expect(result).toEqual({
         companies: {
           'company-1': PERMISSIONS_BY_ROLE[UserCompanyRole.ADMIN],
@@ -174,11 +203,33 @@ describe(AuthService.name, () => {
       (mockSubscriptionsRepository.getDocumentsList as jest.Mock).mockResolvedValueOnce([]);
       (mockSubscriptionsRepository.getDocumentsList as jest.Mock).mockResolvedValueOnce([]);
       const result = await authService.getUserPermissions(userId, mockLogger);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_USER_COMPANY_RELATIONS.id);
+      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_USER_COMPANY_RELATIONS.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTIONS.id);
+      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTIONS.id);
+      expect(mockUserCompanyRelationsRepository.getDocumentsList).toHaveBeenCalledWith({
+        userId: [{ operator: '==', value: userId }],
+      }, mockLogger);
+      expect(mockSubscriptionsRepository.getDocumentsList).toHaveBeenCalledWith({
+        companyId: [{ operator: '==', value: mockUserCompanyRelations[0].companyId }],
+        startsAt: [{ operator: '<=', value: now }],
+        endsAt: [{ operator: '>=', value: now }],
+      }, mockLogger);
+      expect(mockSubscriptionsRepository.getDocumentsList).toHaveBeenCalledWith({
+        companyId: [{ operator: '==', value: mockUserCompanyRelations[1].companyId }],
+        startsAt: [{ operator: '<=', value: now }],
+        endsAt: [{ operator: '>=', value: now }],
+      }, mockLogger);
+      expect(mockSubscriptionsRepository.getDocumentsList).toHaveBeenCalledWith({
+        companyId: [{ operator: '==', value: mockUserCompanyRelations[2].companyId }],
+        startsAt: [{ operator: '<=', value: now }],
+        endsAt: [{ operator: '>=', value: now }],
+      }, mockLogger);
       expect(result).toEqual({
         companies: {
           'company-1': PERMISSIONS_BY_ROLE[UserCompanyRole.ADMIN],
-          'company-2': PERMISSIONS_BY_ROLE[UserCompanyRole.ADMIN].filter((permission) => !permission.includes(WRITE_PERMISSION_SUFFIX)),
-          'company-3': PERMISSIONS_BY_ROLE[UserCompanyRole.MEMBER].filter((permission) => !permission.includes(WRITE_PERMISSION_SUFFIX)),
+          'company-2': PERMISSIONS_BY_ROLE[UserCompanyRole.ADMIN].map((permission) => permission.replace(PERMISSION_SUFFIXES.WRITE, PERMISSION_SUFFIXES.READ)),
+          'company-3': PERMISSIONS_BY_ROLE[UserCompanyRole.MEMBER].map((permission) => permission.replace(PERMISSION_SUFFIXES.WRITE, PERMISSION_SUFFIXES.READ)),
         },
       });
     });

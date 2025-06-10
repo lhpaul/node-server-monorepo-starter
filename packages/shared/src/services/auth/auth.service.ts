@@ -6,7 +6,7 @@ import { PERMISSIONS_BY_ROLE } from '../../domain/models/user-company-relation.m
 import { SubscriptionsRepository } from '../../repositories/subscriptions/subscriptions.repository';
 import { UserCompanyRelationsRepository } from '../../repositories/user-company-relations/user-company-relations.repository';
 import { UsersRepository } from '../../repositories/users/users.repository';
-import { STEPS, WRITE_PERMISSION_SUFFIX } from './auth.service.constants';
+import { PERMISSION_SUFFIXES, STEPS } from './auth.service.constants';
 import { UserPermissions, ValidateCredentialsInput } from './auth.service.interfaces';
 
 export class AuthService {
@@ -48,6 +48,7 @@ export class AuthService {
     const response: UserPermissions = { companies: {} };
     // get subscriptions of this companies
     const now = new Date();
+    logger.startStep(STEPS.GET_SUBSCRIPTIONS.id);
     const companySubscriptions = await Promise.all(userCompanyRelations.map(async (relation) => {
       const subscriptions = await SubscriptionsRepository.getInstance().getDocumentsList({
         companyId: [{ operator: '==', value: relation.companyId }],
@@ -55,14 +56,13 @@ export class AuthService {
         endsAt: [{ operator: '>=', value: now }],
       }, logger);
       return subscriptions;
-    }));
-    
+    })).finally(() => logger.endStep(STEPS.GET_SUBSCRIPTIONS.id));
     for (const index in userCompanyRelations) {
       const userCompanyRelation = userCompanyRelations[index];
       const subscriptions = companySubscriptions[index];
       response.companies[userCompanyRelation.companyId] = PERMISSIONS_BY_ROLE[userCompanyRelation.role];
-      if (!subscriptions.length) { // if no subscription, remove write permissions
-        response.companies[userCompanyRelation.companyId] = response.companies[userCompanyRelation.companyId].filter((permission) => !permission.includes(WRITE_PERMISSION_SUFFIX));
+      if (!subscriptions.length) { // if no subscription, replace write permissions with read permissions
+        response.companies[userCompanyRelation.companyId] = response.companies[userCompanyRelation.companyId].map((permission) => permission.replace(PERMISSION_SUFFIXES.WRITE, PERMISSION_SUFFIXES.READ));
       }
     }
     return response;

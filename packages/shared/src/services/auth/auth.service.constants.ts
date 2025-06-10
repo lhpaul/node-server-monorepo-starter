@@ -8,6 +8,12 @@ export const STEPS = {
   GET_USER_COMPANY_RELATIONS: {
     id: 'get-user-company-relations'
   },
+  GET_SUBSCRIPTIONS: {
+    id: 'get-subscriptions'
+  },
 };
 
-export const WRITE_PERMISSION_SUFFIX = 'write';
+export const PERMISSION_SUFFIXES = {
+  WRITE: 'write',
+  READ: 'read',
+}
