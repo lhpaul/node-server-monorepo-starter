@@ -1,14 +1,14 @@
-import { PrivateKey } from '../../domain/models/private-key.model';
 import { FirestoreCollectionRepository } from '../../utils/repositories';
 import { COLLECTION_PATH } from './private-keys.repository.constants';
 import {
+  PrivateKeyDocument,
   CreatePrivateKeyDocumentInput,
   GetPrivateKeysQuery,
   UpdatePrivateKeyDocumentInput,
 } from './private-keys.repository.interfaces';
 
 
-export class PrivateKeysRepository extends FirestoreCollectionRepository<PrivateKey, CreatePrivateKeyDocumentInput, UpdatePrivateKeyDocumentInput, GetPrivateKeysQuery> {
+export class PrivateKeysRepository extends FirestoreCollectionRepository<PrivateKeyDocument, CreatePrivateKeyDocumentInput, UpdatePrivateKeyDocumentInput, GetPrivateKeysQuery> {
   private static instance: PrivateKeysRepository;
 
   public static getInstance(): PrivateKeysRepository {
