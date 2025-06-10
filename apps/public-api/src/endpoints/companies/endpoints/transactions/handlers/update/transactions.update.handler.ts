@@ -12,7 +12,6 @@ import {
   UpdateTransactionParams,
 } from './transactions.update.handler.interfaces';
 
-
 export const updateTransactionHandler = async (
   request: FastifyRequest,
   reply: FastifyReply,

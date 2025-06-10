@@ -1,9 +1,10 @@
 import * as admin from 'firebase-admin';
 
 import { PERMISSIONS_BY_ROLE } from '../../domain/models/user-company-relation.model';
+import { SubscriptionsRepository } from '../../repositories/subscriptions/subscriptions.repository';
 import { UserCompanyRelationsRepository } from '../../repositories/user-company-relations/user-company-relations.repository';
 import { UserPermissions } from './auth.service.interfaces';
-import { ERROR_MESSAGES, STEPS } from './auth.service.constants';
+import { ERROR_MESSAGES, PERMISSIONS_SUFFIXES, STEPS } from './auth.service.constants';
 import { DecodeEmailTokenError } from './auth.service.errors';
 import { DecodeEmailTokenErrorCode } from './auth.service.errors';
 import { ExecutionLogger } from '../../definitions/logging.interfaces';
@@ -58,12 +59,26 @@ export class AuthService {
   }
 
   private async _getUserPermissions(userId: string, logger: ExecutionLogger): Promise<UserPermissions> {
+    logger.startStep(STEPS.GET_USER_COMPANY_RELATIONS.id);
     const userCompanyRelations = await UserCompanyRelationsRepository.getInstance().getDocumentsList({
       userId: [{ operator: '==', value: userId }],
-    }, logger);
-    const response: { companies: { [companyId: string]: string[] } } = { companies: {} };
+    }, logger).finally(() => logger.endStep(STEPS.GET_USER_COMPANY_RELATIONS.id));
+
+    logger.startStep(STEPS.GET_SUBSCRIPTIONS.id);
+    const now = new Date();
+    const subscriptions = await SubscriptionsRepository.getInstance().getDocumentsList({
+      companyId: [{ operator: 'in', value: userCompanyRelations.map((relation) => relation.companyId) }],
+      startsAt: [{ operator: '<=', value: now }],
+      endsAt: [{ operator: '>=', value: now }],
+    }, logger).finally(() => logger.endStep(STEPS.GET_SUBSCRIPTIONS.id));
+    
+    const response: { companies: {[companyId: string]: string[] } } = { companies: {} };
     for (const userCompanyRelation of userCompanyRelations) {
+      const companySubscription = subscriptions.find((subscription) => subscription.companyId === userCompanyRelation.companyId);
       response.companies[userCompanyRelation.companyId] = PERMISSIONS_BY_ROLE[userCompanyRelation.role];
+      if (!companySubscription) { // if no subscription, change write permissions to read permissions
+        response.companies[userCompanyRelation.companyId] = response.companies[userCompanyRelation.companyId].map((permission) => permission.replace(PERMISSIONS_SUFFIXES.WRITE, PERMISSIONS_SUFFIXES.READ));
+      }
     }
     return response;
   }

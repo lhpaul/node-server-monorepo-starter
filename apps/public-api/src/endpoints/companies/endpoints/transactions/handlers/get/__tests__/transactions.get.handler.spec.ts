@@ -48,7 +48,7 @@ describe(getTransactionHandler.name, () => {
   let mockRepository: Partial<TransactionsRepository>;
 
   const mockParams = { companyId: 'company123', id: 'transaction123' };
-  const mockUser: AuthUser = {
+  const mockUser = {
     companies: {
       'company123': ['transaction:read'],
     },
