@@ -1,9 +1,11 @@
+import { SubscriptionDocument } from "./subscriptions.repository.interfaces";
+
 export const ERROR_MESSAGES = {
   COMPANY_NOT_FOUND: 'Company not found',
 } as const;
 
 const now = new Date();
-export const MOCK_SUBSCRIPTIONS = [
+export const MOCK_SUBSCRIPTIONS: SubscriptionDocument[] = [
   {
     id: '0',
     companyId: '0',

@@ -1,23 +1,29 @@
-import { QueryInput, QueryItem } from '../../definitions/listing.interfaces';
-import { TransactionType } from '../../domain/models/transaction.model';
+import { DocumentModel, QueryInput, QueryItem } from '../../definitions/repositories.interfaces';
 
-export interface CreateTransactionInput {
+export interface TransactionDocument extends DocumentModel {
   amount: number;
   companyId: string;
   date: string;
-  type: TransactionType;
+  type: string;
 }
 
-export interface UpdateTransactionInput {
+export interface CreateTransactionDocumentInput {
+  amount: number;
+  companyId: string;
+  date: string;
+  type: string;
+}
+
+export interface UpdateTransactionDocumentInput {
   amount?: number;
   companyId?: string;
   date?: string;
-  type?: TransactionType;
+  type?: string;
 }
 
-export interface GetTransactionsQuery extends QueryInput {
+export interface QueryTransactionsInput extends QueryInput {
   amount?: QueryItem<number>[];
   companyId?: QueryItem<string>[];
   date?: QueryItem<string>[];
-  type?: QueryItem<TransactionType>[];
+  type?: QueryItem<string>[];
 }

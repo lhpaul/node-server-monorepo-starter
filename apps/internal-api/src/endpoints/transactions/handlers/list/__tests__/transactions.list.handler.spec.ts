@@ -1,17 +1,17 @@
 import { STATUS_CODES } from '@repo/fastify';
 import { TransactionType } from '@repo/shared/domain';
-import { TransactionsRepository } from '@repo/shared/repositories';
+import { TransactionsService } from '@repo/shared/services';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
 import { listTransactionsHandler } from '../transactions.list.handler';
 import { STEPS } from '../transactions.list.handler.constants';
 
-jest.mock('@repo/shared/repositories');
+jest.mock('@repo/shared/services');
 
 describe(listTransactionsHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;
   let mockReply: Partial<FastifyReply>;
-  let mockRepository: Partial<TransactionsRepository>;
+  let mockService: Partial<TransactionsService>;
   let mockLogger: Partial<FastifyBaseLogger>;
   const mockTransactions = [
     {
@@ -60,12 +60,12 @@ describe(listTransactionsHandler.name, () => {
       send: jest.fn(),
     };
 
-    mockRepository = {
-      getDocumentsList: jest.fn(),
+    mockService = {
+      getResourcesList: jest.fn(),
     };
 
-    (TransactionsRepository.getInstance as jest.Mock).mockReturnValue(
-      mockRepository,
+    (TransactionsService.getInstance as jest.Mock).mockReturnValue(
+      mockService,
     );
   });
 
@@ -74,7 +74,7 @@ describe(listTransactionsHandler.name, () => {
   });
 
   it('should return all transactions when no query parameters are provided', async () => {
-    jest.spyOn(mockRepository, 'getDocumentsList').mockResolvedValue(mockTransactions);
+    jest.spyOn(mockService, 'getResourcesList').mockResolvedValue(mockTransactions);
 
     await listTransactionsHandler(
       mockRequest as FastifyRequest,
@@ -82,7 +82,7 @@ describe(listTransactionsHandler.name, () => {
     );
 
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id);
-    expect(mockRepository.getDocumentsList).toHaveBeenCalledWith(
+    expect(mockService.getResourcesList).toHaveBeenCalledWith(
       {},
       mockLogger,
     );
@@ -98,7 +98,7 @@ describe(listTransactionsHandler.name, () => {
     };
     mockRequest.query = queryParams;
     const filteredTransactions = [mockTransactions[0]];
-    jest.spyOn(mockRepository, 'getDocumentsList').mockResolvedValue(filteredTransactions);
+    jest.spyOn(mockService, 'getResourcesList').mockResolvedValue(filteredTransactions);
 
     await listTransactionsHandler(
       mockRequest as FastifyRequest,
@@ -106,7 +106,7 @@ describe(listTransactionsHandler.name, () => {
     );
 
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id);
-    expect(mockRepository.getDocumentsList).toHaveBeenCalledWith(
+    expect(mockService.getResourcesList).toHaveBeenCalledWith(
       {
         amount: [{ operator: '==', value: 100 }],
         date: [{ operator: '>', value: '2024-01-01' }],
@@ -119,7 +119,7 @@ describe(listTransactionsHandler.name, () => {
   });
 
   it('should handle empty result set', async () => {
-    jest.spyOn(mockRepository, 'getDocumentsList').mockResolvedValue([]);
+    jest.spyOn(mockService, 'getResourcesList').mockResolvedValue([]);
 
     await listTransactionsHandler(
       mockRequest as FastifyRequest,
@@ -127,7 +127,7 @@ describe(listTransactionsHandler.name, () => {
     );
 
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id);
-    expect(mockRepository.getDocumentsList).toHaveBeenCalledWith(
+    expect(mockService.getResourcesList).toHaveBeenCalledWith(
       {},
       mockLogger,
     );
@@ -136,9 +136,9 @@ describe(listTransactionsHandler.name, () => {
     expect(mockReply.send).toHaveBeenCalledWith([]);
   });
 
-  it('should handle repository errors', async () => {
-    const error = new Error('Repository error');
-    jest.spyOn(mockRepository, 'getDocumentsList').mockRejectedValue(error);
+  it('should handle service errors', async () => {
+    const error = new Error('Service error');
+    jest.spyOn(mockService, 'getResourcesList').mockRejectedValue(error);
 
     await expect(
       listTransactionsHandler(

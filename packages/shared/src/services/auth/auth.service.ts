@@ -1,11 +1,8 @@
 import { compare } from 'bcrypt';
 
-import { ExecutionLogger } from '../../definitions/logging.interfaces';
-import { User } from '../../domain/models/user.model';
-import { PERMISSIONS_BY_ROLE } from '../../domain/models/user-company-relation.model';
-import { SubscriptionsRepository } from '../../repositories/subscriptions/subscriptions.repository';
-import { UserCompanyRelationsRepository } from '../../repositories/user-company-relations/user-company-relations.repository';
-import { UsersRepository } from '../../repositories/users/users.repository';
+import { ExecutionLogger } from '../../definitions';
+import { PERMISSIONS_BY_ROLE, UserCompanyRole, User } from '../../domain';
+import { SubscriptionsRepository, UserCompanyRelationsRepository, UsersRepository } from '../../repositories';
 import { PERMISSION_SUFFIXES, STEPS } from './auth.service.constants';
 import { UserPermissions, ValidateCredentialsInput } from './auth.service.interfaces';
 
@@ -60,7 +57,7 @@ export class AuthService {
     for (const index in userCompanyRelations) {
       const userCompanyRelation = userCompanyRelations[index];
       const subscriptions = companySubscriptions[index];
-      response.companies[userCompanyRelation.companyId] = PERMISSIONS_BY_ROLE[userCompanyRelation.role];
+      response.companies[userCompanyRelation.companyId] = PERMISSIONS_BY_ROLE[userCompanyRelation.role as UserCompanyRole];
       if (!subscriptions.length) { // if no subscription, replace write permissions with read permissions
         response.companies[userCompanyRelation.companyId] = response.companies[userCompanyRelation.companyId].map((permission) => permission.replace(PERMISSION_SUFFIXES.WRITE, PERMISSION_SUFFIXES.READ));
       }

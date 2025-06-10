@@ -1,6 +1,6 @@
 import { FORBIDDEN_ERROR, STATUS_CODES, transformQueryParams } from '@repo/fastify';
 import { TransactionType } from '@repo/shared/domain';
-import { TransactionsRepository } from '@repo/shared/repositories';
+import { TransactionsService } from '@repo/shared/services';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../../../definitions/auth.interfaces';
@@ -20,7 +20,7 @@ jest.mock('@repo/fastify', () => ({
   transformQueryParams: jest.fn(),
 }));
 
-jest.mock('@repo/shared/repositories');
+jest.mock('@repo/shared/services');
 
 jest.mock('../../../../../../../utils/auth/auth.utils', () => ({
   hasCompanyTransactionsReadPermission: jest.fn(),
@@ -34,7 +34,7 @@ describe(listTransactionsHandler.name, () => {
     endStep: jest.Mock;
     child: jest.Mock;
   } & Partial<FastifyBaseLogger>;
-  let mockRepository: Partial<TransactionsRepository>;
+  let mockService: Partial<TransactionsService>;
 
   const mockParams = { companyId: 'company123' };
   const mockQuery = { amount: { eq: 100 } };
@@ -63,11 +63,11 @@ describe(listTransactionsHandler.name, () => {
       send: jest.fn(),
     };
 
-    mockRepository = {
-      getDocumentsList: jest.fn(),
+    mockService = {
+      getResourcesList: jest.fn(),
     };
 
-    (TransactionsRepository.getInstance as jest.Mock).mockReturnValue(mockRepository);
+    (TransactionsService.getInstance as jest.Mock).mockReturnValue(mockService);
     (hasCompanyTransactionsReadPermission as jest.Mock).mockReturnValue(true);
     (transformQueryParams as jest.Mock).mockReturnValue({ amount: { eq: 100 } });
   });
@@ -89,14 +89,14 @@ describe(listTransactionsHandler.name, () => {
       code: FORBIDDEN_ERROR.responseCode,
       message: FORBIDDEN_ERROR.responseMessage,
     });
-    expect(mockRepository.getDocumentsList).not.toHaveBeenCalled();
+    expect(mockService.getResourcesList).not.toHaveBeenCalled();
   });
 
   it('should successfully list transactions', async () => {
     const transformedQuery = { companyId: mockParams.companyId, ...mockQuery };
     const mockTransactions = [{ id: '1', amount: 100, companyId: 'company123', createdAt: new Date(), date: '2024-03-20', type: TransactionType.CREDIT, updatedAt: new Date() }];
     (transformQueryParams as jest.Mock).mockReturnValue(transformedQuery);
-    jest.spyOn(mockRepository, 'getDocumentsList').mockResolvedValue(mockTransactions);
+    jest.spyOn(mockService, 'getResourcesList').mockResolvedValue(mockTransactions);
 
     await listTransactionsHandler(
       mockRequest as FastifyRequest,
@@ -105,7 +105,7 @@ describe(listTransactionsHandler.name, () => {
 
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id);
     expect(transformQueryParams).toHaveBeenCalledWith(transformedQuery);
-    expect(mockRepository.getDocumentsList).toHaveBeenCalledWith(
+    expect(mockService.getResourcesList).toHaveBeenCalledWith(
       transformedQuery,
       mockLogger,
     );
@@ -114,11 +114,11 @@ describe(listTransactionsHandler.name, () => {
     expect(mockReply.send).toHaveBeenCalledWith(mockTransactions);
   });
 
-  it('should handle repository errors', async () => {
+  it('should handle service errors', async () => {
     const transformedQuery = { companyId: mockParams.companyId, ...mockQuery };
     (transformQueryParams as jest.Mock).mockReturnValue(transformedQuery);
-    const error = new Error('Repository error');
-    jest.spyOn(mockRepository, 'getDocumentsList').mockRejectedValue(error);
+    const error = new Error('Service error');
+    jest.spyOn(mockService, 'getResourcesList').mockRejectedValue(error);
     await expect(
       listTransactionsHandler(
         mockRequest as FastifyRequest,
@@ -127,7 +127,7 @@ describe(listTransactionsHandler.name, () => {
     ).rejects.toThrow(error);
 
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id);
-    expect(mockRepository.getDocumentsList).toHaveBeenCalledWith(
+    expect(mockService.getResourcesList).toHaveBeenCalledWith(
       transformedQuery,
       mockLogger,
     );

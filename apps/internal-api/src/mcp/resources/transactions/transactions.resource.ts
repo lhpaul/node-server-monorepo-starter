@@ -1,7 +1,7 @@
 import { ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { RequestLogger } from '@repo/fastify';
 import { QueryItem } from '@repo/shared/definitions';
-import { TransactionsRepository } from '@repo/shared/repositories';
+import { TransactionsService } from '@repo/shared/services';
 import { FastifyBaseLogger } from 'fastify';
 
 import { McpResourceConfig } from '../../../definitions/mcp.interfaces';
@@ -29,8 +29,8 @@ export function transactionsResourceBuilder(serverLogger: FastifyBaseLogger): Mc
       if (dateTo) {
         dateFilters.push({ value: dateTo as string, operator: '<=' });
       }
-      const transactionsRepo = TransactionsRepository.getInstance();
-      const transactions = await transactionsRepo.getDocumentsList({
+      const service = TransactionsService.getInstance();
+      const transactions = await service.getResourcesList({
         companyId: [{ value: companyId, operator: '==' }],
         date: dateFilters,
       }, requestLogger)

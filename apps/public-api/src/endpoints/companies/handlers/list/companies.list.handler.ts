@@ -1,5 +1,5 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { CompaniesRepository } from '@repo/shared/repositories';
+import { CompaniesService } from '@repo/shared/services';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../definitions/auth.interfaces';
@@ -10,7 +10,7 @@ export const listCompaniesHandler = async (
   reply: FastifyReply,
 ) => {
   const logger = request.log.child({ handler: listCompaniesHandler.name });
-  const repository = CompaniesRepository.getInstance();
+  const service = CompaniesService.getInstance();
   const user = request.user as AuthUser;
 
   // Get all company IDs the user has permission for
@@ -19,7 +19,7 @@ export const listCompaniesHandler = async (
   // Get company information for each ID in parallel
   logger.startStep(STEPS.GET_COMPANIES.id);
   const companies = await Promise.all(
-    companyIds.map((id) => repository.getDocument(id, logger)),
+    companyIds.map((id) => service.getResource(id, logger)),
   ).finally(() => logger.endStep(STEPS.GET_COMPANIES.id));
 
   // Filter out any null values (though this shouldn't happen if permissions are correct)

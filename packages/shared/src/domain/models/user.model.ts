@@ -1,8 +1,7 @@
-import { DatabaseObject } from '../../definitions/database.interfaces';
+import { ResourceModel } from '../../definitions/domain.interfaces';
 
-export class User implements DatabaseObject {
+export class User implements ResourceModel {
   public readonly createdAt: Date; // Created at date
-  public readonly currentPasswordHash: string; // Current password hash
   public readonly email: string; // Email
   public readonly id: string; // User id
   public readonly updatedAt: Date; // Updated at date

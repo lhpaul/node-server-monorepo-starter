@@ -1,4 +1,4 @@
-import { ExecutionLogger, QueryInput, QueryItem } from '../../../definitions';
+import { ExecutionLogger, FilterInput, FilterItem } from '../../../definitions';
 import { filterList } from '../../lists/lists.utils';
 import { InMemoryRepository } from '../in-memory-repository.class';
 import { STEPS } from '../in-memory-repository.class.constants';
@@ -29,9 +29,9 @@ interface TestUpdateInput {
   age?: number;
 }
 
-interface TestQueryInput extends QueryInput {
-  name?: QueryItem<string>[];
-  age?: QueryItem<number>[];
+interface TestQueryInput extends FilterInput {
+  name?: FilterItem<string>[];
+  age?: FilterItem<number>[];
 }
 
 describe(InMemoryRepository.name, () => {

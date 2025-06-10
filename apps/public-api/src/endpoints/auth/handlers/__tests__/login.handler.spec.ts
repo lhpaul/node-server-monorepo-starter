@@ -3,7 +3,7 @@ import { AuthService, UserPermissions } from '@repo/shared/services';
 import { FastifyReply, FastifyRequest, FastifyInstance } from 'fastify';
 
 import { loginHandler } from '../login.handler';
-import { ERROR_RESPONSES, STEPS } from '../login.constants';
+import { ERROR_RESPONSES, STEPS } from '../login.handler.constants';
 
 jest.mock('@repo/shared/services');
 

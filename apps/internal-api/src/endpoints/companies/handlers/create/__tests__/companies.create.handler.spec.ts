@@ -1,18 +1,18 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { CompaniesRepository } from '@repo/shared/repositories';
+import { CompaniesService } from '@repo/shared/services';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { createCompanyHandler } from '../companies.create.handler';
 import { STEPS } from '../companies.create.handler.constants';
 
 
-jest.mock('@repo/shared/repositories');
+jest.mock('@repo/shared/services');
 
 describe(createCompanyHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;
   let mockReply: Partial<FastifyReply>;
   let mockLogger: any;
-  let mockRepository: Partial<CompaniesRepository>;
+  let mockService: Partial<CompaniesService>;
 
   beforeEach(() => {
     mockLogger = {
@@ -33,12 +33,12 @@ describe(createCompanyHandler.name, () => {
       send: jest.fn(),
     };
 
-    mockRepository = {
-      createDocument: jest.fn(),
+    mockService = {
+      createResource: jest.fn(),
     };
 
-    (CompaniesRepository.getInstance as jest.Mock).mockReturnValue(
-      mockRepository,
+    (CompaniesService.getInstance as jest.Mock).mockReturnValue(
+      mockService,
     );
   });
 
@@ -48,7 +48,7 @@ describe(createCompanyHandler.name, () => {
 
   it('should create a company successfully', async () => {
     const mockCompanyId = '123';
-    jest.spyOn(mockRepository, 'createDocument').mockResolvedValue(mockCompanyId);
+    jest.spyOn(mockService, 'createResource').mockResolvedValue(mockCompanyId);
 
     await createCompanyHandler(
       mockRequest as FastifyRequest,
@@ -59,7 +59,7 @@ describe(createCompanyHandler.name, () => {
       handler: createCompanyHandler.name,
     });
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_COMPANY.id);
-    expect(mockRepository.createDocument).toHaveBeenCalledWith(
+    expect(mockService.createResource).toHaveBeenCalledWith(
       mockRequest.body,
       mockLogger,
     );
@@ -68,9 +68,9 @@ describe(createCompanyHandler.name, () => {
     expect(mockReply.send).toHaveBeenCalledWith({ id: mockCompanyId });
   });
 
-  it('should handle repository errors', async () => {
-    const mockError = new Error('Repository error');
-    jest.spyOn(mockRepository, 'createDocument').mockRejectedValue(mockError);
+  it('should handle service errors', async () => {
+    const mockError = new Error('Service error');
+    jest.spyOn(mockService, 'createResource').mockRejectedValue(mockError);
 
     await expect(
       createCompanyHandler(

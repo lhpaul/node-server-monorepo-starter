@@ -1,5 +1,5 @@
 import { FORBIDDEN_ERROR, mapDateQueryParams, STATUS_CODES, transformQueryParams } from '@repo/fastify';
-import { SubscriptionsRepository } from '@repo/shared/repositories';
+import { SubscriptionsService } from '@repo/shared/services';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../../../definitions/auth.interfaces';
@@ -20,7 +20,7 @@ jest.mock('@repo/fastify', () => ({
   transformQueryParams: jest.fn(),
 }));
 
-jest.mock('@repo/shared/repositories');
+jest.mock('@repo/shared/services');
 jest.mock('../../../../../../../utils/auth/auth.utils');
 
 describe(listSubscriptionsHandler.name, () => {
@@ -31,7 +31,7 @@ describe(listSubscriptionsHandler.name, () => {
     endStep: jest.Mock;
     child: jest.Mock;
   } & Partial<FastifyBaseLogger>;
-  let mockRepository: Partial<SubscriptionsRepository>;
+  let mockService: Partial<SubscriptionsService>;
 
   const mockParams = { companyId: 'company123' };
   const mockQuery = { startsAt: '2024-03-20', endsAt: '2024-03-20' };
@@ -62,11 +62,11 @@ describe(listSubscriptionsHandler.name, () => {
       send: jest.fn(),
     };
 
-    mockRepository = {
-      getDocumentsList: jest.fn(),
+    mockService = {
+      getResourcesList: jest.fn(),
     };
 
-    (SubscriptionsRepository.getInstance as jest.Mock).mockReturnValue(mockRepository);
+    (SubscriptionsService.getInstance as jest.Mock).mockReturnValue(mockService);
     (mapDateQueryParams as jest.Mock).mockReturnValue(mockMappedQuery);
     (transformQueryParams as jest.Mock).mockReturnValue(transformedQuery);
   });
@@ -89,7 +89,7 @@ describe(listSubscriptionsHandler.name, () => {
       code: FORBIDDEN_ERROR.responseCode,
       message: FORBIDDEN_ERROR.responseMessage,
     });
-    expect(mockRepository.getDocumentsList).not.toHaveBeenCalled();
+    expect(mockService.getResourcesList).not.toHaveBeenCalled();
   });
 
   it('should successfully list subscriptions', async () => {
@@ -102,7 +102,7 @@ describe(listSubscriptionsHandler.name, () => {
       createdAt: new Date(),
       updatedAt: new Date(),
     }];
-    jest.spyOn(mockRepository, 'getDocumentsList').mockResolvedValue(mockSubscriptions);
+    jest.spyOn(mockService, 'getResourcesList').mockResolvedValue(mockSubscriptions);
 
     await listSubscriptionsHandler(
       mockRequest as FastifyRequest,
@@ -113,7 +113,7 @@ describe(listSubscriptionsHandler.name, () => {
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.LIST_SUBSCRIPTIONS.id);
     expect(mapDateQueryParams).toHaveBeenCalledWith(mockQuery, ['startsAt', 'endsAt']);
     expect(transformQueryParams).toHaveBeenCalledWith({ companyId: mockParams.companyId, ...mockMappedQuery });
-    expect(mockRepository.getDocumentsList).toHaveBeenCalledWith(
+    expect(mockService.getResourcesList).toHaveBeenCalledWith(
       transformedQuery,
       mockLogger,
     );
@@ -122,10 +122,10 @@ describe(listSubscriptionsHandler.name, () => {
     expect(mockReply.send).toHaveBeenCalledWith(mockSubscriptions);
   });
 
-  it('should handle repository errors', async () => {
+  it('should handle service errors', async () => {
     (hasCompanySubscriptionsReadPermission as jest.Mock).mockReturnValue(true);
-    const error = new Error('Repository error');
-    jest.spyOn(mockRepository, 'getDocumentsList').mockRejectedValue(error);
+    const error = new Error('Service error');
+    jest.spyOn(mockService, 'getResourcesList').mockRejectedValue(error);
     await expect(
       listSubscriptionsHandler(
         mockRequest as FastifyRequest,
@@ -137,7 +137,7 @@ describe(listSubscriptionsHandler.name, () => {
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.LIST_SUBSCRIPTIONS.id);
     expect(mapDateQueryParams).toHaveBeenCalledWith(mockQuery, ['startsAt', 'endsAt']);
     expect(transformQueryParams).toHaveBeenCalledWith({ companyId: mockParams.companyId, ...mockMappedQuery });
-    expect(mockRepository.getDocumentsList).toHaveBeenCalledWith(
+    expect(mockService.getResourcesList).toHaveBeenCalledWith(
       transformedQuery,
       mockLogger,
     );

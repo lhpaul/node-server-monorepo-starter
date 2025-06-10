@@ -1,5 +1,5 @@
 import { FORBIDDEN_ERROR, STATUS_CODES, transformQueryParams } from '@repo/fastify';
-import { SubscriptionsRepository } from '@repo/shared/repositories';
+import { SubscriptionsService } from '@repo/shared/services';
 import { mapDateQueryParams } from '@repo/fastify';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
@@ -13,7 +13,7 @@ export const listSubscriptionsHandler = async (
   reply: FastifyReply,
 ) => {
   const logger = request.log.child({ handler: listSubscriptionsHandler.name });
-  const repository = SubscriptionsRepository.getInstance();
+  const service = SubscriptionsService.getInstance();
   const { companyId } = request.params as ListSubscriptionsParams;
   const user = request.user as AuthUser;
   
@@ -26,8 +26,8 @@ export const listSubscriptionsHandler = async (
 
   logger.startStep(STEPS.LIST_SUBSCRIPTIONS.id);
   const query = request.query as GetSubscriptionsQueryParams;
-  const subscriptions = await repository
-    .getDocumentsList(transformQueryParams({
+  const subscriptions = await service
+    .getResourcesList(transformQueryParams({
       companyId,
       ...mapDateQueryParams(query as Record<string, string>, ['startsAt', 'endsAt']),
     }), logger)

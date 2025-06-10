@@ -1,12 +1,12 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { SubscriptionsRepository } from '@repo/shared/repositories';
+import { SubscriptionsService } from '@repo/shared/services';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
 import { ERROR_RESPONSES } from '../../../subscriptions.endpoints.constants';
 import { STEPS } from '../subscriptions.get.handler.constants';
 import { getSubscriptionHandler } from '../subscriptions.get.handler';
 
-jest.mock('@repo/shared/repositories');
+jest.mock('@repo/shared/services');
 
 describe(getSubscriptionHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;
@@ -15,7 +15,7 @@ describe(getSubscriptionHandler.name, () => {
     startStep: jest.Mock;
     endStep: jest.Mock;
   } & Partial<FastifyBaseLogger>;
-  let mockRepository: Partial<SubscriptionsRepository>;
+  let mockService: Partial<SubscriptionsService>;
 
   const mockParams = { id: '123' };
 
@@ -36,12 +36,12 @@ describe(getSubscriptionHandler.name, () => {
       send: jest.fn(),
     };
 
-    mockRepository = {
-      getDocument: jest.fn(),
+    mockService = {
+      getResource: jest.fn(),
     };
 
-    (SubscriptionsRepository.getInstance as jest.Mock).mockReturnValue(
-      mockRepository,
+    (SubscriptionsService.getInstance as jest.Mock).mockReturnValue(
+      mockService,
     );
   });
 
@@ -55,7 +55,7 @@ describe(getSubscriptionHandler.name, () => {
       updatedAt: new Date(),
     };
 
-    jest.spyOn(mockRepository, 'getDocument').mockResolvedValue(mockSubscription);
+    jest.spyOn(mockService, 'getResource').mockResolvedValue(mockSubscription);
 
     await getSubscriptionHandler(
       mockRequest as FastifyRequest,
@@ -63,7 +63,7 @@ describe(getSubscriptionHandler.name, () => {
     );
 
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTION.id);
-    expect(mockRepository.getDocument).toHaveBeenCalledWith(
+    expect(mockService.getResource).toHaveBeenCalledWith(
       mockParams.id,
       mockLogger,
     );
@@ -73,7 +73,7 @@ describe(getSubscriptionHandler.name, () => {
   });
 
   it('should handle subscription not found', async () => {
-    jest.spyOn(mockRepository, 'getDocument').mockResolvedValue(null);
+    jest.spyOn(mockService, 'getResource').mockResolvedValue(null);
 
     await getSubscriptionHandler(
       mockRequest as FastifyRequest,
@@ -81,7 +81,7 @@ describe(getSubscriptionHandler.name, () => {
     );
 
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTION.id);
-    expect(mockRepository.getDocument).toHaveBeenCalledWith(
+    expect(mockService.getResource).toHaveBeenCalledWith(
       mockParams.id,
       mockLogger,
     );
@@ -92,9 +92,9 @@ describe(getSubscriptionHandler.name, () => {
     );
   });
 
-  it('should handle repository errors', async () => {
-    const error = new Error('Repository error');
-    jest.spyOn(mockRepository, 'getDocument').mockRejectedValue(error);
+  it('should handle service errors', async () => {
+    const error = new Error('Service error');
+    jest.spyOn(mockService, 'getResource').mockRejectedValue(error);
 
     await expect(
       getSubscriptionHandler(
@@ -104,7 +104,7 @@ describe(getSubscriptionHandler.name, () => {
     ).rejects.toThrow(error);
 
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTION.id);
-    expect(mockRepository.getDocument).toHaveBeenCalledWith(
+    expect(mockService.getResource).toHaveBeenCalledWith(
       mockParams.id,
       mockLogger,
     );

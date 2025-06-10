@@ -3,7 +3,7 @@ import { RepositoryError, RepositoryErrorCode } from '../../../utils/repositorie
 import { CompaniesRepository } from '../../companies/companies.repository';
 import { ERROR_MESSAGES, MOCK_SUBSCRIPTIONS } from '../subscriptions.repository.constants';
 import { SubscriptionsRepository } from '../subscriptions.repository';
-import { CreateSubscriptionInput } from '../subscriptions.repository.interfaces';
+import { CreateSubscriptionDocumentInput } from '../subscriptions.repository.interfaces';
 import { InMemoryRepository } from '../../../utils/repositories/in-memory-repository.class';
 
 jest.mock('../../../utils/repositories/in-memory-repository.class');
@@ -39,7 +39,7 @@ describe(SubscriptionsRepository.name, () => {
   });
 
   describe(SubscriptionsRepository.prototype.createDocument.name, () => {
-    const mockCreateInput: CreateSubscriptionInput = {
+    const mockCreateInput: CreateSubscriptionDocumentInput = {
       companyId: '1',
       startsAt: new Date('2024-01-01'),
       endsAt: new Date('2024-12-31'),

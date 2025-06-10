@@ -1,8 +1,8 @@
 import { compare } from 'bcrypt';
 
 import { ExecutionLogger } from '../../../definitions';
-import { User, UserCompanyRole, PERMISSIONS_BY_ROLE } from '../../../domain';
-import { SubscriptionsRepository, UsersRepository, UserCompanyRelationsRepository } from '../../../repositories';
+import { UserCompanyRole, PERMISSIONS_BY_ROLE } from '../../../domain';
+import { SubscriptionsRepository, UsersRepository, UserCompanyRelationsRepository, UserDocument } from '../../../repositories';
 import { AuthService } from '../auth.service';
 import { PERMISSION_SUFFIXES, STEPS } from '../auth.service.constants';
 
@@ -63,11 +63,11 @@ describe(AuthService.name, () => {
   });
 
   describe(AuthService.prototype.validateCredentials.name, () => {
-    const mockUser: User = {
+    const mockUser: UserDocument = {
       id: 'user-1',
       email: 'test@example.com',
       currentPasswordHash: 'hashed-password',
-    } as User;
+    } as UserDocument;
 
     beforeEach(() => {
       (mockUsersRepository.getDocumentsList as jest.Mock).mockResolvedValue([mockUser]);

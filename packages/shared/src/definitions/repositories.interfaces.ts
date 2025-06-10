@@ -1,5 +1,20 @@
-import { QueryInput } from './listing.interfaces';
-import { ExecutionLogger } from './logging.interfaces';
+import { FilterOperator } from './domain.interfaces';
+import { ExecutionLogger } from './executions.interfaces';
+
+export interface DocumentModel {
+  id: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export type QueryOperator = FilterOperator; // for now, we only support the same operators as the ones in the listing.interfaces.ts
+export type QueryItem<T> = {
+  value: T | T[];
+  operator: QueryOperator;
+};
+export interface QueryInput {
+  [key: string]: QueryItem<any>[] | undefined;
+}
 
 /**
  * Generic repository interface that defines standard CRUD operations for a document-based data store.
@@ -8,7 +23,7 @@ import { ExecutionLogger } from './logging.interfaces';
  * @template UpdateDocumentInput - The data structure used to update an existing document
  * @template FilterInput - The query parameters used to filter and list documents
  */
-export interface Repository<DocumentModel, CreateDocumentInput, UpdateDocumentInput, FilterInput extends QueryInput> {
+export interface Repository<DocumentModel, CreateDocumentInput, UpdateDocumentInput, RepositoryQueryInput extends QueryInput> {
 
   /**
    * Creates a new document in the repository
@@ -40,7 +55,7 @@ export interface Repository<DocumentModel, CreateDocumentInput, UpdateDocumentIn
    * @param logger - Logger instance for tracking execution
    * @returns Promise resolving to an array of matching documents
    */
-  getDocumentsList(query: FilterInput, logger: ExecutionLogger): Promise<DocumentModel[]>;
+  getDocumentsList(query: RepositoryQueryInput, logger: ExecutionLogger): Promise<DocumentModel[]>;
 
   /**
    * Updates an existing document in the repository

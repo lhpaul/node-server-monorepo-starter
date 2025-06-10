@@ -1,5 +1,5 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { CompaniesRepository } from '@repo/shared/repositories';
+import { CompaniesService } from '@repo/shared/services';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../definitions/auth.interfaces';
@@ -12,13 +12,13 @@ jest.mock('@repo/fastify', () => ({
   },
 }));
 
-jest.mock('@repo/shared/repositories');
+jest.mock('@repo/shared/services');
 
 describe(listCompaniesHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;
   let mockReply: Partial<FastifyReply>;
   let mockLogger: Partial<FastifyBaseLogger>;
-  let mockRepository: Partial<CompaniesRepository>;
+  let mockService: Partial<CompaniesService>;
   let mockUser: AuthUser;
 
   beforeEach(() => {
@@ -46,12 +46,12 @@ describe(listCompaniesHandler.name, () => {
       log: mockLogger as FastifyBaseLogger,
       user: mockUser,
     };
-    mockRepository = {
-      getDocument: jest.fn(),
+    mockService = {
+      getResource: jest.fn(),
     };
 
-    (CompaniesRepository.getInstance as jest.Mock).mockReturnValue(
-      mockRepository,
+    (CompaniesService.getInstance as jest.Mock).mockReturnValue(
+      mockService,
     );
   });
 
@@ -61,7 +61,7 @@ describe(listCompaniesHandler.name, () => {
       { id: 'company-2', name: 'Company 2', createdAt: new Date(), updatedAt: new Date() },
       { id: 'company-3', name: 'Company 3', createdAt: new Date(), updatedAt: new Date() },
     ];
-    jest.spyOn(mockRepository, 'getDocument').mockImplementation((id) => Promise.resolve(mockCompanies.find((company) => company.id === id) ?? null));
+    jest.spyOn(mockService, 'getResource').mockImplementation((id) => Promise.resolve(mockCompanies.find((company) => company.id === id) ?? null));
 
     await listCompaniesHandler(
       mockRequest as FastifyRequest,
@@ -69,10 +69,10 @@ describe(listCompaniesHandler.name, () => {
     );
 
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
-    expect(mockRepository.getDocument).toHaveBeenCalledTimes(3);
-    expect(mockRepository.getDocument).toHaveBeenCalledWith('company-1', mockLogger);
-    expect(mockRepository.getDocument).toHaveBeenCalledWith('company-2', mockLogger);
-    expect(mockRepository.getDocument).toHaveBeenCalledWith('company-3', mockLogger);
+    expect(mockService.getResource).toHaveBeenCalledTimes(3);
+    expect(mockService.getResource).toHaveBeenCalledWith('company-1', mockLogger);
+    expect(mockService.getResource).toHaveBeenCalledWith('company-2', mockLogger);
+    expect(mockService.getResource).toHaveBeenCalledWith('company-3', mockLogger);
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
     expect(mockReply.send).toHaveBeenCalledWith(mockCompanies);
@@ -88,7 +88,7 @@ describe(listCompaniesHandler.name, () => {
     );
 
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
-    expect(mockRepository.getDocument).not.toHaveBeenCalled();
+    expect(mockService.getResource).not.toHaveBeenCalled();
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
     expect(mockReply.send).toHaveBeenCalledWith([]);
@@ -100,7 +100,7 @@ describe(listCompaniesHandler.name, () => {
       { id: 'company-3', name: 'Company 3', createdAt: new Date(), updatedAt: new Date() },
     ];
 
-    jest.spyOn(mockRepository, 'getDocument')
+    jest.spyOn(mockService, 'getResource')
       .mockResolvedValueOnce(mockCompanies[0])
       .mockResolvedValueOnce(null)
       .mockResolvedValueOnce(mockCompanies[1]);
@@ -111,15 +111,15 @@ describe(listCompaniesHandler.name, () => {
     );
 
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
-    expect(mockRepository.getDocument).toHaveBeenCalledTimes(3);
+    expect(mockService.getResource).toHaveBeenCalledTimes(3);
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
     expect(mockReply.send).toHaveBeenCalledWith(mockCompanies);
   });
 
-  it('should handle repository errors', async () => {
-    const error = new Error('Repository error');
-    jest.spyOn(mockRepository, 'getDocument').mockRejectedValue(error);
+  it('should handle service errors', async () => {
+    const error = new Error('Service error');
+    jest.spyOn(mockService, 'getResource').mockRejectedValue(error);
 
     await expect(
       listCompaniesHandler(
@@ -129,7 +129,7 @@ describe(listCompaniesHandler.name, () => {
     ).rejects.toThrow(error);
 
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
-    expect(mockRepository.getDocument).toHaveBeenCalled();
+    expect(mockService.getResource).toHaveBeenCalled();
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
     expect(mockReply.code).not.toHaveBeenCalled();
     expect(mockReply.send).not.toHaveBeenCalled();

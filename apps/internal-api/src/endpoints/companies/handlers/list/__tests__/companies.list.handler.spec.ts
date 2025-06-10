@@ -1,16 +1,16 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { CompaniesRepository } from '@repo/shared/repositories';
+import { CompaniesService } from '@repo/shared/services';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { listCompaniesHandler } from '../companies.list.handler';
 import { STEPS } from '../companies.list.handler.constants';
 
-jest.mock('@repo/shared/repositories');
+jest.mock('@repo/shared/services');
 
 describe(listCompaniesHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;
   let mockReply: Partial<FastifyReply>;
-  let mockRepository: Partial<CompaniesRepository>;
+  let mockService: Partial<CompaniesService>;
   let mockLogger: any;
   const mockCompanies = [
     { id: '1', name: 'Company 1', createdAt: new Date(), updatedAt: new Date() },
@@ -35,12 +35,12 @@ describe(listCompaniesHandler.name, () => {
       send: jest.fn(),
     };
 
-    mockRepository = {
-      getDocumentsList: jest.fn(),
+    mockService = {
+      getResourcesList: jest.fn(),
     };
 
-    (CompaniesRepository.getInstance as jest.Mock).mockReturnValue(
-      mockRepository,
+    (CompaniesService.getInstance as jest.Mock).mockReturnValue(
+      mockService,
     );
   });
 
@@ -49,7 +49,7 @@ describe(listCompaniesHandler.name, () => {
   });
 
   it('should return all companies when no query parameters are provided', async () => {
-    jest.spyOn(mockRepository, 'getDocumentsList').mockResolvedValue(mockCompanies);
+    jest.spyOn(mockService, 'getResourcesList').mockResolvedValue(mockCompanies);
 
     await listCompaniesHandler(
       mockRequest as FastifyRequest,
@@ -57,7 +57,7 @@ describe(listCompaniesHandler.name, () => {
     );
 
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
-    expect(mockRepository.getDocumentsList).toHaveBeenCalledWith(
+    expect(mockService.getResourcesList).toHaveBeenCalledWith(
       {},
       mockLogger,
     );
@@ -72,7 +72,7 @@ describe(listCompaniesHandler.name, () => {
     };
     mockRequest.query = queryParams;
     const filteredCompanies = [mockCompanies[0]];
-    jest.spyOn(mockRepository, 'getDocumentsList').mockResolvedValue(filteredCompanies);
+    jest.spyOn(mockService, 'getResourcesList').mockResolvedValue(filteredCompanies);
 
     await listCompaniesHandler(
       mockRequest as FastifyRequest,
@@ -80,7 +80,7 @@ describe(listCompaniesHandler.name, () => {
     );
 
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
-    expect(mockRepository.getDocumentsList).toHaveBeenCalledWith(
+    expect(mockService.getResourcesList).toHaveBeenCalledWith(
       {
         name: [{ operator: '==', value: 'Company 1' }],
       },
@@ -92,7 +92,7 @@ describe(listCompaniesHandler.name, () => {
   });
 
   it('should handle empty result set', async () => {
-    jest.spyOn(mockRepository, 'getDocumentsList').mockResolvedValue([]);
+    jest.spyOn(mockService, 'getResourcesList').mockResolvedValue([]);
 
     await listCompaniesHandler(
       mockRequest as FastifyRequest,
@@ -100,7 +100,7 @@ describe(listCompaniesHandler.name, () => {
     );
 
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
-    expect(mockRepository.getDocumentsList).toHaveBeenCalledWith(
+    expect(mockService.getResourcesList).toHaveBeenCalledWith(
       {},
       mockLogger,
     );
@@ -109,9 +109,9 @@ describe(listCompaniesHandler.name, () => {
     expect(mockReply.send).toHaveBeenCalledWith([]);
   });
 
-  it('should handle repository errors', async () => {
-    const error = new Error('Repository error');
-    jest.spyOn(mockRepository, 'getDocumentsList').mockRejectedValue(error);
+  it('should handle service errors', async () => {
+    const error = new Error('Service error');
+    jest.spyOn(mockService, 'getResourcesList').mockRejectedValue(error);
 
     await expect(
       listCompaniesHandler(

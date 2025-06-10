@@ -1,4 +1,4 @@
-import { DatabaseObject, ExecutionLogger, QueryInput, QueryItem, Repository } from '../../definitions';
+import { DocumentModel, ExecutionLogger, QueryInput, QueryItem, Repository } from '../../definitions';
 import { filterList } from '../lists/lists.utils';
 import { wait } from '../time/time.utils';
 import { IN_MEMORY_REPOSITORY_WAIT_TIME, STEPS } from './in-memory-repository.class.constants';
@@ -8,15 +8,15 @@ import { RepositoryErrorCode, REPOSITORY_ERROR_MESSAGES, RepositoryError } from 
  * Generic repository class that defines standard CRUD operations for a document-based data store.
  * This class is designed to be used in memory, and is not suitable for production use.
  * 
- * @template DocumentModel - The type of document being stored and retrieved
+ * @template RepositoryDocumentModel - The type of document being stored and retrieved
  * @template CreateDocumentInput - The data structure required to create a new document
  * @template UpdateDocumentInput - The data structure used to update an existing document
- * @template FilterInput - The query parameters used to filter and list documents
+ * @template DocumentsQueryInput - The query parameters used to filter and list documents
  */
-export class InMemoryRepository<DocumentModel extends DatabaseObject, CreateDocumentInput, UpdateDocumentInput, FilterInput extends QueryInput> implements Repository<DocumentModel, CreateDocumentInput, UpdateDocumentInput, QueryInput> {
-  private _documents: DocumentModel[] = [];
+export class InMemoryRepository<RepositoryDocumentModel extends DocumentModel, CreateDocumentInput, UpdateDocumentInput, DocumentsQueryInput extends QueryInput> implements Repository<RepositoryDocumentModel, CreateDocumentInput, UpdateDocumentInput, DocumentsQueryInput> {
+  private _documents: RepositoryDocumentModel[] = [];
 
-  constructor(documents: DocumentModel[]) {
+  constructor(documents: RepositoryDocumentModel[]) {
     this._documents = [...documents];
   }
 
@@ -35,7 +35,7 @@ export class InMemoryRepository<DocumentModel extends DatabaseObject, CreateDocu
       id,
       createdAt: new Date(),
       updatedAt: new Date(),
-    } as unknown as DocumentModel);
+    } as unknown as RepositoryDocumentModel);
     logger.endStep(STEPS.CREATE_DOCUMENT.id);
     return Promise.resolve(id);
   }
@@ -69,7 +69,7 @@ export class InMemoryRepository<DocumentModel extends DatabaseObject, CreateDocu
    * @param logger - Logger instance for tracking execution
    * @returns Promise resolving to the found document or null if not found
    */
-  public async getDocument(id: string, logger: ExecutionLogger): Promise<DocumentModel | null> {
+  public async getDocument(id: string, logger: ExecutionLogger): Promise<RepositoryDocumentModel | null> {
     logger.startStep(STEPS.GET_DOCUMENT.id);
     await wait(IN_MEMORY_REPOSITORY_WAIT_TIME);
     const document = this._documents.find((d) => d.id === id) ?? null;
@@ -83,14 +83,14 @@ export class InMemoryRepository<DocumentModel extends DatabaseObject, CreateDocu
    * @param logger - Logger instance for tracking execution
    * @returns Promise resolving to an array of matching documents
    */
-  public async getDocumentsList(query: FilterInput, logger: ExecutionLogger): Promise<DocumentModel[]> {
+  public async getDocumentsList(query: DocumentsQueryInput, logger: ExecutionLogger): Promise<RepositoryDocumentModel[]> {
     logger.startStep(STEPS.GET_DOCUMENTS.id);
     await wait(IN_MEMORY_REPOSITORY_WAIT_TIME);
     logger.endStep(STEPS.GET_DOCUMENTS.id);
     let filteredItems = [...this._documents];
     for (const key in query) {
       const queries = query[
-        key as keyof FilterInput
+        key as keyof DocumentsQueryInput
       ] as QueryItem<any>[];
       filteredItems = queries.reduce(
         (acc, query) => filterList(acc, key, query),

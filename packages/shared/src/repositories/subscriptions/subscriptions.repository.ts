@@ -5,12 +5,12 @@ import { RepositoryError, RepositoryErrorCode } from '../../utils/repositories/r
 import { CompaniesRepository } from '../companies/companies.repository';
 import { ERROR_MESSAGES, MOCK_SUBSCRIPTIONS } from './subscriptions.repository.constants';
 import {
-  CreateSubscriptionInput,
+  CreateSubscriptionDocumentInput,
   GetSubscriptionsQuery,
-  UpdateSubscriptionInput,
+  UpdateSubscriptionDocumentInput,
 } from './subscriptions.repository.interfaces';
 
-export class SubscriptionsRepository extends InMemoryRepository<Subscription, CreateSubscriptionInput, UpdateSubscriptionInput, GetSubscriptionsQuery> {
+export class SubscriptionsRepository extends InMemoryRepository<Subscription, CreateSubscriptionDocumentInput, UpdateSubscriptionDocumentInput, GetSubscriptionsQuery> {
   private static instance: SubscriptionsRepository;
 
   public static getInstance(): SubscriptionsRepository {
@@ -27,7 +27,7 @@ export class SubscriptionsRepository extends InMemoryRepository<Subscription, Cr
    * @returns Promise resolving to the ID of the created subscription
    * @throws RepositoryError with code {@link RepositoryErrorCode.RELATED_DOCUMENT_NOT_FOUND} if the related company is not found
    */
-  async createDocument(data: CreateSubscriptionInput, logger: ExecutionLogger): Promise<string> {
+  async createDocument(data: CreateSubscriptionDocumentInput, logger: ExecutionLogger): Promise<string> {
     const { companyId } = data;
     const company = await CompaniesRepository.getInstance().getDocument(companyId, logger);
     if (!company) {

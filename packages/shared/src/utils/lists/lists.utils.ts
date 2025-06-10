@@ -1,9 +1,9 @@
-import { QueryItem } from '../../definitions/listing.interfaces';
+import { FilterItem } from '../../definitions';
 import { ERROR_MESSAGES } from './lists.constants';
 export function filterList<T, Y>(
   list: T[],
   field: string,
-  query: QueryItem<Y>,
+  query: FilterItem<Y>,
 ): T[] {
   return list.filter((item) => {
     const value = item[field as keyof T] as Y;

@@ -1,14 +1,15 @@
-import { User } from '../../domain/models/user.model';
+
 import { InMemoryRepository } from '../../utils/repositories/in-memory-repository.class';
 import { MOCK_USERS } from './users.repository.constants';
 import {
-  CreateUserInput,
-  GetUsersQuery,
-  UpdateUserInput,
+  UserDocument,
+  CreateUserDocumentInput,
+  QueryUsersInput,
+  UpdateUserDocumentInput,
 } from './users.repository.interfaces';
 
 
-export class UsersRepository extends InMemoryRepository<User, CreateUserInput, UpdateUserInput, GetUsersQuery> {
+export class UsersRepository extends InMemoryRepository<UserDocument, CreateUserDocumentInput, UpdateUserDocumentInput, QueryUsersInput> {
   private static instance: UsersRepository;
 
   public static getInstance(): UsersRepository {

@@ -3,7 +3,6 @@ import { User } from '../user.model';
 describe(User.name, () => {
   const initialValues = {
     createdAt: new Date(),
-    currentPasswordHash: 'hashed_password_123',
     email: 'test@example.com',
     id: 'user-123',
     updatedAt: new Date(),
@@ -21,7 +20,6 @@ describe(User.name, () => {
 
     it('should initialize with correct values', () => {
       expect(user.createdAt).toBe(initialValues.createdAt);
-      expect(user.currentPasswordHash).toBe(initialValues.currentPasswordHash);
       expect(user.email).toBe(initialValues.email);
       expect(user.id).toBe(initialValues.id);
       expect(user.updatedAt).toBe(initialValues.updatedAt);

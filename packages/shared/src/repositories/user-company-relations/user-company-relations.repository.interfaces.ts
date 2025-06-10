@@ -1,20 +1,25 @@
-import { QueryInput, QueryItem } from '../../definitions/listing.interfaces';
-import { UserCompanyRole } from '../../domain/models/user-company-relation.model';
+import { DocumentModel, QueryInput, QueryItem } from '../../definitions/repositories.interfaces';
 
-export interface CreateUserCompanyRelationInput {
+export interface UserCompanyRelationDocument extends DocumentModel {
   companyId: string;
   userId: string;
-  role: UserCompanyRole;
+  role: string;
 }
 
-export interface UpdateUserCompanyRelationInput {
-  role?: UserCompanyRole;
+export interface CreateUserCompanyRelationDocumentInput {
+  companyId: string;
+  userId: string;
+  role: string;
 }
 
-export interface GetUserCompanyRelationsQuery extends QueryInput {
+export interface UpdateUserCompanyRelationDocumentInput {
+  role?: string;
+}
+
+export interface QueryUserCompanyRelationsInput extends QueryInput {
   companyId?: QueryItem<string>[];
   userId?: QueryItem<string>[];
-  role?: QueryItem<UserCompanyRole>[];
+  role?: QueryItem<string>[];
   createdAt?: QueryItem<Date>[];
   updatedAt?: QueryItem<Date>[];
 } 

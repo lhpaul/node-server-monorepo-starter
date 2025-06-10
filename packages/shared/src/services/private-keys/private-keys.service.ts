@@ -1,8 +1,9 @@
 import { compareSync } from 'bcrypt';
-import { PrivateKeysRepository } from '../../repositories/private-keys/private-keys.repository';
+
+import { ExecutionLogger } from '../../definitions';
+import { PrivateKeysRepository } from '../../repositories';
 import { API_KEYS_CACHE_EXPIRATION } from './private-keys.service.constants';
 import { PrivateKeyValidationResult, ClientCache } from './private-keys.service.interfaces';
-import { ExecutionLogger } from '../../definitions/logging.interfaces';
 export class PrivateKeysService {
   private static instance: PrivateKeysService;
   private cache: {[oauthClientId: string]: ClientCache} = {}; // to avoid fetching private keys from the database on each request

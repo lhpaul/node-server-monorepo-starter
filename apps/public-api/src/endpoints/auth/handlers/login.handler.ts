@@ -2,8 +2,8 @@ import { STATUS_CODES } from '@repo/fastify';
 import { AuthService } from '@repo/shared/services';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
-import { ERROR_RESPONSES, STEPS } from './login.constants';
-import { LoginBody } from './login.interfaces';
+import { ERROR_RESPONSES, STEPS } from './login.handler.constants';
+import { LoginBody } from './login.handler.interfaces';
 
 
 export const loginHandler = async (

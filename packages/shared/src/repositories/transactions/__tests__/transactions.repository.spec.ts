@@ -1,6 +1,6 @@
-import { InMemoryRepository, RepositoryError, RepositoryErrorCode } from '../../../utils';
 import { ExecutionLogger } from '../../../definitions';
 import { TransactionType } from '../../../domain';
+import { InMemoryRepository, RepositoryError, RepositoryErrorCode } from '../../../utils/repositories';
 import { ERROR_MESSAGES, MOCK_TRANSACTIONS } from '../transactions.repository.constants';
 import { TransactionsRepository } from '../transactions.repository';
 import { CompaniesRepository } from '../../companies/companies.repository';

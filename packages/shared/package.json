@@ -16,14 +16,6 @@
       "types": "./src/domain/index.ts",
       "default": "./dist/domain/index.js"
     },
-    "./mocks": {
-      "types": "./src/mocks/index.ts",
-      "default": "./dist/mocks/index.js"
-    },
-    "./repositories": {
-      "types": "./src/repositories/index.ts",
-      "default": "./dist/repositories/index.js"
-    },
     "./services": {
       "types": "./src/services/index.ts",
       "default": "./dist/services/index.js"

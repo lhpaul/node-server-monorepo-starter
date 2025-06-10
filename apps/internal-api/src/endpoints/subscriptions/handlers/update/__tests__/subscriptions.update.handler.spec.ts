@@ -1,23 +1,23 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { SubscriptionsRepository } from '@repo/shared/repositories';
-import { RepositoryError, RepositoryErrorCode } from '@repo/shared/utils';
+import { SubscriptionsService } from '@repo/shared/services';
+import { DomainModelServiceError, DomainModelServiceErrorCode } from '@repo/shared/utils';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
 import { ERROR_RESPONSES } from '../../../subscriptions.endpoints.constants';
 import { STEPS } from '../subscriptions.update.handler.constants';
 import { updateSubscriptionHandler } from '../subscriptions.update.handler';
 
-jest.mock('@repo/shared/repositories');
+jest.mock('@repo/shared/services');
 jest.mock('@repo/shared/utils', () => ({
   ...jest.requireActual('@repo/shared/utils'),
-  RepositoryError: jest.fn(),
-  RepositoryErrorCode: jest.fn(),
+  DomainModelServiceError: jest.fn(),
+  DomainModelServiceErrorCode: jest.fn(),
 }));
 
 describe(updateSubscriptionHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;
   let mockReply: Partial<FastifyReply>;
-  let mockRepository: Partial<SubscriptionsRepository>;
+  let mockService: Partial<SubscriptionsService>;
   let mockLogger: Partial<FastifyBaseLogger>;
   const mockParams = { id: '123' };
   const mockBody = {
@@ -43,12 +43,12 @@ describe(updateSubscriptionHandler.name, () => {
       send: jest.fn(),
     };
 
-    mockRepository = {
-      updateDocument: jest.fn(),
+    mockService = {
+      updateResource: jest.fn(),
     };
 
-    (SubscriptionsRepository.getInstance as jest.Mock).mockReturnValue(
-      mockRepository,
+    (SubscriptionsService.getInstance as jest.Mock).mockReturnValue(
+      mockService,
     );
   });
 
@@ -63,7 +63,7 @@ describe(updateSubscriptionHandler.name, () => {
     );
 
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_SUBSCRIPTION.id);
-    expect(mockRepository.updateDocument).toHaveBeenCalledWith(
+    expect(mockService.updateResource).toHaveBeenCalledWith(
       mockParams.id,
       {
         ...mockBody,
@@ -80,9 +80,9 @@ describe(updateSubscriptionHandler.name, () => {
   });
 
   it('should handle subscription not found error', async () => {
-    jest.spyOn(mockRepository, 'updateDocument').mockRejectedValue(
-      new RepositoryError({
-        code: RepositoryErrorCode.DOCUMENT_NOT_FOUND,
+    jest.spyOn(mockService, 'updateResource').mockRejectedValue(
+      new DomainModelServiceError({
+        code: DomainModelServiceErrorCode.RESOURCE_NOT_FOUND,
         message: 'Subscription not found',
       }),
     );
@@ -93,7 +93,7 @@ describe(updateSubscriptionHandler.name, () => {
     );
 
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_SUBSCRIPTION.id);
-    expect(mockRepository.updateDocument).toHaveBeenCalledWith(
+    expect(mockService.updateResource).toHaveBeenCalledWith(
       mockParams.id,
       {
         ...mockBody,
@@ -113,7 +113,7 @@ describe(updateSubscriptionHandler.name, () => {
 
   it('should throw unexpected errors', async () => {
     const unexpectedError = new Error('Unexpected error');
-    jest.spyOn(mockRepository, 'updateDocument').mockRejectedValue(unexpectedError);
+    jest.spyOn(mockService, 'updateResource').mockRejectedValue(unexpectedError);
 
     await expect(
       updateSubscriptionHandler(
@@ -123,7 +123,7 @@ describe(updateSubscriptionHandler.name, () => {
     ).rejects.toThrow(unexpectedError);
 
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_SUBSCRIPTION.id);
-    expect(mockRepository.updateDocument).toHaveBeenCalledWith(
+    expect(mockService.updateResource).toHaveBeenCalledWith(
       mockParams.id,
       {
         ...mockBody,

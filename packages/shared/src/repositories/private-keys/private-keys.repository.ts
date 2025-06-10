@@ -2,13 +2,13 @@ import { PrivateKey } from '../../domain/models/private-key.model';
 import { InMemoryRepository } from '../../utils/repositories/in-memory-repository.class';
 import { MOCK_PRIVATE_KEYS } from './private-keys.repository.constants';
 import {
-  CreatePrivateKeyInput,
+  CreatePrivateKeyDocumentInput,
   GetPrivateKeysQuery,
-  UpdatePrivateKeyInput,
+  UpdatePrivateKeyDocumentInput,
 } from './private-keys.repository.interfaces';
 
 
-export class PrivateKeysRepository extends InMemoryRepository<PrivateKey, CreatePrivateKeyInput, UpdatePrivateKeyInput, GetPrivateKeysQuery> {
+export class PrivateKeysRepository extends InMemoryRepository<PrivateKey, CreatePrivateKeyDocumentInput, UpdatePrivateKeyDocumentInput, GetPrivateKeysQuery> {
   private static instance: PrivateKeysRepository;
 
   public static getInstance(): PrivateKeysRepository {
