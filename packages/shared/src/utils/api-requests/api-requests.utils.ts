@@ -1,6 +1,6 @@
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
 
-import { ExecutionLogger } from '../../definitions/logging.interfaces';
+import { ExecutionLogger } from '../../definitions';
 import { maskFields } from '../mask/mask.utils';
 import {
   ApiResponse,

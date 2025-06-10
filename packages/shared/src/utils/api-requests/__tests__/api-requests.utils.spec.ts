@@ -1,7 +1,7 @@
 import axios, { AxiosError, AxiosStatic } from 'axios';
 
 import { maskFields } from '../../mask/mask.utils';
-import { ExecutionLogger } from '../../../definitions/logging.interfaces';
+import { ExecutionLogger } from '../../../definitions/executions.interfaces';
 import { DEFAULT_ERROR_CODE, LOGS } from '../api-requests.utils.constants';
 import {
   ApiRequestValues,

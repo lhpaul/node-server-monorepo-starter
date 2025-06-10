@@ -1,4 +1,4 @@
-import { DatabaseObject } from '../../definitions/database.interfaces';
+import { ResourceModel } from '../../definitions/domain.interfaces';
 
 export enum UserCompanyRole {
   ADMIN = 'admin',
@@ -17,7 +17,7 @@ export enum UserCompanyPermission {
   COMPANY_TRANSACTIONS_WRITE = 'transactions:write',
 }
 
-export const PERMISSIONS_BY_ROLE: Record<UserCompanyRole, string[]> = {
+export const PERMISSIONS_BY_ROLE: Record<UserCompanyRole, UserCompanyPermission[]> = {
   [UserCompanyRole.ADMIN]: [
     UserCompanyPermission.COMPANY_WRITE,
     UserCompanyPermission.COMPANY_SUBSCRIPTIONS_READ,
@@ -29,7 +29,7 @@ export const PERMISSIONS_BY_ROLE: Record<UserCompanyRole, string[]> = {
   ],
 };
 
-export class UserCompanyRelation implements DatabaseObject {
+export class UserCompanyRelation implements ResourceModel {
   public readonly companyId: string; // Company id
   public readonly createdAt: Date; // Created at date
   public readonly id: string; // User company relation id

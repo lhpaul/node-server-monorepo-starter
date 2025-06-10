@@ -1,15 +1,17 @@
 import * as admin from 'firebase-admin';
 import { FieldValue, OrderByDirection } from 'firebase-admin/firestore';
-import { ExecutionLogger } from '../../definitions/logging.interfaces';
-import { QueryInput as IQueryInput } from '../../definitions/listing.interfaces';
-import { Repository } from '../../definitions/repositories.interfaces';
-import { changeTimestampsToDate, runRetriableAction } from './firestore.utils';
-import { CreateDocumentConfig, ParentIds, PrepareWriteOperationOutput, UpdateDocumentConfig } from './firestore-collection-repository.class.interfaces';
+
+import { ExecutionLogger, QueryInput, Repository } from '../../definitions';
+import { FIRESTORE_ERROR_CODE } from '../firestore/firestore.constants';
+import { changeTimestampsToDate, runRetriableAction } from '../firestore/firestore.utils';
 import { ERROR_MESSAGES, STEPS } from './firestore-collection-repository.class.constants';
-import { REPOSITORY_ERROR_MESSAGES } from '../repositories/repositories.errors';
-import { RepositoryErrorCode } from '../repositories/repositories.errors';
-import { FIRESTORE_ERROR_CODE } from '../../constants/firestore.constants';
-import { RepositoryError } from '../repositories/repositories.errors';
+import {
+  CreateDocumentConfig,
+  ParentIds,
+  PrepareWriteOperationOutput,
+  UpdateDocumentConfig
+} from './firestore-collection-repository.class.interfaces';
+import { REPOSITORY_ERROR_MESSAGES, RepositoryErrorCode, RepositoryError } from './repositories.errors';
 
 /**
  * A service class that provides CRUD operations for Firestore collections
@@ -18,7 +20,7 @@ import { RepositoryError } from '../repositories/repositories.errors';
  * @template UpdateDocumentInput - The type of input for updating a document
  * @template QueryInput - The type of input for querying documents
  */
-export class FirestoreCollectionRepository<DocumentModel, CreateDocumentInput, UpdateDocumentInput, QueryInput extends IQueryInput> implements Repository<DocumentModel, CreateDocumentInput, UpdateDocumentInput, QueryInput> {
+export class FirestoreCollectionRepository<DocumentModel, CreateDocumentInput, UpdateDocumentInput, DocumentsQueryInput extends QueryInput> implements Repository<DocumentModel, CreateDocumentInput, UpdateDocumentInput, DocumentsQueryInput> {
   protected _db: FirebaseFirestore.Firestore;
   protected _childCollection?: string; // is the last collection in the path. E.g. "companies/:companyId/transactions" -> "transactions"
   protected _collectionPath: string; // is the full path to the collection. E.g. "companies/:companyId/transactions"
@@ -193,7 +195,7 @@ export class FirestoreCollectionRepository<DocumentModel, CreateDocumentInput, U
    * @param config.transaction - Optional Firestore transaction for transaction operations
    * @returns Promise<DocumentModel[]> - Array of retrieved documents
    */
-  public async getDocumentsList(query: QueryInput, _logger: ExecutionLogger, config?: {
+  public async getDocumentsList(query: DocumentsQueryInput, _logger: ExecutionLogger, config?: {
     limit?: number;
     offset?: number;
     orderBy?: { field: string; direction: OrderByDirection; };

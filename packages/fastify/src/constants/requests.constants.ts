@@ -1,4 +1,4 @@
-import { QueryOperator } from '@repo/shared/definitions';
+import { FilterOperator } from '@repo/shared/definitions';
 
 export const HTTP_METHODS_MAP = {
   LIST: 'GET',
@@ -21,7 +21,7 @@ export type QUERY_PARAMS_OPERATORS =
 
 export const QUERY_PARAMS_OPERATORS_MAP: Record<
   QUERY_PARAMS_OPERATORS,
-  QueryOperator
+  FilterOperator
 > = {
   ge: '>=',
   gt: '>',

@@ -1,23 +1,23 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { SubscriptionsRepository } from '@repo/shared/repositories';
-import { RepositoryError, RepositoryErrorCode } from '@repo/shared/utils';
+import { SubscriptionsService } from '@repo/shared/services';
+import { DomainModelServiceError, DomainModelServiceErrorCode } from '@repo/shared/utils';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
 import { ERROR_RESPONSES } from '../../../subscriptions.endpoints.constants';
 import { STEPS } from '../subscriptions.delete.handler.constants';
 import { deleteSubscriptionHandler } from '../subscriptions.delete.handler';
 
-jest.mock('@repo/shared/repositories');
+jest.mock('@repo/shared/services');
 jest.mock('@repo/shared/utils', () => ({
   ...jest.requireActual('@repo/shared/utils'),
-  RepositoryError: jest.fn(),
-  RepositoryErrorCode: jest.fn(),
+  DomainModelServiceError: jest.fn(),
+  DomainModelServiceErrorCode: jest.fn(),
 }));
 
 describe(deleteSubscriptionHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;
   let mockReply: Partial<FastifyReply>;
-  let mockRepository: Partial<SubscriptionsRepository>;
+  let mockService: Partial<SubscriptionsService>;
   let mockLogger: Partial<FastifyBaseLogger>;
 
   const mockParams = { id: 'test-id' };
@@ -39,12 +39,12 @@ describe(deleteSubscriptionHandler.name, () => {
       send: jest.fn(),
     };
 
-    mockRepository = {
-      deleteDocument: jest.fn(),
+    mockService = {
+      deleteResource: jest.fn(),
     };
 
-    (SubscriptionsRepository.getInstance as jest.Mock).mockReturnValue(
-      mockRepository,
+    (SubscriptionsService.getInstance as jest.Mock).mockReturnValue(
+      mockService,
     );
   });
 
@@ -53,7 +53,7 @@ describe(deleteSubscriptionHandler.name, () => {
   });
 
   it('should successfully delete a subscription', async () => {
-    jest.spyOn(mockRepository, 'deleteDocument').mockResolvedValue();
+    jest.spyOn(mockService, 'deleteResource').mockResolvedValue();
 
     await deleteSubscriptionHandler(
       mockRequest as FastifyRequest,
@@ -61,7 +61,7 @@ describe(deleteSubscriptionHandler.name, () => {
     );
 
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DELETE_SUBSCRIPTION.id);
-    expect(mockRepository.deleteDocument).toHaveBeenCalledWith(
+    expect(mockService.deleteResource).toHaveBeenCalledWith(
       mockParams.id,
       mockLogger,
     );
@@ -73,9 +73,9 @@ describe(deleteSubscriptionHandler.name, () => {
   });
 
   it('should handle non-existent subscription', async () => {
-    jest.spyOn(mockRepository, 'deleteDocument').mockRejectedValue(
-      new RepositoryError({
-        code: RepositoryErrorCode.DOCUMENT_NOT_FOUND,
+    jest.spyOn(mockService, 'deleteResource').mockRejectedValue(
+      new DomainModelServiceError({
+        code: DomainModelServiceErrorCode.RESOURCE_NOT_FOUND,
         message: 'Subscription not found',
       }),
     );
@@ -86,7 +86,7 @@ describe(deleteSubscriptionHandler.name, () => {
     );
 
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DELETE_SUBSCRIPTION.id);
-    expect(mockRepository.deleteDocument).toHaveBeenCalledWith(
+    expect(mockService.deleteResource).toHaveBeenCalledWith(
       mockParams.id,
       mockLogger,
     );
@@ -99,9 +99,9 @@ describe(deleteSubscriptionHandler.name, () => {
     );
   });
 
-  it('should rethrow non-RepositoryError errors', async () => {
+  it('should throw unexpected errors', async () => {
     const error = new Error('Unexpected error');
-    jest.spyOn(mockRepository, 'deleteDocument').mockRejectedValue(error);
+    jest.spyOn(mockService, 'deleteResource').mockRejectedValue(error);
 
     await expect(
       deleteSubscriptionHandler(
@@ -111,7 +111,7 @@ describe(deleteSubscriptionHandler.name, () => {
     ).rejects.toThrow(error);
 
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DELETE_SUBSCRIPTION.id);
-    expect(mockRepository.deleteDocument).toHaveBeenCalledWith(
+    expect(mockService.deleteResource).toHaveBeenCalledWith(
       mockParams.id,
       mockLogger,
     );

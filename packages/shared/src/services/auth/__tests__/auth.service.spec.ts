@@ -1,8 +1,9 @@
-import { PERMISSIONS_BY_ROLE } from '../../../domain/models/user-company-relation.model';
-import { ExecutionLogger } from '../../../definitions/logging.interfaces';
+import { PERMISSIONS_BY_ROLE } from '../../../domain';
+import { ExecutionLogger } from '../../../definitions';
 import { AuthService } from '../auth.service';
-import { DecodeEmailTokenError, DecodeEmailTokenErrorCode } from '../auth.service.errors';
 import { ERROR_MESSAGES, PERMISSIONS_SUFFIXES, STEPS } from '../auth.service.constants';
+import { DecodeEmailTokenError, DecodeEmailTokenErrorCode } from '../auth.service.errors';
+
 
 jest.mock('firebase-admin', () => ({
   auth: jest.fn(() => mockFirebaseAuth),

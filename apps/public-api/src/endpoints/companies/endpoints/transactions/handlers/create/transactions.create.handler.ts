@@ -1,5 +1,5 @@
 import { FORBIDDEN_ERROR, STATUS_CODES } from '@repo/fastify';
-import { TransactionsRepository } from '@repo/shared/repositories';
+import { TransactionsService } from '@repo/shared/services';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../../definitions/auth.interfaces';
@@ -20,11 +20,11 @@ export const createTransactionHandler = async (
       message: FORBIDDEN_ERROR.responseMessage,
     });
   }
-  const repository = TransactionsRepository.getInstance();
+  const service = TransactionsService.getInstance();
   const body = request.body as CreateCompanyTransactionBody;
   logger.startStep(STEPS.CREATE_TRANSACTION.id);
-  const id = await repository
-    .createDocument({
+  const id = await service
+    .createResource({
       ...body,
       companyId,
     }, logger)

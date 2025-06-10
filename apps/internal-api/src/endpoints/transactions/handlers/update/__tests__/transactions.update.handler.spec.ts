@@ -1,23 +1,23 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { TransactionsRepository } from '@repo/shared/repositories';
-import { RepositoryError, RepositoryErrorCode } from '@repo/shared/utils';
+import { TransactionsService } from '@repo/shared/services';
+import { DomainModelServiceError, DomainModelServiceErrorCode } from '@repo/shared/utils';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
 import { ERROR_RESPONSES } from '../../../transactions.endpoints.constants';
 import { STEPS } from '../transactions.update.handler.constants';
 import { updateTransactionHandler } from '../transactions.update.handler';
 
-jest.mock('@repo/shared/repositories');
+jest.mock('@repo/shared/services');
 jest.mock('@repo/shared/utils', () => ({
   ...jest.requireActual('@repo/shared/utils'),
-  RepositoryError: jest.fn(),
-  RepositoryErrorCode: jest.fn(),
+  DomainModelServiceError: jest.fn(),
+  DomainModelServiceErrorCode: jest.fn(),
 }));
 
 describe(updateTransactionHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;
   let mockReply: Partial<FastifyReply>;
-  let mockRepository: Partial<TransactionsRepository>;
+  let mockService: Partial<TransactionsService>;
   let mockLogger: Partial<FastifyBaseLogger>;
 
   beforeEach(() => {
@@ -42,12 +42,12 @@ describe(updateTransactionHandler.name, () => {
       send: jest.fn(),
     };
 
-    mockRepository = {
-      updateDocument: jest.fn(),
+    mockService = {
+      updateResource: jest.fn(),
     };
 
-    (TransactionsRepository.getInstance as jest.Mock).mockReturnValue(
-      mockRepository,
+    (TransactionsService.getInstance as jest.Mock).mockReturnValue(
+      mockService,
     );
   });
 
@@ -62,7 +62,7 @@ describe(updateTransactionHandler.name, () => {
     );
 
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION.id);
-    expect(mockRepository.updateDocument).toHaveBeenCalledWith(
+    expect(mockService.updateResource).toHaveBeenCalledWith(
       '123',
       mockRequest.body,
       mockLogger,
@@ -75,9 +75,9 @@ describe(updateTransactionHandler.name, () => {
   });
 
   it('should handle transaction not found error', async () => {
-    jest.spyOn(mockRepository, 'updateDocument').mockRejectedValue(
-      new RepositoryError({
-        code: RepositoryErrorCode.DOCUMENT_NOT_FOUND,
+    jest.spyOn(mockService, 'updateResource').mockRejectedValue(
+      new DomainModelServiceError({
+        code: DomainModelServiceErrorCode.RESOURCE_NOT_FOUND,
         message: 'Transaction not found',
       }),
     );
@@ -88,7 +88,7 @@ describe(updateTransactionHandler.name, () => {
     );
 
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION.id);
-    expect(mockRepository.updateDocument).toHaveBeenCalledWith(
+    expect(mockService.updateResource).toHaveBeenCalledWith(
       '123',
       mockRequest.body,
       mockLogger,
@@ -104,7 +104,7 @@ describe(updateTransactionHandler.name, () => {
 
   it('should throw unexpected errors', async () => {
     const unexpectedError = new Error('Unexpected error');
-    jest.spyOn(mockRepository, 'updateDocument').mockRejectedValue(unexpectedError);
+    jest.spyOn(mockService, 'updateResource').mockRejectedValue(unexpectedError);
 
     await expect(
       updateTransactionHandler(
@@ -114,7 +114,7 @@ describe(updateTransactionHandler.name, () => {
     ).rejects.toThrow(unexpectedError);
 
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION.id);
-    expect(mockRepository.updateDocument).toHaveBeenCalledWith(
+    expect(mockService.updateResource).toHaveBeenCalledWith(
       '123',
       mockRequest.body,
       mockLogger,

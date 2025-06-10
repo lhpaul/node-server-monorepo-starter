@@ -1,8 +1,8 @@
-import { FirestoreCollectionRepository } from '../../../utils/firestore/firestore-collection-repository.class';
+import { FirestoreCollectionRepository } from '../../../utils/repositories';
 import { COLLECTION_PATH } from '../users.repository.constants';
 import { UsersRepository } from '../users.repository';
 
-jest.mock('../../../utils/firestore/firestore-collection-repository.class');
+jest.mock('../../../utils/repositories');
 
 describe(UsersRepository.name, () => {
 

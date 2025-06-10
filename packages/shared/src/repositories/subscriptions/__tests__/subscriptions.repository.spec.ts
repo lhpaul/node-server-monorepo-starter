@@ -1,8 +1,8 @@
-import { FirestoreCollectionRepository } from '../../../utils/firestore/firestore-collection-repository.class';
+import { FirestoreCollectionRepository } from '../../../utils/repositories';
 import { COLLECTION_PATH } from '../subscriptions.repository.constants';
 import { SubscriptionsRepository } from '../subscriptions.repository';
 
-jest.mock('../../../utils/firestore/firestore-collection-repository.class');
+jest.mock('../../../utils/repositories');
 
 describe(SubscriptionsRepository.name, () => {
 

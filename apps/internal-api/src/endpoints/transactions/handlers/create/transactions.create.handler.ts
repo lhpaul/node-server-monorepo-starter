@@ -1,6 +1,6 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { TransactionsRepository } from '@repo/shared/repositories';
-import { RepositoryError, RepositoryErrorCode } from '@repo/shared/utils';
+import { TransactionsService } from '@repo/shared/services';
+import { DomainModelServiceError, DomainModelServiceErrorCode } from '@repo/shared/utils';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { ERROR_RESPONSES } from '../../transactions.endpoints.constants';
@@ -12,16 +12,16 @@ export const createTransactionHandler = async (
   reply: FastifyReply,
 ) => {
   const logger = request.log.child({ handler: createTransactionHandler.name });
-  const repository = TransactionsRepository.getInstance();
+  const service = TransactionsService.getInstance();
   const body = request.body as CreateTransactionBody;
   logger.startStep(STEPS.CREATE_TRANSACTION.id);
   try {
-    const id = await repository
-      .createDocument(body, logger)
+    const id = await service
+      .createResource(body, logger)
       .finally(() => logger.endStep(STEPS.CREATE_TRANSACTION.id));
     return reply.code(STATUS_CODES.CREATED).send({ id });
   } catch (error) {
-    if (error instanceof RepositoryError && error.code === RepositoryErrorCode.RELATED_DOCUMENT_NOT_FOUND) {
+    if (error instanceof DomainModelServiceError && error.code === DomainModelServiceErrorCode.RELATED_RESOURCE_NOT_FOUND) {
       return reply.code(STATUS_CODES.BAD_REQUEST).send({
         code: ERROR_RESPONSES.COMPANY_NOT_FOUND.code,
         message: ERROR_RESPONSES.COMPANY_NOT_FOUND.message(body.companyId),

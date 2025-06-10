@@ -1,17 +1,26 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { UsersRepository } from '@repo/shared/repositories';
-import { AuthService, DecodeEmailTokenError, DecodeEmailTokenErrorCode } from '@repo/shared/services';
+import { AuthService, DecodeEmailTokenError, DecodeEmailTokenErrorCode, UsersService } from '@repo/shared/services';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
-import { ERROR_RESPONSES, STEPS } from '../login.constants';
+import { ERROR_RESPONSES, STEPS } from '../login.handler.constants';
 import { loginHandler } from '../login.handler';
+
+jest.mock('@repo/shared/services', () => ({
+  ...jest.requireActual('@repo/shared/services'),
+  AuthService: {
+    getInstance: jest.fn(),
+  },
+  UsersService: {
+    getInstance: jest.fn(),
+  },
+}));
 
 describe(loginHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;
   let mockReply: Partial<FastifyReply>;
   let mockLogger: any;
   let mockAuthService: jest.SpyInstance;
-  let mockUsersRepository: jest.SpyInstance;
+  let mockUsersService: jest.SpyInstance;
 
   const mockEmail = 'test@example.com';
   const mockUserId = 'user-123';
@@ -44,8 +53,8 @@ describe(loginHandler.name, () => {
     } as any);
 
     // Mock UsersRepository
-    mockUsersRepository = jest.spyOn(UsersRepository, 'getInstance').mockReturnValue({
-      getDocumentsList: jest.fn(),
+    mockUsersService = jest.spyOn(UsersService, 'getInstance').mockReturnValue({
+      getResourcesList: jest.fn(),
     } as any);
   });
 
@@ -61,8 +70,8 @@ describe(loginHandler.name, () => {
       generateUserToken: jest.fn().mockResolvedValue(mockUserToken),
     } as any);
 
-    mockUsersRepository.mockReturnValue({
-      getDocumentsList: jest.fn().mockResolvedValue([mockUser]),
+    mockUsersService.mockReturnValue({
+      getResourcesList: jest.fn().mockResolvedValue([mockUser]),
     } as any);
 
     // Act
@@ -85,8 +94,8 @@ describe(loginHandler.name, () => {
       decodeEmailToken: jest.fn().mockResolvedValue({ email: mockEmail }),
     } as any);
 
-    mockUsersRepository.mockReturnValue({
-      getDocumentsList: jest.fn().mockResolvedValue([]),
+    mockUsersService.mockReturnValue({
+      getResourcesList: jest.fn().mockResolvedValue([]),
     } as any);
 
     // Act

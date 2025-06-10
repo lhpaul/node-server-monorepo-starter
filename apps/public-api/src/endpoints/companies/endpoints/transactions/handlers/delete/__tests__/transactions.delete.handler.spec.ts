@@ -1,13 +1,12 @@
 import { FORBIDDEN_ERROR, RESOURCE_NOT_FOUND_ERROR, STATUS_CODES } from '@repo/fastify';
-import { TransactionsRepository } from '@repo/shared/repositories';
-import { RepositoryError, RepositoryErrorCode } from '@repo/shared/utils';
+import { TransactionsService } from '@repo/shared/services';
+import { DomainModelServiceError, DomainModelServiceErrorCode } from '@repo/shared/utils';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../../../definitions/auth.interfaces';
 import { hasCompanyTransactionsDeletePermission } from '../../../../../../../utils/auth/auth.utils';
 import { STEPS } from '../transactions.delete.handler.constants';
 import { deleteTransactionHandler } from '../transactions.delete.handler';
-
 
 jest.mock('@repo/fastify', () => ({
   STATUS_CODES: {
@@ -24,11 +23,11 @@ jest.mock('@repo/fastify', () => ({
   },
 }));
 
-jest.mock('@repo/shared/repositories');
+jest.mock('@repo/shared/services');
 
 jest.mock('@repo/shared/utils', () => ({
-  RepositoryError: jest.fn(),
-  RepositoryErrorCode: jest.fn(),
+  DomainModelServiceError: jest.fn(),
+  DomainModelServiceErrorCode: jest.fn(),
 }));
 
 jest.mock('../../../../../../../utils/auth/auth.utils', () => ({
@@ -42,7 +41,7 @@ describe(deleteTransactionHandler.name, () => {
     startStep: jest.Mock;
     endStep: jest.Mock;
   } & Partial<FastifyBaseLogger>;
-  let mockRepository: Partial<TransactionsRepository>;
+  let mockService: Partial<TransactionsService>;
 
   const mockParams = { companyId: 'company123', id: 'transaction123' };
   const mockUser: AuthUser = {
@@ -69,12 +68,12 @@ describe(deleteTransactionHandler.name, () => {
       send: jest.fn(),
     };
 
-    mockRepository = {
-      deleteDocument: jest.fn(),
+    mockService = {
+      deleteResource: jest.fn(),
     };
 
-    (TransactionsRepository.getInstance as jest.Mock).mockReturnValue(
-      mockRepository,
+    (TransactionsService.getInstance as jest.Mock).mockReturnValue(
+      mockService,
     );
 
     (hasCompanyTransactionsDeletePermission as jest.Mock).mockReturnValue(true);
@@ -86,7 +85,7 @@ describe(deleteTransactionHandler.name, () => {
 
   it('should successfully delete a transaction', async () => {
     (hasCompanyTransactionsDeletePermission as jest.Mock).mockReturnValue(true);
-    jest.spyOn(mockRepository, 'deleteDocument').mockResolvedValue(undefined);
+    jest.spyOn(mockService, 'deleteResource').mockResolvedValue(undefined);
 
     await deleteTransactionHandler(
       mockRequest as FastifyRequest,
@@ -94,7 +93,7 @@ describe(deleteTransactionHandler.name, () => {
     );
 
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DELETE_TRANSACTION.id);
-    expect(mockRepository.deleteDocument).toHaveBeenCalledWith(
+    expect(mockService.deleteResource).toHaveBeenCalledWith(
       mockParams.id,
       mockLogger,
     );
@@ -104,9 +103,9 @@ describe(deleteTransactionHandler.name, () => {
   });
 
   it('should handle transaction not found', async () => {
-    jest.spyOn(mockRepository, 'deleteDocument').mockRejectedValue(
-      new RepositoryError({
-        code: RepositoryErrorCode.DOCUMENT_NOT_FOUND,
+    jest.spyOn(mockService, 'deleteResource').mockRejectedValue(
+      new DomainModelServiceError({
+        code: DomainModelServiceErrorCode.RESOURCE_NOT_FOUND,
         message: 'Transaction not found',
       }),
     );
@@ -117,7 +116,7 @@ describe(deleteTransactionHandler.name, () => {
     );
 
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DELETE_TRANSACTION.id);
-    expect(mockRepository.deleteDocument).toHaveBeenCalledWith(
+    expect(mockService.deleteResource).toHaveBeenCalledWith(
       mockParams.id,
       mockLogger,
     );
@@ -129,9 +128,9 @@ describe(deleteTransactionHandler.name, () => {
     });
   });
 
-  it('should handle repository errors', async () => {
-    const error = new Error('Repository error');
-    jest.spyOn(mockRepository, 'deleteDocument').mockRejectedValue(error);
+  it('should handle service errors', async () => {
+    const error = new Error('Service error');
+    jest.spyOn(mockService, 'deleteResource').mockRejectedValue(error);
 
     await expect(
       deleteTransactionHandler(
@@ -141,7 +140,7 @@ describe(deleteTransactionHandler.name, () => {
     ).rejects.toThrow(error);
 
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DELETE_TRANSACTION.id);
-    expect(mockRepository.deleteDocument).toHaveBeenCalledWith(
+    expect(mockService.deleteResource).toHaveBeenCalledWith(
       mockParams.id,
       mockLogger,
     );
@@ -163,6 +162,6 @@ describe(deleteTransactionHandler.name, () => {
       code: FORBIDDEN_ERROR.responseCode,
       message: FORBIDDEN_ERROR.responseMessage,
     });
-    expect(mockRepository.deleteDocument).not.toHaveBeenCalled();
+    expect(mockService.deleteResource).not.toHaveBeenCalled();
   });
 });

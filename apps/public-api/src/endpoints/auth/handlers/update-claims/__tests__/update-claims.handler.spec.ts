@@ -1,19 +1,26 @@
 import { STATUS_CODES } from '@repo/fastify';
 import { User } from '@repo/shared/domain';
-import { UsersRepository } from '@repo/shared/repositories';
-import { AuthService } from '@repo/shared/services';
+import { AuthService, UsersService } from '@repo/shared/services';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { ERROR_RESPONSES, STEPS } from '../update-claims.handler.constants';
 import { updateClaimsHandler } from '../update-claims.handler';
 
-jest.mock('@repo/shared/repositories');
+jest.mock('@repo/shared/services', () => ({
+  AuthService: {
+    getInstance: jest.fn(),
+  },
+  UsersService: {
+    getInstance: jest.fn(),
+  },
+}));
 
 describe(updateClaimsHandler.name, () => {
   let mockRequest: FastifyRequest;
   let mockReply: FastifyReply;
   let mockLogger: any;
-  let mockUsersRepository: Partial<UsersRepository>;
+  let mockAuthService: Partial<AuthService>;
+  let mockUsersService: Partial<UsersService>;
 
   beforeEach(() => {
     mockLogger = {
@@ -41,11 +48,16 @@ describe(updateClaimsHandler.name, () => {
       send: jest.fn(),
     } as unknown as FastifyReply;
 
-    mockUsersRepository = {
-      getDocumentsList: jest.fn(),
+    mockUsersService = {
+      getResourcesList: jest.fn(),
     };
 
-    jest.spyOn(UsersRepository, 'getInstance').mockReturnValue(mockUsersRepository as UsersRepository);
+    mockAuthService = {
+      updatePermissionsToUser: jest.fn(),
+    };
+
+    jest.spyOn(AuthService, 'getInstance').mockReturnValue(mockAuthService as AuthService);
+    jest.spyOn(UsersService, 'getInstance').mockReturnValue(mockUsersService as UsersService);
   });
 
   describe('when app_user_id is present', () => {
@@ -57,12 +69,9 @@ describe(updateClaimsHandler.name, () => {
     });
 
     it('should update claims and return 204', async () => {
-      const mockUpdatePermissions = jest.spyOn(AuthService.getInstance(), 'updatePermissionsToUser')
-        .mockResolvedValueOnce(undefined);
-
       await updateClaimsHandler(mockRequest, mockReply);
 
-      expect(mockUpdatePermissions).toHaveBeenCalledWith({
+      expect(mockAuthService.updatePermissionsToUser).toHaveBeenCalledWith({
         userId: 'test-user-id',
         uid: 'test-uid',
       }, mockLogger);
@@ -106,8 +115,7 @@ describe(updateClaimsHandler.name, () => {
       });
 
       it('should return 403 when user is not found', async () => {
-        jest.spyOn(UsersRepository.getInstance(), 'getDocumentsList')
-          .mockResolvedValueOnce([]);
+        (mockUsersService.getResourcesList as jest.Mock).mockResolvedValueOnce([]);
 
         await updateClaimsHandler(mockRequest, mockReply);
 
@@ -127,17 +135,13 @@ describe(updateClaimsHandler.name, () => {
           createdAt: new Date(),
           updatedAt: new Date(),
         });
-        jest.spyOn(UsersRepository.getInstance(), 'getDocumentsList')
-          .mockResolvedValueOnce([mockUser]);
-
-        const mockUpdatePermissions = jest.spyOn(AuthService.getInstance(), 'updatePermissionsToUser')
-          .mockResolvedValueOnce(undefined);
+        (mockUsersService.getResourcesList as jest.Mock).mockResolvedValueOnce([mockUser]);
 
         await updateClaimsHandler(mockRequest, mockReply);
 
         expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.FIND_USER.id);
         expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.FIND_USER.id);
-        expect(mockUpdatePermissions).toHaveBeenCalledWith({
+        expect(mockAuthService.updatePermissionsToUser).toHaveBeenCalledWith({
           userId: mockUser.id,
           uid: 'test-uid',
         }, mockLogger);

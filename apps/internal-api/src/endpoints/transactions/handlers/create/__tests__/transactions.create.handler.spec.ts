@@ -1,20 +1,25 @@
 import { STATUS_CODES } from '@repo/fastify';
 import { TransactionType } from '@repo/shared/domain';
-import { TransactionsRepository } from '@repo/shared/repositories';
-import { RepositoryError, RepositoryErrorCode } from '@repo/shared/utils';
+import { TransactionsService } from '@repo/shared/services';
+import { DomainModelServiceError, DomainModelServiceErrorCode } from '@repo/shared/utils';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
 import { ERROR_RESPONSES } from '../../../transactions.endpoints.constants';
 import { createTransactionHandler } from '../transactions.create.handler';
 import { STEPS } from '../transactions.create.handler.constants';
 
-jest.mock('@repo/shared/repositories');
+jest.mock('@repo/shared/services');
+jest.mock('@repo/shared/utils', () => ({
+  ...jest.requireActual('@repo/shared/utils'),
+  DomainModelServiceError: jest.fn(),
+  DomainModelServiceErrorCode: jest.fn(),
+}));
 
 describe(createTransactionHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;
   let mockReply: Partial<FastifyReply>;
   let mockLogger: Partial<FastifyBaseLogger>;
-  let mockRepository: Partial<TransactionsRepository>;
+  let mockService: Partial<TransactionsService>;
 
   beforeEach(() => {
     mockLogger = {
@@ -37,12 +42,12 @@ describe(createTransactionHandler.name, () => {
       send: jest.fn(),
     };
 
-    mockRepository = {
-      createDocument: jest.fn(),
+    mockService = {
+      createResource: jest.fn(),
     };
 
-    (TransactionsRepository.getInstance as jest.Mock).mockReturnValue(
-      mockRepository,
+    (TransactionsService.getInstance as jest.Mock).mockReturnValue(
+      mockService,
     );
   });
 
@@ -52,7 +57,7 @@ describe(createTransactionHandler.name, () => {
 
   it('should create a transaction successfully', async () => {
     const mockTransactionId = '123';
-    jest.spyOn(mockRepository, 'createDocument').mockResolvedValue(mockTransactionId);
+    jest.spyOn(mockService, 'createResource').mockResolvedValue(mockTransactionId);
 
     await createTransactionHandler(
       mockRequest as FastifyRequest,
@@ -63,7 +68,7 @@ describe(createTransactionHandler.name, () => {
       handler: createTransactionHandler.name,
     });
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_TRANSACTION.id);
-    expect(mockRepository.createDocument).toHaveBeenCalledWith(
+    expect(mockService.createResource).toHaveBeenCalledWith(
       mockRequest.body,
       mockLogger,
     );
@@ -75,11 +80,11 @@ describe(createTransactionHandler.name, () => {
   });
 
   it('should handle company not found', async () => {
-    const mockError = new RepositoryError({
-      code: RepositoryErrorCode.RELATED_DOCUMENT_NOT_FOUND,
+    const mockError = new DomainModelServiceError({
+      code: DomainModelServiceErrorCode.RELATED_RESOURCE_NOT_FOUND,
       message: 'Related document not found',
     });
-    jest.spyOn(mockRepository, 'createDocument').mockRejectedValue(mockError);
+    jest.spyOn(mockService, 'createResource').mockRejectedValue(mockError);
 
     await createTransactionHandler(
       mockRequest as FastifyRequest,
@@ -93,9 +98,9 @@ describe(createTransactionHandler.name, () => {
     });
   });
 
-  it('should handle repository unknown errors', async () => {
-    const mockError = new Error('Repository error');
-    jest.spyOn(mockRepository, 'createDocument').mockRejectedValue(mockError);
+  it('should handle service unknown errors', async () => {
+    const mockError = new Error('Service error');
+    jest.spyOn(mockService, 'createResource').mockRejectedValue(mockError);
 
     await expect(
       createTransactionHandler(

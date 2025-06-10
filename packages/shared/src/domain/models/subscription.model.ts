@@ -1,6 +1,6 @@
-import { DatabaseObject } from '../../definitions/database.interfaces';
+import { ResourceModel } from '../../definitions/domain.interfaces';
 
-export class Subscription implements DatabaseObject {
+export class Subscription implements ResourceModel {
   public readonly companyId: string; // id of the company
   public readonly createdAt: Date; // date of creation
   public readonly endsAt: Date; // end date of the subscription

@@ -1,5 +1,5 @@
 import { FORBIDDEN_ERROR, STATUS_CODES } from '@repo/fastify';
-import { CompaniesRepository } from '@repo/shared/repositories';
+import { CompaniesService } from '@repo/shared/services';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../definitions/auth.interfaces';
@@ -13,7 +13,6 @@ export const getCompanyHandler = async (
   reply: FastifyReply,
 ) => {
   const logger = request.log.child({ handler: getCompanyHandler.name });
-  const repository = CompaniesRepository.getInstance();
   const { id } = request.params as GetCompanyParams;
   const user = request.user as AuthUser;
   if (!hasCompanyReadPermission(id, user)) {
@@ -23,8 +22,8 @@ export const getCompanyHandler = async (
     });
   }
   logger.startStep(STEPS.GET_COMPANY.id);
-  const company = await repository
-    .getDocument(id, logger)
+  const company = await CompaniesService.getInstance()
+    .getResource(id, logger)
     .finally(() => logger.endStep(STEPS.GET_COMPANY.id));
   if (!company) { // this should never happen since the user has permission to read the company so it should exist
     throw new Error(COMPANY_NOT_FOUND_ERROR(id));

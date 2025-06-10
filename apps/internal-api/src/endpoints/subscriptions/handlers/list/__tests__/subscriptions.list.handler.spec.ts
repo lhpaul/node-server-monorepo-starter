@@ -1,5 +1,5 @@
 import { STATUS_CODES, transformQueryParams } from '@repo/fastify';
-import { SubscriptionsRepository } from '@repo/shared/repositories';
+import { SubscriptionsService } from '@repo/shared/services';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
 import { listSubscriptionsHandler } from '../subscriptions.list.handler';
@@ -12,7 +12,7 @@ jest.mock('@repo/fastify', () => ({
   transformQueryParams: jest.fn(),
 }));
 
-jest.mock('@repo/shared/repositories');
+jest.mock('@repo/shared/services');
 
 describe(listSubscriptionsHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;
@@ -22,7 +22,7 @@ describe(listSubscriptionsHandler.name, () => {
     endStep: jest.Mock;
     child: jest.Mock;
   } & Partial<FastifyBaseLogger>;
-  let mockRepository: Partial<SubscriptionsRepository>;
+  let mockService: Partial<SubscriptionsService>;
 
   const mockQuery = { companyId: 'company123' };
 
@@ -43,11 +43,11 @@ describe(listSubscriptionsHandler.name, () => {
       send: jest.fn(),
     };
 
-    mockRepository = {
-      getDocumentsList: jest.fn(),
+    mockService = {
+      getResourcesList: jest.fn(),
     };
 
-    (SubscriptionsRepository.getInstance as jest.Mock).mockReturnValue(mockRepository);
+    (SubscriptionsService.getInstance as jest.Mock).mockReturnValue(mockService);
     (transformQueryParams as jest.Mock).mockReturnValue({ companyId: 'company123' });
   });
 
@@ -64,7 +64,7 @@ describe(listSubscriptionsHandler.name, () => {
       createdAt: new Date(),
       updatedAt: new Date(),
     }];
-    jest.spyOn(mockRepository, 'getDocumentsList').mockResolvedValue(mockSubscriptions);
+    jest.spyOn(mockService, 'getResourcesList').mockResolvedValue(mockSubscriptions);
 
     await listSubscriptionsHandler(
       mockRequest as FastifyRequest,
@@ -73,7 +73,7 @@ describe(listSubscriptionsHandler.name, () => {
 
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTIONS.id);
     expect(transformQueryParams).toHaveBeenCalledWith(mockQuery);
-    expect(mockRepository.getDocumentsList).toHaveBeenCalledWith(
+    expect(mockService.getResourcesList).toHaveBeenCalledWith(
       { companyId: mockQuery.companyId },
       mockLogger,
     );
@@ -83,7 +83,7 @@ describe(listSubscriptionsHandler.name, () => {
   });
 
   it('should handle empty subscriptions list', async () => {
-    jest.spyOn(mockRepository, 'getDocumentsList').mockResolvedValue([]);
+    jest.spyOn(mockService, 'getResourcesList').mockResolvedValue([]);
 
     await listSubscriptionsHandler(
       mockRequest as FastifyRequest,
@@ -92,7 +92,7 @@ describe(listSubscriptionsHandler.name, () => {
 
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTIONS.id);
     expect(transformQueryParams).toHaveBeenCalledWith(mockQuery);
-    expect(mockRepository.getDocumentsList).toHaveBeenCalledWith(
+    expect(mockService.getResourcesList).toHaveBeenCalledWith(
       { companyId: mockQuery.companyId },
       mockLogger,
     );

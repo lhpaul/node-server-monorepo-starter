@@ -1,16 +1,23 @@
-import { QueryInput, QueryItem } from '../../definitions/listing.interfaces';
-export interface CreateSubscriptionInput {
+import { DocumentModel, QueryInput, QueryItem } from '../../definitions/repositories.interfaces';
+
+export interface SubscriptionDocument extends DocumentModel {
   companyId: string;
   startsAt: Date;
   endsAt: Date;
 }
 
-export interface UpdateSubscriptionInput {
+export interface CreateSubscriptionDocumentInput {
+  companyId: string;
+  startsAt: Date;
+  endsAt: Date;
+}
+
+export interface UpdateSubscriptionDocumentInput {
   endsAt?: Date;
   startsAt?: Date;
 }
 
-export interface GetSubscriptionsQuery extends QueryInput {
+export interface QuerySubscriptionsInput extends QueryInput {
   companyId?: QueryItem<string>[];
   startsAt?: QueryItem<Date>[];
   endsAt?: QueryItem<Date>[];

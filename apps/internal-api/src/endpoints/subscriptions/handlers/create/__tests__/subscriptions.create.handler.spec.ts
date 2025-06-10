@@ -1,13 +1,18 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { SubscriptionsRepository } from '@repo/shared/repositories';
-import { RepositoryError, RepositoryErrorCode } from '@repo/shared/utils';
+import { SubscriptionsService } from '@repo/shared/services';
+import { DomainModelServiceError, DomainModelServiceErrorCode } from '@repo/shared/utils';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
 import { ERROR_RESPONSES } from '../../../subscriptions.endpoints.constants';
 import { STEPS } from '../subscriptions.create.handler.constants';
 import { createSubscriptionHandler } from '../subscriptions.create.handler';
 
-jest.mock('@repo/shared/repositories');
+jest.mock('@repo/shared/services');
+jest.mock('@repo/shared/utils', () => ({
+  ...jest.requireActual('@repo/shared/utils'),
+  DomainModelServiceError: jest.fn(),
+  DomainModelServiceErrorCode: jest.fn(),
+}));
 
 describe(createSubscriptionHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;
@@ -16,7 +21,7 @@ describe(createSubscriptionHandler.name, () => {
     startStep: jest.Mock;
     endStep: jest.Mock;
   } & Partial<FastifyBaseLogger>;
-  let mockRepository: Partial<SubscriptionsRepository>;
+  let mockService: Partial<SubscriptionsService>;
 
   const mockBody = {
     companyId: '123',
@@ -41,18 +46,18 @@ describe(createSubscriptionHandler.name, () => {
       send: jest.fn(),
     };
 
-    mockRepository = {
-      createDocument: jest.fn(),
+    mockService = {
+      createResource: jest.fn(),
     };
 
-    (SubscriptionsRepository.getInstance as jest.Mock).mockReturnValue(
-      mockRepository,
+    (SubscriptionsService.getInstance as jest.Mock).mockReturnValue(
+      mockService,
     );
   });
 
   it('should successfully create a subscription', async () => {
     const mockId = 'new-subscription-id';
-    jest.spyOn(mockRepository, 'createDocument').mockResolvedValue(mockId);
+    jest.spyOn(mockService, 'createResource').mockResolvedValue(mockId);
 
     await createSubscriptionHandler(
       mockRequest as FastifyRequest,
@@ -60,7 +65,7 @@ describe(createSubscriptionHandler.name, () => {
     );
 
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_SUBSCRIPTION.id);
-    expect(mockRepository.createDocument).toHaveBeenCalledWith(
+    expect(mockService.createResource).toHaveBeenCalledWith(
       {
         ...mockBody,
         startsAt: new Date(mockBody.startsAt),
@@ -74,14 +79,14 @@ describe(createSubscriptionHandler.name, () => {
   });
 
   it('should handle company not found error', async () => {
-    const error = new RepositoryError({
-      code: RepositoryErrorCode.RELATED_DOCUMENT_NOT_FOUND,
+    const error = new DomainModelServiceError({
+      code: DomainModelServiceErrorCode.RELATED_RESOURCE_NOT_FOUND,
       message: 'Company not found',
       data: {
         companyId: mockBody.companyId,
       },
     });
-    jest.spyOn(mockRepository, 'createDocument').mockRejectedValue(error);
+    jest.spyOn(mockService, 'createResource').mockRejectedValue(error);
 
     await createSubscriptionHandler(
       mockRequest as FastifyRequest,
@@ -89,7 +94,7 @@ describe(createSubscriptionHandler.name, () => {
     );
 
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_SUBSCRIPTION.id);
-    expect(mockRepository.createDocument).toHaveBeenCalledWith(
+    expect(mockService.createResource).toHaveBeenCalledWith(
       {
         ...mockBody,
         startsAt: new Date(mockBody.startsAt),
@@ -105,9 +110,9 @@ describe(createSubscriptionHandler.name, () => {
     });
   });
 
-  it('should handle other repository errors', async () => {
-    const error = new Error('Repository error');
-    jest.spyOn(mockRepository, 'createDocument').mockRejectedValue(error);
+  it('should handle other service errors', async () => {
+    const error = new Error('Service error');
+    jest.spyOn(mockService, 'createResource').mockRejectedValue(error);
 
     await expect(
       createSubscriptionHandler(
@@ -117,7 +122,7 @@ describe(createSubscriptionHandler.name, () => {
     ).rejects.toThrow(error);
 
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_SUBSCRIPTION.id);
-    expect(mockRepository.createDocument).toHaveBeenCalledWith(
+    expect(mockService.createResource).toHaveBeenCalledWith(
       {
         ...mockBody,
         startsAt: new Date(mockBody.startsAt),

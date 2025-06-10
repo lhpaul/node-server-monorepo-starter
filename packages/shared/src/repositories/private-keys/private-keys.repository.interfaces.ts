@@ -1,12 +1,18 @@
-import { QueryInput, QueryItem } from '../../definitions/listing.interfaces';
+import { DocumentModel, QueryInput, QueryItem } from '../../definitions/repositories.interfaces';
 
-export interface CreatePrivateKeyInput {
+export interface PrivateKeyDocument extends DocumentModel {
+  hash: string;
+  label: string;
+  oauthClientId: string;
+}
+
+export interface CreatePrivateKeyDocumentInput {
   oauthClientId: string;
   label: string;
   hash: string;
 }
 
-export interface UpdatePrivateKeyInput {
+export interface UpdatePrivateKeyDocumentInput {
   label?: string;
   hash?: string;
 }

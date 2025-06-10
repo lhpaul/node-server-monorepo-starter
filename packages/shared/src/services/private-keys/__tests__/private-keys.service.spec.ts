@@ -1,9 +1,10 @@
 import { compareSync } from 'bcrypt';
-import { PrivateKey } from '../../../domain/models/private-key.model';
-import { PrivateKeysRepository } from '../../../repositories/private-keys/private-keys.repository';
+
+import { ExecutionLogger } from '../../../definitions';
+import { PrivateKey } from '../../../domain';
+import { PrivateKeysRepository } from '../../../repositories';
 import { API_KEYS_CACHE_EXPIRATION } from '../private-keys.service.constants';
 import { PrivateKeysService } from '../private-keys.service';
-import { ExecutionLogger } from '../../../definitions';
 
 jest.mock('bcrypt');
 jest.mock('../../../repositories/private-keys/private-keys.repository');

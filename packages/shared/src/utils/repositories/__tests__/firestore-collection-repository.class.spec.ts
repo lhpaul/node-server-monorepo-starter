@@ -1,12 +1,11 @@
 import * as admin from 'firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
+
+import { ExecutionLogger, QueryInput, QueryItem } from '../../../definitions';
+import { FIRESTORE_ERROR_CODE, changeTimestampsToDate, runRetriableAction } from '../../firestore';
+import { RepositoryError, RepositoryErrorCode } from '../repositories.errors';
 import { FirestoreCollectionRepository } from '../firestore-collection-repository.class';
-import { ExecutionLogger } from '../../../definitions/logging.interfaces';
-import { QueryInput, QueryItem } from '../../../definitions/listing.interfaces';
-import { RepositoryError, RepositoryErrorCode } from '../../../utils/repositories/repositories.errors';
-import { FIRESTORE_ERROR_CODE } from '../../../constants/firestore.constants';
 import { ERROR_MESSAGES, STEPS } from '../firestore-collection-repository.class.constants';
-import { changeTimestampsToDate, runRetriableAction } from '..';
 import { OrderByDirection } from '../firestore-collection-repository.class.interfaces';
 
 // Mock Firebase Admin

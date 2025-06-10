@@ -1,5 +1,5 @@
 import { FORBIDDEN_ERROR, STATUS_CODES, RESOURCE_NOT_FOUND_ERROR } from '@repo/fastify';
-import { SubscriptionsRepository } from '@repo/shared/repositories';
+import { SubscriptionsService } from '@repo/shared/services';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../../definitions/auth.interfaces';
@@ -23,9 +23,9 @@ export const getSubscriptionHandler = async (
   }
 
   logger.startStep(STEPS.GET_SUBSCRIPTION.id);
-  const repository = SubscriptionsRepository.getInstance();
-  const subscription = await repository
-    .getDocument(id, logger)
+  const service = SubscriptionsService.getInstance();
+  const subscription = await service
+    .getResource(id, logger)
     .finally(() => logger.endStep(STEPS.GET_SUBSCRIPTION.id));
 
   if (!subscription) {

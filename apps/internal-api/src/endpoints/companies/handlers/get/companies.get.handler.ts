@@ -1,5 +1,5 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { CompaniesRepository } from '@repo/shared/repositories';
+import { CompaniesService } from '@repo/shared/services';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { ERROR_RESPONSES } from '../../companies.endpoints.constants';
@@ -11,11 +11,11 @@ export const getCompanyHandler = async (
   reply: FastifyReply,
 ) => {
   const logger = request.log.child({ handler: getCompanyHandler.name });
-  const repository = CompaniesRepository.getInstance();
+  const service = CompaniesService.getInstance();
   const { id } = request.params as GetCompanyParams;
   logger.startStep(STEPS.GET_COMPANY.id);
-  const company = await repository
-    .getDocument(id, logger)
+  const company = await service
+    .getResource(id, logger)
     .finally(() => logger.endStep(STEPS.GET_COMPANY.id));
   if (!company) {
     return reply.code(STATUS_CODES.NOT_FOUND).send(ERROR_RESPONSES.COMPANY_NOT_FOUND);

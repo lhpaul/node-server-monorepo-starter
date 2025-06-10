@@ -1,7 +1,7 @@
 import * as admin from 'firebase-admin';
 
-import { ExecutionLogger } from '../../definitions/logging.interfaces';
-import { PERMISSIONS_BY_ROLE } from '../../domain/models/user-company-relation.model';
+import { ExecutionLogger } from '../../definitions';
+import { PERMISSIONS_BY_ROLE, UserCompanyRole } from '../../domain/models/user-company-relation.model';
 import { SubscriptionsRepository } from '../../repositories/subscriptions/subscriptions.repository';
 import { UserCompanyRelationsRepository } from '../../repositories/user-company-relations/user-company-relations.repository';
 import { ERROR_MESSAGES, PERMISSIONS_SUFFIXES, STEPS } from './auth.service.constants';
@@ -74,7 +74,7 @@ export class AuthService {
     const response: { companies: {[companyId: string]: string[] } } = { companies: {} };
     for (const userCompanyRelation of userCompanyRelations) {
       const companySubscription = subscriptions.find((subscription) => subscription.companyId === userCompanyRelation.companyId);
-      response.companies[userCompanyRelation.companyId] = PERMISSIONS_BY_ROLE[userCompanyRelation.role];
+      response.companies[userCompanyRelation.companyId] = PERMISSIONS_BY_ROLE[userCompanyRelation.role as UserCompanyRole];
       if (!companySubscription) { // if no subscription, change write permissions to read permissions
         response.companies[userCompanyRelation.companyId] = response.companies[userCompanyRelation.companyId].map((permission) => permission.replace(PERMISSIONS_SUFFIXES.WRITE, PERMISSIONS_SUFFIXES.READ));
       }

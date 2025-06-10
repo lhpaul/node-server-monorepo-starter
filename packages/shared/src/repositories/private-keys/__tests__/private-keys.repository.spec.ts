@@ -1,8 +1,8 @@
-import { FirestoreCollectionRepository } from '../../../utils/firestore/firestore-collection-repository.class';
+import { FirestoreCollectionRepository } from '../../../utils/repositories';
 import { COLLECTION_PATH } from '../private-keys.repository.constants';
 import { PrivateKeysRepository } from '../private-keys.repository';
 
-jest.mock('../../../utils/firestore/firestore-collection-repository.class');
+jest.mock('../../../utils/repositories');
 
 describe(PrivateKeysRepository.name, () => {
 
