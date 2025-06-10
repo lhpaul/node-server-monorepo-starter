@@ -1,13 +1,12 @@
 import * as admin from 'firebase-admin';
 
+import { ExecutionLogger } from '../../definitions/logging.interfaces';
 import { PERMISSIONS_BY_ROLE } from '../../domain/models/user-company-relation.model';
 import { SubscriptionsRepository } from '../../repositories/subscriptions/subscriptions.repository';
 import { UserCompanyRelationsRepository } from '../../repositories/user-company-relations/user-company-relations.repository';
-import { UserPermissions } from './auth.service.interfaces';
 import { ERROR_MESSAGES, PERMISSIONS_SUFFIXES, STEPS } from './auth.service.constants';
-import { DecodeEmailTokenError } from './auth.service.errors';
-import { DecodeEmailTokenErrorCode } from './auth.service.errors';
-import { ExecutionLogger } from '../../definitions/logging.interfaces';
+import { DecodeEmailTokenError, DecodeEmailTokenErrorCode } from './auth.service.errors';
+import { UserPermissions } from './auth.service.interfaces';
 
 export class AuthService {
   private static instance: AuthService;
