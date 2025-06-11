@@ -47,6 +47,10 @@ describe(AuthService.name, () => {
       companyId: 'company2',
       role: 'admin',
     },
+    {
+      companyId: 'company3',
+      role: 'member',
+    },
   ];
   const mockSubscriptions = [
     {
@@ -137,7 +141,9 @@ describe(AuthService.name, () => {
       const mockToken = 'custom-token'; 
 
       mockUserCompanyRelationsRepo.getDocumentsList.mockResolvedValue(mockUserCompanyRelations);
-      mockSubscriptionsRepo.getDocumentsList.mockResolvedValue(mockSubscriptions);
+      mockSubscriptionsRepo.getDocumentsList.mockResolvedValueOnce([mockSubscriptions[0]]);
+      mockSubscriptionsRepo.getDocumentsList.mockResolvedValueOnce([]);
+      mockSubscriptionsRepo.getDocumentsList.mockResolvedValueOnce([]);
       mockFirebaseAuth.createCustomToken.mockResolvedValue(mockToken);
 
       const result = await authService.generateUserToken(mockUserId, mockLogger);
@@ -153,7 +159,17 @@ describe(AuthService.name, () => {
         userId: [{ operator: '==', value: mockUserId }],
       }, mockLogger);
       expect(mockSubscriptionsRepo.getDocumentsList).toHaveBeenCalledWith({
-        companyId: [{ operator: 'in', value: mockUserCompanyRelations.map((relation) => relation.companyId) }],
+        companyId: [{ operator: '==', value: mockUserCompanyRelations[0].companyId }],
+        startsAt: [{ operator: '<=', value: now }],
+        endsAt: [{ operator: '>=', value: now }],
+      }, mockLogger);
+      expect(mockSubscriptionsRepo.getDocumentsList).toHaveBeenCalledWith({
+        companyId: [{ operator: '==', value: mockUserCompanyRelations[1].companyId }],
+        startsAt: [{ operator: '<=', value: now }],
+        endsAt: [{ operator: '>=', value: now }],
+      }, mockLogger);
+      expect(mockSubscriptionsRepo.getDocumentsList).toHaveBeenCalledWith({
+        companyId: [{ operator: '==', value: mockUserCompanyRelations[2].companyId }],
         startsAt: [{ operator: '<=', value: now }],
         endsAt: [{ operator: '>=', value: now }],
       }, mockLogger);
@@ -161,6 +177,7 @@ describe(AuthService.name, () => {
         companies: {
           company1: PERMISSIONS_BY_ROLE.admin,
           company2: PERMISSIONS_BY_ROLE.admin.map((permission) => permission.replace(PERMISSIONS_SUFFIXES.WRITE, PERMISSIONS_SUFFIXES.READ)),
+          company3: PERMISSIONS_BY_ROLE.member,
         },
       });
     });
@@ -170,7 +187,9 @@ describe(AuthService.name, () => {
     const mockUid = 'uid123';
     it('should update the permissions of a user correctly', async () => {
       mockUserCompanyRelationsRepo.getDocumentsList.mockResolvedValue(mockUserCompanyRelations);
-      mockSubscriptionsRepo.getDocumentsList.mockResolvedValue(mockSubscriptions);
+      mockSubscriptionsRepo.getDocumentsList.mockResolvedValueOnce([mockSubscriptions[0]]);
+      mockSubscriptionsRepo.getDocumentsList.mockResolvedValueOnce([]);
+      mockSubscriptionsRepo.getDocumentsList.mockResolvedValueOnce([]);
       mockFirebaseAuth.setCustomUserClaims.mockResolvedValue(mockUserCompanyRelations);
 
       await authService.updatePermissionsToUser({
@@ -188,7 +207,17 @@ describe(AuthService.name, () => {
         userId: [{ operator: '==', value: mockUserId }],
       }, mockLogger);
       expect(mockSubscriptionsRepo.getDocumentsList).toHaveBeenCalledWith({
-        companyId: [{ operator: 'in', value: mockUserCompanyRelations.map((relation) => relation.companyId) }],
+        companyId: [{ operator: '==', value: mockUserCompanyRelations[0].companyId }],
+        startsAt: [{ operator: '<=', value: now }],
+        endsAt: [{ operator: '>=', value: now }],
+      }, mockLogger);
+      expect(mockSubscriptionsRepo.getDocumentsList).toHaveBeenCalledWith({
+        companyId: [{ operator: '==', value: mockUserCompanyRelations[1].companyId }],
+        startsAt: [{ operator: '<=', value: now }],
+        endsAt: [{ operator: '>=', value: now }],
+      }, mockLogger);
+      expect(mockSubscriptionsRepo.getDocumentsList).toHaveBeenCalledWith({
+        companyId: [{ operator: '==', value: mockUserCompanyRelations[2].companyId }],
         startsAt: [{ operator: '<=', value: now }],
         endsAt: [{ operator: '>=', value: now }],
       }, mockLogger);
@@ -197,6 +226,90 @@ describe(AuthService.name, () => {
         companies: {
           company1: PERMISSIONS_BY_ROLE.admin,
           company2: PERMISSIONS_BY_ROLE.admin.map((permission) => permission.replace(PERMISSIONS_SUFFIXES.WRITE, PERMISSIONS_SUFFIXES.READ)),
+          company3: PERMISSIONS_BY_ROLE.member,
+        },
+      });
+    });
+  });
+  describe(AuthService.prototype.getUserPermissions.name, () => {
+    it('should return user permissions for all companies', async () => {
+      mockUserCompanyRelationsRepo.getDocumentsList.mockResolvedValue(mockUserCompanyRelations);
+      mockSubscriptionsRepo.getDocumentsList.mockResolvedValueOnce([mockSubscriptions[0]]);
+      mockSubscriptionsRepo.getDocumentsList.mockResolvedValueOnce([]);
+      mockSubscriptionsRepo.getDocumentsList.mockResolvedValueOnce([]);
+      const result = await authService.getUserPermissions(mockUserId, mockLogger);
+      expect(mockLogger.startStep).toHaveBeenNthCalledWith(1, STEPS.GET_USER_COMPANY_RELATIONS.id);
+      expect(mockLogger.endStep).toHaveBeenNthCalledWith(1, STEPS.GET_USER_COMPANY_RELATIONS.id);
+      expect(mockLogger.startStep).toHaveBeenNthCalledWith(2, STEPS.GET_SUBSCRIPTIONS.id);
+      expect(mockLogger.endStep).toHaveBeenNthCalledWith(2, STEPS.GET_SUBSCRIPTIONS.id);
+      expect(mockUserCompanyRelationsRepo.getDocumentsList).toHaveBeenCalledWith({
+        userId: [{ operator: '==', value: mockUserId }],
+      }, mockLogger);
+      expect(mockSubscriptionsRepo.getDocumentsList).toHaveBeenCalledWith({
+        companyId: [{ operator: '==', value: mockUserCompanyRelations[0].companyId }],
+        startsAt: [{ operator: '<=', value: now }],
+        endsAt: [{ operator: '>=', value: now }],
+      }, mockLogger);
+      expect(mockSubscriptionsRepo.getDocumentsList).toHaveBeenCalledWith({
+        companyId: [{ operator: '==', value: mockUserCompanyRelations[1].companyId }],
+        startsAt: [{ operator: '<=', value: now }],
+        endsAt: [{ operator: '>=', value: now }],
+      }, mockLogger);
+      expect(mockSubscriptionsRepo.getDocumentsList).toHaveBeenCalledWith({
+        companyId: [{ operator: '==', value: mockUserCompanyRelations[2].companyId }],
+        startsAt: [{ operator: '<=', value: now }],
+        endsAt: [{ operator: '>=', value: now }],
+      }, mockLogger);
+      expect(result).toEqual({
+        companies: {
+          company1: PERMISSIONS_BY_ROLE.admin,
+          company2: PERMISSIONS_BY_ROLE.admin.map((permission) => permission.replace(PERMISSIONS_SUFFIXES.WRITE, PERMISSIONS_SUFFIXES.READ)),
+          company3: PERMISSIONS_BY_ROLE.member,
+        },
+      });
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_USER_COMPANY_RELATIONS.id);
+      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_USER_COMPANY_RELATIONS.id);
+    });
+
+    it('should return empty companies object when user has no company relations', async () => {
+      mockUserCompanyRelationsRepo.getDocumentsList.mockResolvedValue([]);
+      const result = await authService.getUserPermissions(mockUserId, mockLogger);
+      expect(result).toEqual({ companies: {} });
+    });
+    
+    it('should remove write permissions to companies without active subscriptions', async () => {
+      mockUserCompanyRelationsRepo.getDocumentsList.mockResolvedValue(mockUserCompanyRelations);
+      mockSubscriptionsRepo.getDocumentsList.mockResolvedValueOnce([mockSubscriptions[0]]);
+      mockSubscriptionsRepo.getDocumentsList.mockResolvedValueOnce([]);
+      mockSubscriptionsRepo.getDocumentsList.mockResolvedValueOnce([]);
+      const result = await authService.getUserPermissions(mockUserId, mockLogger);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_USER_COMPANY_RELATIONS.id);
+      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_USER_COMPANY_RELATIONS.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTIONS.id);
+      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTIONS.id);
+      expect(mockUserCompanyRelationsRepo.getDocumentsList).toHaveBeenCalledWith({
+        userId: [{ operator: '==', value: mockUserId }],
+      }, mockLogger);
+      expect(mockSubscriptionsRepo.getDocumentsList).toHaveBeenCalledWith({
+        companyId: [{ operator: '==', value: mockUserCompanyRelations[0].companyId }],
+        startsAt: [{ operator: '<=', value: now }],
+        endsAt: [{ operator: '>=', value: now }],
+      }, mockLogger);
+      expect(mockSubscriptionsRepo.getDocumentsList).toHaveBeenCalledWith({
+        companyId: [{ operator: '==', value: mockUserCompanyRelations[1].companyId }],
+        startsAt: [{ operator: '<=', value: now }],
+        endsAt: [{ operator: '>=', value: now }],
+      }, mockLogger);
+        expect(mockSubscriptionsRepo.getDocumentsList).toHaveBeenCalledWith({
+        companyId: [{ operator: '==', value: mockUserCompanyRelations[2].companyId }],
+        startsAt: [{ operator: '<=', value: now }],
+        endsAt: [{ operator: '>=', value: now }],
+      }, mockLogger);
+      expect(result).toEqual({
+        companies: {
+          company1: PERMISSIONS_BY_ROLE.admin,
+          company2: PERMISSIONS_BY_ROLE.admin.map((permission) => permission.replace(PERMISSIONS_SUFFIXES.WRITE, PERMISSIONS_SUFFIXES.READ)),
+          company3: PERMISSIONS_BY_ROLE.member,
         },
       });
     });

@@ -34,7 +34,7 @@ export class AuthService {
 
   public async generateUserToken(userId: string, logger: ExecutionLogger): Promise<string> {
     logger.startStep(STEPS.GET_USER_COMPANY_RELATIONS.id);
-    const permissions = await this._getUserPermissions(userId, logger);
+    const permissions = await this.getUserPermissions(userId, logger);
     logger.endStep(STEPS.GET_USER_COMPANY_RELATIONS.id);
     logger.startStep(STEPS.GENERATE_USER_TOKEN.id);
     const token = await admin.auth().createCustomToken(userId, permissions);
@@ -47,7 +47,7 @@ export class AuthService {
     uid: string,
   }, logger: ExecutionLogger): Promise<void> {
     logger.startStep(STEPS.GET_USER_COMPANY_RELATIONS.id);
-    const permissions = await this._getUserPermissions(input.userId, logger);
+    const permissions = await this.getUserPermissions(input.userId, logger);
     logger.endStep(STEPS.GET_USER_COMPANY_RELATIONS.id);
     logger.startStep(STEPS.UPDATE_USER_PERMISSIONS.id);
     await admin.auth().setCustomUserClaims(input.uid, {
@@ -57,25 +57,25 @@ export class AuthService {
     logger.endStep(STEPS.UPDATE_USER_PERMISSIONS.id);
   }
 
-  private async _getUserPermissions(userId: string, logger: ExecutionLogger): Promise<UserPermissions> {
+  public async getUserPermissions(userId: string, logger: ExecutionLogger): Promise<UserPermissions> {
     logger.startStep(STEPS.GET_USER_COMPANY_RELATIONS.id);
     const userCompanyRelations = await UserCompanyRelationsRepository.getInstance().getDocumentsList({
       userId: [{ operator: '==', value: userId }],
     }, logger).finally(() => logger.endStep(STEPS.GET_USER_COMPANY_RELATIONS.id));
-
-    logger.startStep(STEPS.GET_SUBSCRIPTIONS.id);
+    const response: { companies: { [companyId: string]: string[] } } = { companies: {} };
+    // get subscriptions of this companies
     const now = new Date();
-    const subscriptions = await SubscriptionsRepository.getInstance().getDocumentsList({
-      companyId: [{ operator: 'in', value: userCompanyRelations.map((relation) => relation.companyId) }],
+    logger.startStep(STEPS.GET_SUBSCRIPTIONS.id);
+    const companySubscriptions = await Promise.all(userCompanyRelations.map(async (relation) => SubscriptionsRepository.getInstance().getDocumentsList({
+      companyId: [{ operator: '==', value: relation.companyId }],
       startsAt: [{ operator: '<=', value: now }],
       endsAt: [{ operator: '>=', value: now }],
-    }, logger).finally(() => logger.endStep(STEPS.GET_SUBSCRIPTIONS.id));
-    
-    const response: { companies: {[companyId: string]: string[] } } = { companies: {} };
-    for (const userCompanyRelation of userCompanyRelations) {
-      const companySubscription = subscriptions.find((subscription) => subscription.companyId === userCompanyRelation.companyId);
+    }, logger))).finally(() => logger.endStep(STEPS.GET_SUBSCRIPTIONS.id));
+    for (const index in userCompanyRelations) {
+      const userCompanyRelation = userCompanyRelations[index];
+      const subscriptions = companySubscriptions[index];
       response.companies[userCompanyRelation.companyId] = PERMISSIONS_BY_ROLE[userCompanyRelation.role as UserCompanyRole];
-      if (!companySubscription) { // if no subscription, change write permissions to read permissions
+      if (!subscriptions.length) { // if no subscription, replace write permissions with read permissions
         response.companies[userCompanyRelation.companyId] = response.companies[userCompanyRelation.companyId].map((permission) => permission.replace(PERMISSIONS_SUFFIXES.WRITE, PERMISSIONS_SUFFIXES.READ));
       }
     }
