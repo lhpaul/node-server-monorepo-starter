@@ -24,7 +24,7 @@ export const getTransactionHandler = async (
   const transaction = await service
     .getResource(id, logger)
     .finally(() => logger.endStep(STEPS.GET_TRANSACTION.id));
-  if (!transaction) {
+  if (!transaction || transaction.companyId !== companyId) {
     return reply.code(STATUS_CODES.NOT_FOUND).send({
       code: RESOURCE_NOT_FOUND_ERROR.responseCode,
       message: RESOURCE_NOT_FOUND_ERROR.responseMessage,

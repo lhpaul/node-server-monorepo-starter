@@ -28,7 +28,7 @@ export const getSubscriptionHandler = async (
     .getResource(id, logger)
     .finally(() => logger.endStep(STEPS.GET_SUBSCRIPTION.id));
 
-  if (!subscription) {
+  if (!subscription || subscription.companyId !== companyId) {
     return reply.code(STATUS_CODES.NOT_FOUND).send({
       code: RESOURCE_NOT_FOUND_ERROR.responseCode,
       message: RESOURCE_NOT_FOUND_ERROR.responseMessage,
