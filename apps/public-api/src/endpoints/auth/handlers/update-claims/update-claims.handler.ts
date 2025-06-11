@@ -1,6 +1,5 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { UsersRepository } from '@repo/shared/repositories';
-import { AuthService } from '@repo/shared/services';
+import { AuthService, UsersService } from '@repo/shared/services';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { ERROR_RESPONSES, STEPS } from './update-claims.handler.constants';
@@ -18,7 +17,7 @@ export const updateClaimsHandler = async (request: FastifyRequest, reply: Fastif
       });
     }
     logger.startStep(STEPS.FIND_USER.id);
-    const [user, ..._rest] = await UsersRepository.getInstance().getDocumentsList(
+    const [user, ..._rest] = await UsersService.getInstance().getResourcesList(
       {
         email: [{ value: email, operator: '==' }],
       },

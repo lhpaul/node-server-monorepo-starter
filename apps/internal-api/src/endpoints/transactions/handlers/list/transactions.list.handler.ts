@@ -1,20 +1,20 @@
 import { STATUS_CODES, transformQueryParams } from '@repo/fastify';
-import { TransactionsRepository } from '@repo/shared/repositories';
+import { TransactionsService } from '@repo/shared/services';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
-import { STEPS } from './transactions.list.constants';
-import { GetTransactionsQueryParams } from './transactions.list.interfaces';
+import { STEPS } from './transactions.list.handler.constants';
+import { GetTransactionsQueryParams } from './transactions.list.handler.interfaces';
 
 export const listTransactionsHandler = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
   const logger = request.log.child({ handler: listTransactionsHandler.name });
-  const repository = TransactionsRepository.getInstance();
+  const service = TransactionsService.getInstance();
   const query = request.query as GetTransactionsQueryParams;
   logger.startStep(STEPS.GET_TRANSACTIONS.id);
-  const transactions = await repository
-    .getDocumentsList(transformQueryParams(query), logger)
+  const transactions = await service
+    .getResourcesList(transformQueryParams(query), logger)
     .finally(() => logger.endStep(STEPS.GET_TRANSACTIONS.id));
   return reply.code(STATUS_CODES.OK).send(transactions);
 };

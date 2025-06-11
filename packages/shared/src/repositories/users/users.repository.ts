@@ -1,13 +1,14 @@
-import { User } from '../../domain/models/user.model';
+import { FirestoreCollectionRepository } from '../../utils/repositories';
 import { COLLECTION_PATH } from './users.repository.constants';
 import {
-  CreateUserInput,
-  GetUsersQuery,
-  UpdateUserInput,
+  UserDocument,
+  CreateUserDocumentInput,
+  QueryUsersInput,
+  UpdateUserDocumentInput,
 } from './users.repository.interfaces';
-import { FirestoreCollectionRepository } from '../../utils/firestore/firestore-collection-repository.class';
 
-export class UsersRepository extends FirestoreCollectionRepository<User, CreateUserInput, UpdateUserInput, GetUsersQuery> {
+
+export class UsersRepository extends FirestoreCollectionRepository<UserDocument, CreateUserDocumentInput, UpdateUserDocumentInput, QueryUsersInput> {
   private static instance: UsersRepository;
   public static getInstance(): UsersRepository {
     if (!UsersRepository.instance) {

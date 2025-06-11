@@ -1,6 +1,7 @@
 import { compareSync } from 'bcrypt';
+
 import { ExecutionLogger } from '../../definitions';
-import { PrivateKeysRepository } from '../../repositories/private-keys/private-keys.repository';
+import { PrivateKeysRepository } from '../../repositories';
 import { API_KEYS_CACHE_EXPIRATION } from './private-keys.service.constants';
 import { PrivateKeyValidationResult, ClientCache } from './private-keys.service.interfaces';
 export class PrivateKeysService {

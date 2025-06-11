@@ -1,7 +1,7 @@
 import { ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { RequestLogger } from '@repo/fastify';
-import { QueryItem } from '@repo/shared/definitions';
-import { TransactionsRepository } from '@repo/shared/repositories';
+import { FilterItem } from '@repo/shared/definitions';
+import { TransactionsService } from '@repo/shared/services';
 import { FastifyBaseLogger } from 'fastify';
 
 import { McpResourceConfig } from '../../../definitions/mcp.interfaces';
@@ -21,15 +21,15 @@ export function transactionsResourceBuilder(serverLogger: FastifyBaseLogger): Mc
       .child({ requestId: extra.requestId, resource: RESOURCE_NAME, uri, variables });
 
       requestLogger.startStep(STEPS.GET_TRANSACTIONS.id);
-      const dateFilters: QueryItem<string>[] = [];
+      const dateFilters: FilterItem<string>[] = [];
       if (dateFrom) {
         dateFilters.push({ value: dateFrom as string, operator: '>=' });
       }
       if (dateTo) {
         dateFilters.push({ value: dateTo as string, operator: '<=' });
       }
-      const transactionsRepo = TransactionsRepository.getInstance();
-      const transactions = await transactionsRepo.getDocumentsList({
+      const service = TransactionsService.getInstance();
+      const transactions = await service.getResourcesList({
         companyId: [{ value: companyId, operator: '==' }],
         date: dateFilters,
       }, requestLogger)

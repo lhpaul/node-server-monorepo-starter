@@ -1,13 +1,14 @@
-import { UserCompanyRelation } from '../../domain/models/user-company-relation.model';
-import { FirestoreCollectionRepository } from '../../utils/firestore/firestore-collection-repository.class';
+import { FirestoreCollectionRepository } from '../../utils/repositories';
 import { COLLECTION_PATH } from './user-company-relations.repository.constants';
 import {
-  CreateUserCompanyRelationInput,
-  GetUserCompanyRelationsQuery,
-  UpdateUserCompanyRelationInput,
+  UserCompanyRelationDocument,
+  CreateUserCompanyRelationDocumentInput,
+  QueryUserCompanyRelationsInput,
+  UpdateUserCompanyRelationDocumentInput,
 } from './user-company-relations.repository.interfaces';
 
-export class UserCompanyRelationsRepository extends FirestoreCollectionRepository<UserCompanyRelation, CreateUserCompanyRelationInput, UpdateUserCompanyRelationInput, GetUserCompanyRelationsQuery> {
+
+export class UserCompanyRelationsRepository extends FirestoreCollectionRepository<UserCompanyRelationDocument, CreateUserCompanyRelationDocumentInput, UpdateUserCompanyRelationDocumentInput, QueryUserCompanyRelationsInput> {
   private static instance: UserCompanyRelationsRepository;
 
   public static getInstance(): UserCompanyRelationsRepository {

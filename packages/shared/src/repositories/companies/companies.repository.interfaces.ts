@@ -1,13 +1,17 @@
-import { QueryInput, QueryItem } from '../../definitions/listing.interfaces';
+import { DocumentModel, QueryInput, QueryItem } from '../../definitions/repositories.interfaces';
 
-export interface CreateCompanyInput {
+export interface CompanyDocument extends DocumentModel {
   name: string;
 }
 
-export interface UpdateCompanyInput {
+export interface CreateCompanyDocumentInput {
+  name: string;
+}
+
+export interface UpdateCompanyDocumentInput {
   name?: string;
 }
 
-export interface GetCompaniesQuery extends QueryInput {
+export interface QueryCompaniesInput extends QueryInput {
   name?: QueryItem<string>[];
 }

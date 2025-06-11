@@ -16,10 +16,6 @@
       "types": "./src/domain/index.ts",
       "default": "./dist/domain/index.js"
     },
-    "./repositories": {
-      "types": "./src/repositories/index.ts",
-      "default": "./dist/repositories/index.js"
-    },
     "./services": {
       "types": "./src/services/index.ts",
       "default": "./dist/services/index.js"
@@ -32,8 +28,7 @@
   "dependencies": {
     "axios": "1.9.0",
     "bcrypt": "6.0.0",
-    "firebase-admin": "13.4.0",
-    "pino": "9.6.0"
+    "firebase-admin": "13.4.0"
   },
   "devDependencies": {
     "@repo/configs": "workspace:*",

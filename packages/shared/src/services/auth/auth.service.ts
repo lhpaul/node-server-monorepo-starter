@@ -1,12 +1,12 @@
 import * as admin from 'firebase-admin';
 
-import { PERMISSIONS_BY_ROLE } from '../../domain/models/user-company-relation.model';
+import { ExecutionLogger } from '../../definitions';
+import { PERMISSIONS_BY_ROLE, UserCompanyRole } from '../../domain/models/user-company-relation.model';
+import { SubscriptionsRepository } from '../../repositories/subscriptions/subscriptions.repository';
 import { UserCompanyRelationsRepository } from '../../repositories/user-company-relations/user-company-relations.repository';
+import { ERROR_MESSAGES, PERMISSIONS_SUFFIXES, STEPS } from './auth.service.constants';
+import { DecodeEmailTokenError, DecodeEmailTokenErrorCode } from './auth.service.errors';
 import { UserPermissions } from './auth.service.interfaces';
-import { ERROR_MESSAGES, STEPS } from './auth.service.constants';
-import { DecodeEmailTokenError } from './auth.service.errors';
-import { DecodeEmailTokenErrorCode } from './auth.service.errors';
-import { ExecutionLogger } from '../../definitions/logging.interfaces';
 
 export class AuthService {
   private static instance: AuthService;
@@ -34,7 +34,7 @@ export class AuthService {
 
   public async generateUserToken(userId: string, logger: ExecutionLogger): Promise<string> {
     logger.startStep(STEPS.GET_USER_COMPANY_RELATIONS.id);
-    const permissions = await this._getUserPermissions(userId, logger);
+    const permissions = await this.getUserPermissions(userId, logger);
     logger.endStep(STEPS.GET_USER_COMPANY_RELATIONS.id);
     logger.startStep(STEPS.GENERATE_USER_TOKEN.id);
     const token = await admin.auth().createCustomToken(userId, permissions);
@@ -47,7 +47,7 @@ export class AuthService {
     uid: string,
   }, logger: ExecutionLogger): Promise<void> {
     logger.startStep(STEPS.GET_USER_COMPANY_RELATIONS.id);
-    const permissions = await this._getUserPermissions(input.userId, logger);
+    const permissions = await this.getUserPermissions(input.userId, logger);
     logger.endStep(STEPS.GET_USER_COMPANY_RELATIONS.id);
     logger.startStep(STEPS.UPDATE_USER_PERMISSIONS.id);
     await admin.auth().setCustomUserClaims(input.uid, {
@@ -57,13 +57,27 @@ export class AuthService {
     logger.endStep(STEPS.UPDATE_USER_PERMISSIONS.id);
   }
 
-  private async _getUserPermissions(userId: string, logger: ExecutionLogger): Promise<UserPermissions> {
+  public async getUserPermissions(userId: string, logger: ExecutionLogger): Promise<UserPermissions> {
+    logger.startStep(STEPS.GET_USER_COMPANY_RELATIONS.id);
     const userCompanyRelations = await UserCompanyRelationsRepository.getInstance().getDocumentsList({
       userId: [{ operator: '==', value: userId }],
-    }, logger);
+    }, logger).finally(() => logger.endStep(STEPS.GET_USER_COMPANY_RELATIONS.id));
     const response: { companies: { [companyId: string]: string[] } } = { companies: {} };
-    for (const userCompanyRelation of userCompanyRelations) {
-      response.companies[userCompanyRelation.companyId] = PERMISSIONS_BY_ROLE[userCompanyRelation.role];
+    // get subscriptions of this companies
+    const now = new Date();
+    logger.startStep(STEPS.GET_SUBSCRIPTIONS.id);
+    const companySubscriptions = await Promise.all(userCompanyRelations.map(async (relation) => SubscriptionsRepository.getInstance().getDocumentsList({
+      companyId: [{ operator: '==', value: relation.companyId }],
+      startsAt: [{ operator: '<=', value: now }],
+      endsAt: [{ operator: '>=', value: now }],
+    }, logger))).finally(() => logger.endStep(STEPS.GET_SUBSCRIPTIONS.id));
+    for (const index in userCompanyRelations) {
+      const userCompanyRelation = userCompanyRelations[index];
+      const subscriptions = companySubscriptions[index];
+      response.companies[userCompanyRelation.companyId] = PERMISSIONS_BY_ROLE[userCompanyRelation.role as UserCompanyRole];
+      if (!subscriptions.length) { // if no subscription, replace write permissions with read permissions
+        response.companies[userCompanyRelation.companyId] = response.companies[userCompanyRelation.companyId].map((permission) => permission.replace(PERMISSIONS_SUFFIXES.WRITE, PERMISSIONS_SUFFIXES.READ));
+      }
     }
     return response;
   }

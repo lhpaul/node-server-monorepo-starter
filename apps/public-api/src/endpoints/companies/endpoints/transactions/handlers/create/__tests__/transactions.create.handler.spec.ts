@@ -1,13 +1,13 @@
 import { FORBIDDEN_ERROR, STATUS_CODES } from '@repo/fastify';
 import { TransactionType } from '@repo/shared/domain';
-import { TransactionsRepository } from '@repo/shared/repositories';
+import { TransactionsService } from '@repo/shared/services';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../../../definitions/auth.interfaces';
 import { hasCompanyTransactionsCreatePermission } from '../../../../../../../utils/auth/auth.utils';
-import { STEPS } from '../transactions.create.constants';
+import { STEPS } from '../transactions.create.handler.constants';
 import { createTransactionHandler } from '../transactions.create.handler';
-import { CreateCompanyTransactionBody } from '../transactions.create.interfaces';
+import { CreateCompanyTransactionBody } from '../transactions.create.handler.interfaces';
 
 // Mock dependencies
 jest.mock('@repo/fastify', () => ({
@@ -21,7 +21,7 @@ jest.mock('@repo/fastify', () => ({
   }
 }));
 
-jest.mock('@repo/shared/repositories');
+jest.mock('@repo/shared/services');
 jest.mock('../../../../../../../utils/auth/auth.utils', () => ({
   hasCompanyTransactionsCreatePermission: jest.fn()
 }));
@@ -30,7 +30,7 @@ describe(createTransactionHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;
   let mockReply: Partial<FastifyReply>;
   let mockLogger: any;
-  let mockRepository: Partial<TransactionsRepository>;
+  let mockService: Partial<TransactionsService>;
 
   const mockParams = { companyId: '123' };
   const mockUser: AuthUser = {
@@ -66,12 +66,12 @@ describe(createTransactionHandler.name, () => {
       send: jest.fn(),
     };
 
-    // Setup repository mock
-    mockRepository = {
-      createDocument: jest.fn(),
+    // Setup service mock
+    mockService = {
+      createResource: jest.fn(),
     };
 
-    (TransactionsRepository.getInstance as jest.Mock).mockReturnValue(mockRepository);
+    (TransactionsService.getInstance as jest.Mock).mockReturnValue(mockService);
   });
 
   afterEach(() => {
@@ -93,7 +93,7 @@ describe(createTransactionHandler.name, () => {
         code: FORBIDDEN_ERROR.responseCode,
         message: FORBIDDEN_ERROR.responseMessage,
       });
-      expect(mockRepository.createDocument).not.toHaveBeenCalled();
+      expect(mockService.createResource).not.toHaveBeenCalled();
     });
   });
 
@@ -104,7 +104,7 @@ describe(createTransactionHandler.name, () => {
 
     it('should create a transaction successfully', async () => {
       const mockTransactionId = '123';
-      jest.spyOn(mockRepository, 'createDocument').mockResolvedValue(mockTransactionId);
+      jest.spyOn(mockService, 'createResource').mockResolvedValue(mockTransactionId);
 
       await createTransactionHandler(
         mockRequest as FastifyRequest,
@@ -120,8 +120,8 @@ describe(createTransactionHandler.name, () => {
         STEPS.CREATE_TRANSACTION.id,
       );
 
-      // Verify repository call
-      expect(mockRepository.createDocument).toHaveBeenCalledWith(
+      // Verify service call
+      expect(mockService.createResource).toHaveBeenCalledWith(
         {
           ...mockBody,
           companyId: mockParams.companyId,
@@ -140,9 +140,9 @@ describe(createTransactionHandler.name, () => {
       (hasCompanyTransactionsCreatePermission as jest.Mock).mockReturnValue(true);
     });
 
-    it('should handle repository errors gracefully', async () => {
-      const error = new Error('Repository error');
-      jest.spyOn(mockRepository, 'createDocument').mockRejectedValue(error);
+    it('should handle service errors gracefully', async () => {
+      const error = new Error('Service error');
+      jest.spyOn(mockService, 'createResource').mockRejectedValue(error);
 
       await expect(
         createTransactionHandler(

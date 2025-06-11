@@ -1,4 +1,4 @@
-import { FIRESTORE_ERROR_CODE } from '../../../constants/firestore.constants';
+import { FIRESTORE_ERROR_CODE } from '../firestore.constants';
 import { ExecutionLogger } from '../../../definitions';
 import { wait } from '../../time/time.utils';
 import { RunRetriableActionError, RunRetriableActionErrorCode } from '../firestore.utils.errors';

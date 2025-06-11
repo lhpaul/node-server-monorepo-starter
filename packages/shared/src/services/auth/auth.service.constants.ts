@@ -8,8 +8,15 @@ export const STEPS = {
   UPDATE_USER_PERMISSIONS: {
     id: 'update-user-permissions'
   },
+  GET_SUBSCRIPTIONS: {
+    id: 'get-subscriptions'
+  },
 };
 
 export const ERROR_MESSAGES = {
   NO_EMAIL_IN_TOKEN: 'No email in token',
+}
+export const PERMISSIONS_SUFFIXES = {
+  WRITE: 'write',
+  READ: 'read',
 }

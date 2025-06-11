@@ -1,17 +1,17 @@
 import { STATUS_CODES, FORBIDDEN_ERROR, RESOURCE_NOT_FOUND_ERROR } from '@repo/fastify';
-import { TransactionsRepository } from '@repo/shared/repositories';
+import { TransactionsService } from '@repo/shared/services';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../../definitions/auth.interfaces';
 import { hasCompanyTransactionsReadPermission } from '../../../../../../utils/auth/auth.utils';
-import { STEPS } from './transactions.get.constants';
-import { GetTransactionParams } from './transactions.get.interfaces';
+import { STEPS } from './transactions.get.handler.constants';
+import { GetTransactionParams } from './transactions.get.handler.interfaces';
 export const getTransactionHandler = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
   const logger = request.log.child({ handler: getTransactionHandler.name });
-  const repository = TransactionsRepository.getInstance();
+  const service = TransactionsService.getInstance();
   const { companyId, id } = request.params as GetTransactionParams;
   const user = request.user as AuthUser;
   if (!hasCompanyTransactionsReadPermission(companyId, user)) {
@@ -21,10 +21,10 @@ export const getTransactionHandler = async (
     });
   }
   logger.startStep(STEPS.GET_TRANSACTION.id);
-  const transaction = await repository
-    .getDocument(id, logger)
+  const transaction = await service
+    .getResource(id, logger)
     .finally(() => logger.endStep(STEPS.GET_TRANSACTION.id));
-  if (!transaction) {
+  if (!transaction || transaction.companyId !== companyId) {
     return reply.code(STATUS_CODES.NOT_FOUND).send({
       code: RESOURCE_NOT_FOUND_ERROR.responseCode,
       message: RESOURCE_NOT_FOUND_ERROR.responseMessage,

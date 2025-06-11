@@ -1,6 +1,8 @@
 packages:
   - apps/*
   - packages/*
+
 onlyBuiltDependencies:
   - '@firebase/util'
   - protobufjs
+  - re2

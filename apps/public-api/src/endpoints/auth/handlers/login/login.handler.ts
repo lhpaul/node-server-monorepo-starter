@@ -1,10 +1,9 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { UsersRepository } from '@repo/shared/repositories';
-import { AuthService, DecodeEmailTokenError } from '@repo/shared/services';
+import { AuthService, DecodeEmailTokenError, UsersService } from '@repo/shared/services';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
-import { ERROR_RESPONSES, STEPS } from './login.constants';
-import { LoginBody } from './login.interfaces';
+import { ERROR_RESPONSES, STEPS } from './login.handler.constants';
+import { LoginBody } from './login.handler.interfaces';
 
 
 export const loginHandler = async (
@@ -21,7 +20,7 @@ export const loginHandler = async (
     const { email } = await authService.decodeEmailToken(emailToken);
     logger.endStep(STEPS.DECODE_EMAIL_TOKEN.id);
     logger.startStep(STEPS.FIND_USER.id);
-    const [user, ..._rest] = await UsersRepository.getInstance().getDocumentsList(
+    const [user, ..._rest] = await UsersService.getInstance().getResourcesList(
       {
         email: [{ value: email, operator: '==' }],
       },

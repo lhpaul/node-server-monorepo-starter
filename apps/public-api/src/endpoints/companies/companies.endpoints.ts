@@ -7,6 +7,7 @@ import {
   URL_WITH_ID_V1,
 } from './companies.endpoints.constants';
 import { transactionsEndpointsBuilder } from './endpoints/transactions/transactions.endpoints';
+import { subscriptionsEndpointsBuilder } from './endpoints/subscriptions/subscriptions.endpoints';
 import {
   getCompanyHandler,
   updateCompanyHandler,
@@ -38,6 +39,7 @@ export function companiesEndpointsBuilder(server: FastifyInstance): RouteOptions
         params: COMPANY_ENDPOINTS_PARAMS_JSON_SCHEMA,
       },
     }),
+    ...subscriptionsEndpointsBuilder(server),
     ...transactionsEndpointsBuilder(server),
   ];
 }

@@ -1,12 +1,12 @@
 import { FORBIDDEN_ERROR, STATUS_CODES } from '@repo/fastify';
-import { CompaniesRepository } from '@repo/shared/repositories';
-import { RepositoryError, RepositoryErrorCode } from '@repo/shared/utils';
+import { CompaniesService } from '@repo/shared/services';
+import { DomainModelServiceError, DomainModelServiceErrorCode } from '@repo/shared/utils';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../definitions/auth.interfaces';
 import { hasCompanyUpdatePermission } from '../../../../../utils/auth/auth.utils';
 import { COMPANY_NOT_FOUND_ERROR } from '../../../companies.endpoints.constants';
-import { STEPS } from '../companies.update.constants';
+import { STEPS } from '../companies.update.handler.constants';
 import { updateCompanyHandler } from '../companies.update.handler';
 
 jest.mock('@repo/fastify', () => ({
@@ -21,11 +21,11 @@ jest.mock('@repo/fastify', () => ({
   }
 }));
 
-jest.mock('@repo/shared/repositories');
+jest.mock('@repo/shared/services');
 
 jest.mock('@repo/shared/utils', () => ({
-  RepositoryError: jest.fn(),
-  RepositoryErrorCode: jest.fn(),
+  DomainModelServiceError: jest.fn(),
+  DomainModelServiceErrorCode: jest.fn(),
 }));
 
 jest.mock('../../../../../utils/auth/auth.utils', () => ({
@@ -39,7 +39,7 @@ describe(updateCompanyHandler.name, () => {
     startStep: jest.Mock;
     endStep: jest.Mock;
   } & Partial<FastifyBaseLogger>;
-  let mockRepository: Partial<CompaniesRepository>;
+  let mockService: Partial<CompaniesService>;
 
   const mockParams = { id: '123' };
   const mockBody = {
@@ -70,12 +70,12 @@ describe(updateCompanyHandler.name, () => {
       send: jest.fn(),
     };
 
-    mockRepository = {
-      updateDocument: jest.fn(),
+    mockService = {
+      updateResource: jest.fn(),
     };
 
-    (CompaniesRepository.getInstance as jest.Mock).mockReturnValue(
-      mockRepository,
+    (CompaniesService.getInstance as jest.Mock).mockReturnValue(
+      mockService,
     );
 
     (hasCompanyUpdatePermission as jest.Mock).mockReturnValue(true);
@@ -87,7 +87,7 @@ describe(updateCompanyHandler.name, () => {
 
   it('should successfully update a company', async () => {
     (hasCompanyUpdatePermission as jest.Mock).mockReturnValue(true);
-    jest.spyOn(mockRepository, 'updateDocument').mockResolvedValue(undefined);
+    jest.spyOn(mockService, 'updateResource').mockResolvedValue(undefined);
 
     await updateCompanyHandler(
       mockRequest as FastifyRequest,
@@ -95,7 +95,7 @@ describe(updateCompanyHandler.name, () => {
     );
 
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_COMPANY.id);
-    expect(mockRepository.updateDocument).toHaveBeenCalledWith(
+    expect(mockService.updateResource).toHaveBeenCalledWith(
       mockParams.id,
       mockBody,
       mockLogger,
@@ -106,10 +106,10 @@ describe(updateCompanyHandler.name, () => {
   });
 
   it('should handle company not found', async () => {
-    jest.spyOn(mockRepository, 'updateDocument').mockRejectedValue(
-      new RepositoryError({
-        code: RepositoryErrorCode.DOCUMENT_NOT_FOUND,
-        message: 'Document not found',
+    jest.spyOn(mockService, 'updateResource').mockRejectedValue(
+      new DomainModelServiceError({
+        code: DomainModelServiceErrorCode.RESOURCE_NOT_FOUND,
+        message: 'Resource not found',
       }),
     );
 
@@ -124,7 +124,7 @@ describe(updateCompanyHandler.name, () => {
     }
 
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_COMPANY.id);
-    expect(mockRepository.updateDocument).toHaveBeenCalledWith(
+    expect(mockService.updateResource).toHaveBeenCalledWith(
       mockParams.id,
       mockBody,
       mockLogger,
@@ -132,9 +132,9 @@ describe(updateCompanyHandler.name, () => {
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_COMPANY.id);
   });
 
-  it('should handle repository errors', async () => {
-    const error = new Error('Repository error');
-    jest.spyOn(mockRepository, 'updateDocument').mockRejectedValue(error);
+  it('should handle service errors', async () => {
+    const error = new Error('Service error');
+    jest.spyOn(mockService, 'updateResource').mockRejectedValue(error);
 
     await expect(
       updateCompanyHandler(
@@ -144,7 +144,7 @@ describe(updateCompanyHandler.name, () => {
     ).rejects.toThrow(error);
 
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_COMPANY.id);
-    expect(mockRepository.updateDocument).toHaveBeenCalledWith(
+    expect(mockService.updateResource).toHaveBeenCalledWith(
       mockParams.id,
       mockBody,
       mockLogger,
@@ -168,6 +168,6 @@ describe(updateCompanyHandler.name, () => {
       code: FORBIDDEN_ERROR.responseCode,
       message: FORBIDDEN_ERROR.responseMessage,
     });
-    expect(mockRepository.updateDocument).not.toHaveBeenCalled();
+    expect(mockService.updateResource).not.toHaveBeenCalled();
   });
 });

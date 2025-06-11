@@ -7,6 +7,7 @@ import {
   hasCompanyTransactionsReadPermission,
   hasCompanyTransactionsUpdatePermission,
   hasCompanyTransactionsDeletePermission,
+  hasCompanySubscriptionsReadPermission,
 } from '../auth.utils';
 
 describe('Auth Utils', () => {
@@ -110,6 +111,28 @@ describe('Auth Utils', () => {
 
     it('should return undefined when company does not exist in permissions', () => {
       const result = hasCompanyDeletePermission('non-existent-company', mockPermissions);
+      expect(result).toBeUndefined();
+    });
+  });
+
+  describe(hasCompanySubscriptionsReadPermission.name, () => {
+    it('should return true when user has subscriptions:read permission', () => {
+      const result = hasCompanySubscriptionsReadPermission(mockCompanyId, {
+        companies: {
+          ...mockPermissions.companies,
+          [mockCompanyId]: ['subscriptions:read'],
+        },
+      });
+      expect(result).toBe(true);
+    });
+
+    it('should return false when user has no read or write permissions', () => {
+      const result = hasCompanySubscriptionsReadPermission(mockCompanyId, mockPermissions);
+      expect(result).toBe(false);
+    });
+
+    it('should return undefined when company does not exist in permissions', () => {
+      const result = hasCompanySubscriptionsReadPermission('non-existent-company', mockPermissions);
       expect(result).toBeUndefined();
     });
   });

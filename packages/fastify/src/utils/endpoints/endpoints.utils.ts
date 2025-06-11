@@ -1,4 +1,4 @@
-import { QueryItem, QueryOperator } from '@repo/shared/definitions';
+import { FilterInput, FilterOperator } from '@repo/shared/definitions';
 import { maskFields } from '@repo/shared/utils';
 import {
   FastifyRequest,
@@ -60,12 +60,12 @@ export function createEndpoint(
   };
 }
 
-export function transformQueryParams(queryParams: any): { [field: string]: QueryItem<any>[] } {
-  const query: { [field: string]: QueryItem<any>[] } = {};
+export function transformQueryParams(queryParams: any): FilterInput {
+  const query: FilterInput = {};
   for (const key in queryParams) {
     const [attribute, other] = key.split('[');
     let queryOperator = other?.split(']')[0];
-    const operator: QueryOperator = queryOperator
+    const operator: FilterOperator = queryOperator
       ? QUERY_PARAMS_OPERATORS_MAP[queryOperator as QUERY_PARAMS_OPERATORS]
       : '==';
     const value = queryParams[key] as any;

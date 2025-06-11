@@ -1,11 +1,11 @@
-import { DatabaseObject } from '../../definitions/database.interfaces';
+import { ResourceModel } from '../../definitions/domain.interfaces';
 
 export enum TransactionType {
   CREDIT = 'credit',
   DEBIT = 'debit',
 }
 
-export class Transaction implements DatabaseObject {
+export class Transaction implements ResourceModel {
   public readonly amount: number; // amount of the transaction
   public readonly companyId: string; // id of the company
   public readonly createdAt: Date; // date of creation

@@ -1,31 +1,31 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { TransactionsRepository } from '@repo/shared/repositories';
-import { RepositoryError, RepositoryErrorCode } from '@repo/shared/utils';
+import { TransactionsService } from '@repo/shared/services';
+import { DomainModelServiceError, DomainModelServiceErrorCode } from '@repo/shared/utils';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { ERROR_RESPONSES } from '../../transactions.endpoints.constants';
-import { STEPS } from './transactions.update.constants';
+import { STEPS } from './transactions.update.handler.constants';
 import {
   UpdateTransactionBody,
   UpdateTransactionParams,
-} from './transactions.update.interfaces';
+} from './transactions.update.handler.interfaces';
 
 export const updateTransactionHandler = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
   const logger = request.log.child({ handler: updateTransactionHandler.name });
-  const repository = TransactionsRepository.getInstance();
+  const service = TransactionsService.getInstance();
   const { id } = request.params as UpdateTransactionParams;
   const body = request.body as UpdateTransactionBody;
   try {
     logger.startStep(STEPS.UPDATE_TRANSACTION.id);
-    await repository.updateDocument(id, body, logger);
+    await service.updateResource(id, body, logger);
     logger.endStep(STEPS.UPDATE_TRANSACTION.id);
     return reply.code(STATUS_CODES.NO_CONTENT).send();
   } catch (error) {
     logger.endStep(STEPS.UPDATE_TRANSACTION.id);
-    if (error instanceof RepositoryError && error.code === RepositoryErrorCode.DOCUMENT_NOT_FOUND) {
+    if (error instanceof DomainModelServiceError && error.code === DomainModelServiceErrorCode.RESOURCE_NOT_FOUND) {
       return reply.code(STATUS_CODES.NOT_FOUND).send(ERROR_RESPONSES.TRANSACTION_NOT_FOUND);
     }
     throw error;
