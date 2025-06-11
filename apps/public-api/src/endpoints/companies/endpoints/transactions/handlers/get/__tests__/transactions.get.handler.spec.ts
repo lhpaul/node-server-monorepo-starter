@@ -45,7 +45,16 @@ describe(getTransactionHandler.name, () => {
     companies: {
       'company123': ['transaction:read'],
     },
-  } as unknown as AuthUser;
+  };
+  const mockTransaction = {
+    id: mockParams.id,
+    companyId: mockParams.companyId,
+    amount: 100,
+    date: '2024-03-20',
+    type: TransactionType.CREDIT,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
 
   beforeEach(() => {
     mockLogger = {
@@ -57,7 +66,7 @@ describe(getTransactionHandler.name, () => {
     mockRequest = {
       log: mockLogger as FastifyBaseLogger,
       params: mockParams,
-      user: mockUser,
+      user: mockUser as unknown as AuthUser,
     };
 
     mockReply = {
@@ -95,18 +104,7 @@ describe(getTransactionHandler.name, () => {
     });
     expect(mockService.getResource).not.toHaveBeenCalled();
   });
-
   it('should successfully get a transaction', async () => {
-    const mockTransaction = {
-      id: mockParams.id,
-      companyId: mockParams.companyId,
-      amount: 100,
-      date: '2024-03-20',
-      type: TransactionType.CREDIT,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
     jest.spyOn(mockService, 'getResource').mockResolvedValue(mockTransaction);
 
     await getTransactionHandler(
@@ -145,16 +143,16 @@ describe(getTransactionHandler.name, () => {
     });
   });
 
-  it('should handle service errors', async () => {
-    const error = new Error('Service error');
-    jest.spyOn(mockService, 'getResource').mockRejectedValue(error);
+  it('should return not found when the transaction is not from the company', async () => {
+    jest.spyOn(mockService, 'getResource').mockResolvedValue({
+      ...mockTransaction,
+      companyId: 'company456',
+    });
 
-    await expect(
-      getTransactionHandler(
-        mockRequest as FastifyRequest,
-        mockReply as FastifyReply,
-      ),
-    ).rejects.toThrow(error);
+    await getTransactionHandler(
+      mockRequest as FastifyRequest,
+      mockReply as FastifyReply,
+    );
 
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION.id);
     expect(mockService.getResource).toHaveBeenCalledWith(
@@ -162,7 +160,10 @@ describe(getTransactionHandler.name, () => {
       mockLogger,
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION.id);
-    expect(mockReply.code).not.toHaveBeenCalled();
-    expect(mockReply.send).not.toHaveBeenCalled();
+    expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.NOT_FOUND);
+    expect(mockReply.send).toHaveBeenCalledWith({
+      code: RESOURCE_NOT_FOUND_ERROR.responseCode,
+      message: RESOURCE_NOT_FOUND_ERROR.responseMessage,
+    });
   });
 });

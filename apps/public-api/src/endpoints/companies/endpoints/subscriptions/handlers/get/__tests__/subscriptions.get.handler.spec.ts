@@ -52,6 +52,14 @@ describe(getSubscriptionHandler.name, () => {
       'company123': ['subscription:read'],
     },
   };
+  const mockSubscription = {
+    id: mockParams.id,
+    companyId: mockParams.companyId,
+    startsAt: new Date(),
+    endsAt: new Date(),
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
 
   beforeEach(() => {
     mockLogger = {
@@ -103,15 +111,6 @@ describe(getSubscriptionHandler.name, () => {
   });
 
   it('should successfully get a subscription', async () => {
-    const mockSubscription = {
-      id: mockParams.id,
-      companyId: mockParams.companyId,
-      startsAt: new Date(),
-      endsAt: new Date(),
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
     jest.spyOn(mockService, 'getResource').mockResolvedValue(mockSubscription);
 
     await getSubscriptionHandler(
@@ -150,16 +149,16 @@ describe(getSubscriptionHandler.name, () => {
     });
   });
 
-  it('should handle service errors', async () => {
-    const error = new Error('Service error');
-    jest.spyOn(mockService, 'getResource').mockRejectedValue(error);
+  it('should return not found when the subscription is not from the company', async () => {
+    jest.spyOn(mockService, 'getResource').mockResolvedValue({
+      ...mockSubscription,
+      companyId: 'company456',
+    });
 
-    await expect(
-      getSubscriptionHandler(
-        mockRequest as FastifyRequest,
-        mockReply as FastifyReply,
-      ),
-    ).rejects.toThrow(error);
+    await getSubscriptionHandler(
+      mockRequest as FastifyRequest,
+      mockReply as FastifyReply,
+    );
 
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTION.id);
     expect(mockService.getResource).toHaveBeenCalledWith(
@@ -167,7 +166,6 @@ describe(getSubscriptionHandler.name, () => {
       mockLogger,
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTION.id);
-    expect(mockReply.code).not.toHaveBeenCalled();
-    expect(mockReply.send).not.toHaveBeenCalled();
+    expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.NOT_FOUND);
   });
 }); 
