@@ -1,10 +1,10 @@
 import { ExecutionLogger } from '../../../definitions';
+import { InMemoryRepository } from '../../../utils/repositories/in-memory-repository.class';
 import { RepositoryError, RepositoryErrorCode } from '../../../utils/repositories/repositories.errors';
 import { CompaniesRepository } from '../../companies/companies.repository';
 import { ERROR_MESSAGES, MOCK_SUBSCRIPTIONS } from '../subscriptions.repository.constants';
 import { SubscriptionsRepository } from '../subscriptions.repository';
 import { CreateSubscriptionDocumentInput } from '../subscriptions.repository.interfaces';
-import { InMemoryRepository } from '../../../utils/repositories/in-memory-repository.class';
 
 jest.mock('../../../utils/repositories/in-memory-repository.class');
 jest.mock('../../companies/companies.repository');
