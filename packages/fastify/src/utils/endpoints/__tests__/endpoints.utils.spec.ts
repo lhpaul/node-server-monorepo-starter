@@ -1,5 +1,4 @@
 import { FastifyInstance, FastifyRequest, FastifyReply, RouteOptions } from 'fastify';
-import { QueryOperator } from '@repo/shared/definitions';
 import { QUERY_PARAMS_OPERATORS, QUERY_PARAMS_OPERATORS_MAP } from '../../../constants/requests.constants';
 import { LOG_IDS } from '../endpoints.utils.constants';
 import { createEndpoint, transformQueryParams, buildSchemaForQueryParamsProperty } from '../endpoints.utils';

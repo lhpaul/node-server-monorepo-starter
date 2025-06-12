@@ -1,6 +1,7 @@
 import { FilterOperator } from '@repo/shared/definitions';
 
 export const HTTP_METHODS_MAP = {
+  OPTIONS: 'OPTIONS',
   LIST: 'GET',
   GET: 'GET',
   CREATE: 'POST',
