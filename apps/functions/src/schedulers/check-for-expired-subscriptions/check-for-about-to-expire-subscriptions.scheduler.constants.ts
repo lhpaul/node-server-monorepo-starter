@@ -1,1 +1,0 @@
-export const HANDLER_NAME = 'checkForAboutToExpireSubscriptions';

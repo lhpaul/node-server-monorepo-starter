@@ -5,6 +5,9 @@
   "scripts": {
     "build": "turbo run build",
     "check-types": "turbo run check-types",
+    "deploy:firestore": "firebase deploy --only firestore",
+    "deploy:firestore:indexes": "firebase deploy --only firestore:indexes",
+    "deploy:firestore:rules": "firebase deploy --only firestore:rules",
     "deploy:functions": "turbo run build --parallel && firebase deploy --only functions",
     "dev:internal-api": "turbo watch dev --filter=internal-api --filter=@repo/fastify --filter=@repo/shared",
     "dev:public-api": "turbo watch dev --filter=public-api --filter=@repo/fastify --filter=@repo/shared",

@@ -2,6 +2,7 @@
   "indexes": [
     {
       "collectionGroup": "subscriptions",
+      "comment": "Index for querying between start and end dates",
       "queryScope": "COLLECTION",
       "fields": [
         {
@@ -17,7 +18,32 @@
   ],
   "fieldOverrides": [
     {
+      "collectionGroup": "subscriptions",
+      "comment": "Index for retrieving subscriptions that are about to expire",
+      "fieldPath": "endsAt",
+      "ttl": false,
+      "indexes": [
+        {
+          "order": "ASCENDING",
+          "queryScope": "COLLECTION"
+        },
+        {
+          "order": "DESCENDING",
+          "queryScope": "COLLECTION"
+        },
+        {
+          "arrayConfig": "CONTAINS",
+          "queryScope": "COLLECTION"
+        },
+        {
+          "order": "ASCENDING",
+          "queryScope": "COLLECTION_GROUP"
+        }
+      ]
+    },
+    {
       "collectionGroup": "transactions",
+      "comment": "Index for querying all transactions (not necessarily of a particular company)",
       "fieldPath": "date",
       "ttl": false,
       "indexes": [

@@ -1,3 +1,6 @@
+import moment from 'moment';
+
+import { ExecutionLogger } from '../../definitions';
 import { Subscription } from '../../domain';
 import {
   SubscriptionsRepository,
@@ -21,5 +24,14 @@ export class SubscriptionsService extends DomainModelService<Subscription, Subsc
       this.instance = new SubscriptionsService(SubscriptionsRepository.getInstance());
     }
     return this.instance;
+  }
+
+  public async getAboutToExpireSubscriptions(daysToExpire: number, logger: ExecutionLogger): Promise<Subscription[]> {
+    const now = moment();
+    const from = now.add(daysToExpire, 'days').startOf('day').toDate();
+    const to = now.add(daysToExpire, 'days').endOf('day').toDate();
+    return this.repository.getDocumentsList({
+      endsAt: [{ operator: '>=', value: from }, { operator: '<=', value: to }],
+    }, logger);
   }
 } 
