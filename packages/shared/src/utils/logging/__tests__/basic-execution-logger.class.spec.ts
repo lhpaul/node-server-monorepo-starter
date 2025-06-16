@@ -133,7 +133,7 @@ describe(BasicExecutionLogger.name, () => {
           elapsedTimeFromPreviousStep: 1000,
           totalElapsedTime: 1000,
         },
-        undefined
+        LOGS.STEP_END.logMessage(stepLabel)
       );
     });
 

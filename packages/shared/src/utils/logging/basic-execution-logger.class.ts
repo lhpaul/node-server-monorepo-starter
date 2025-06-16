@@ -71,7 +71,7 @@ export class BasicExecutionLogger implements ExecutionLogger {
         step: label,
         elapsedTimeFromPreviousStep,
         totalElapsedTime: now - this.initTime,
-      });
+      }, LOGS.STEP_END.logMessage(label));
     }
     delete this._activeSteps[label];
     if (this._parent) {
