@@ -1,3 +1,8 @@
+---
+description: This rules are usefull when making code for an endpoint
+globs: 
+alwaysApply: false
+---
 # Endpoints Conventions
 
 This document outlines the endpoints conventions used in this repository. Adhering to these guidelines ensures consistency and maintainability.
@@ -5,38 +10,6 @@ This document outlines the endpoints conventions used in this repository. Adheri
 ## Best Practices and Naming Conventions
 
 When defining a new endpoint, take in consideration the [API Best Practices and Naming Conventions](https://github.com/saifaustcse/api-best-practices/blob/main/README.md)
-
-## Masking Sensitive Information
-
-When developing, ensure that sensitive data is properly masked in logs to protect user privacy and security. Sensitive information includes, but is not limited to:
-
-- Credentials, such as passwords or API keys.
-- Personally identifiable information (PII), including email addresses, phone numbers, full names, and identification numbers.
-
-When defining a new endpoint (e.g., `src/endpoints/<endpoint-name>/<endpoint-name>.endpoint.ts`), specify the fields to be masked in both request and response logs.
-
-**Example:**
-
-```typescript
-export const usersEndpoint: RouteOptions = createEndpoint(
-  {
-    method: ["POST"],
-    path: "/users",
-    handler: createUserHandler,
-  },
-  logger,
-  {
-    maskOptions: {
-      requestHeaders: ["authorization"],
-      requestPayloadFields: ["lastName", "email", "phoneNumber"],
-      responseHeaders: ["authorization"],
-      responsePayloadFields: ["sensitiveField"],
-    },
-  },
-);
-```
-
-For more details, refer to the [EndpointOptions](packages/fastify/src/utils/endpoints/endpoints.utils.interfaces.ts) interface in `packages/fastify/src/utils/endpoints/endpoints.utils.interfaces.ts`.
 
 ## Error responses
 

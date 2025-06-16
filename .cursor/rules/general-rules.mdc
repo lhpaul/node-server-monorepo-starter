@@ -1,3 +1,8 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
 # General conventions
 
 This document outlines the general conventions used in this repository. Adhering to these guidelines ensures consistency and maintainability.
