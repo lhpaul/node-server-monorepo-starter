@@ -1,6 +1,8 @@
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+import { onScheduleWrapper } from '../../utils/schedulers/schedulers.utils';
+import { HANDLER_NAME } from './check-for-about-to-expire-subscriptions.scheduler.constants';
 
-export const checkForAboutToExpireSubscriptionsFunction = onSchedule(
+export const checkForAboutToExpireSubscriptionsFunction = onScheduleWrapper(
+  HANDLER_NAME,
   'every day 00:00',
   async () => {
     console.log('Checking for about to expire subscriptions');

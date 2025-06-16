@@ -6,4 +6,8 @@ export class NotifySubscriptionAboutToExpirePubSubMessage {
 
   @IsNumber()
   daysToExpire: number;
+
+  constructor(message: { companyId: string; daysToExpire: number }) {
+    Object.assign(this, message);
+  }
 }

@@ -1,0 +1,4 @@
+{
+  "targetPackagePath": "./apps/functions",
+  "forceNpm": true
+}

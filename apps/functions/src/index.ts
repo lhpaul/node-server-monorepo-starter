@@ -1,19 +1,12 @@
-/**
- * Import function triggers from their respective submodules:
- *
- * import {onCall} from "firebase-functions/v2/https";
- * import {onDocumentWritten} from "firebase-functions/v2/firestore";
- *
- * See a full list of supported triggers at https://firebase.google.com/docs/functions
- */
+import * as admin from 'firebase-admin';
 
-import {onRequest} from "firebase-functions/v2/https";
-import * as logger from "firebase-functions/logger";
+import { checkForAboutToExpireSubscriptionsFunction } from './schedulers/check-for-expired-subscriptions/check-for-about-to-expire-subscriptions.scheduler';
+import { notifySubscriptionAboutToExpirePubSub } from './pubsubs/notify-subscription-about-to-expire/notify-subscription-about-to-expire.pubsub';
 
-// Start writing functions
-// https://firebase.google.com/docs/functions/typescript
+admin.initializeApp();
 
-// export const helloWorld = onRequest((request, response) => {
-//   logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });
+// Pub/Subs
+export const notifySubscriptionAboutToExpire = notifySubscriptionAboutToExpirePubSub;
+
+// Schedulers
+export const checkForAboutToExpireSubscriptions = checkForAboutToExpireSubscriptionsFunction;

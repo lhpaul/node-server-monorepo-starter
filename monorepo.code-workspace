@@ -1,8 +1,12 @@
 {
 	"folders": [
 		{
-			"name": "Firebase",
-			"path": "apps/firebase"
+			"name": "Root",
+			"path": "."
+		},
+		{
+			"name": "Firestore",
+			"path": "apps/firestore"
 		},
 		{
 			"name": "Functions",
@@ -27,15 +31,12 @@
 		{
 			"name": "Shared Package",
 			"path": "packages/shared"
-		},
-		{
-			"name": "Root",
-			"path": "."
 		}
 	],
 	"settings": {
 		"cSpell.words": [
 			"firestore",
+			"pubsubs",
 			"retriable"
 		]
 	}

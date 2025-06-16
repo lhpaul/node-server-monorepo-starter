@@ -4,5 +4,6 @@ packages:
 
 onlyBuiltDependencies:
   - '@firebase/util'
+  - esbuild
   - protobufjs
   - re2

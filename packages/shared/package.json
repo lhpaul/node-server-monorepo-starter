@@ -1,5 +1,7 @@
 {
   "name": "@repo/shared",
+  "version": "0.0.0",
+  "files": ["dist"],
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",

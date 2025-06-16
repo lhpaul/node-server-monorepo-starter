@@ -1,5 +1,20 @@
 {
-  "indexes": [],
+  "indexes": [
+    {
+      "collectionGroup": "subscriptions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "endsAt",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "startsAt",
+          "order": "ASCENDING"
+        }
+      ]
+    }
+  ],
   "fieldOverrides": [
     {
       "collectionGroup": "transactions",
