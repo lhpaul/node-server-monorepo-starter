@@ -1,9 +1,10 @@
+import { NotifySubscriptionAboutToExpireMessage } from '@repo/shared/domain';
+
 import { LOGS, NOTIFY_SUBSCRIPTION_ABOUT_TO_EXPIRE_TOPIC } from './notify-subscription-about-to-expire.handler.constants';
-import { NotifySubscriptionAboutToExpirePubSubMessage } from './notify-subscription-about-to-expire.handler.interfaces';
 import { onMessagePublishedWrapper } from '../../utils/pub-subs/pub-subs.utils';
 
-export const notifySubscriptionAboutToExpireHandler = onMessagePublishedWrapper<NotifySubscriptionAboutToExpirePubSubMessage>(
-  NotifySubscriptionAboutToExpirePubSubMessage,
+export const notifySubscriptionAboutToExpireHandler = onMessagePublishedWrapper<NotifySubscriptionAboutToExpireMessage>(
+  NotifySubscriptionAboutToExpireMessage,
   NOTIFY_SUBSCRIPTION_ABOUT_TO_EXPIRE_TOPIC,
   async (_message, logger, _event) => {
     try {

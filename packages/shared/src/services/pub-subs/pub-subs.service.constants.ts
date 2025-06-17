@@ -1,4 +1,4 @@
-import { printError } from "@repo/shared/utils";
+import { printError } from "../../utils";
 
 export const DEFAULT_CONFIG = {
   retries: {

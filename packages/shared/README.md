@@ -7,7 +7,7 @@ This package contains reusable components, utilities, and business logic shared 
 ```bash
 src/
 ├── constants/       # Global constants used throughout the project
-├── domain/          # Domain models and use cases
+├── domain/          # Domain models and Pub/Sub messages
 ├── repositories/    # Data layer component
 ├── services/        # Business logic and service layer implementations 
 ├── utils/           # Reusable utility functions

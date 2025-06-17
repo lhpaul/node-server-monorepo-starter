@@ -3,7 +3,6 @@ import { validate } from 'class-validator';
 import { CloudEvent, CloudFunction } from 'firebase-functions/core';
 import { MessagePublishedData, onMessagePublished } from 'firebase-functions/v2/pubsub';
 
-import { PubSubService } from '../../services/pub-sub/pub-sub.service';
 import { FunctionLogger } from '../logging/function-logger.class';
 import { HandlerFunction, PubSubOptions } from './pub-subs.utils.interfaces';
 import { LOGS, STEPS } from './pub-subs.utils.constants';
@@ -46,41 +45,4 @@ export function onMessagePublishedWrapper<T extends object>(classType: new (valu
       }
     },
   );
-}
-
-
-let pubsubSvc: PubSubService;
-
-/**
- * Publish a message to a Pub/Sub topic.
- * @param classType - The class type to validate the message against.
- * @param topic - The Pub/Sub topic to publish the message to.
- * @param message - The message to publish.
- * @param logger - The logger to use.
- * @param customAttributes - Custom attributes to add to the message.
- */
-export async function publishMessage<T>(classType: new (value: any) => T, topic: string, message: T, logger: FunctionLogger, customAttributes?: Record<string, string>) {
-  try {
-    if (!pubsubSvc) {
-      pubsubSvc = PubSubService.getInstance();
-    }
-    const parsedMessage = new classType(message);
-    logger.startStep(STEPS.VALIDATE_MESSAGE.label);
-    const errors = await validate(parsedMessage as object)
-      .finally(() => logger.endStep(STEPS.VALIDATE_MESSAGE.label));
-    if (errors.length > 0) {
-      logger.warn({
-        logId: LOGS.INVALID_MESSAGE_FORMAT.logId,
-        errors: printError(errors),
-      }, LOGS.INVALID_MESSAGE_FORMAT.logMessage);
-      return;
-    }
-    await pubsubSvc.publishToTopic(topic, logger, parsedMessage as object, customAttributes);
-  } catch (error) {
-    logger.error({
-      logId: LOGS.UNKNOWN_ERROR.logId,
-      error: printError(error),
-    }, LOGS.UNKNOWN_ERROR.logMessage);
-    throw error;
-  }
 }

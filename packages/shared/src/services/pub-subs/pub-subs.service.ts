@@ -1,18 +1,18 @@
 import { PubSub } from '@google-cloud/pubsub';
-import { ExecutionLogger } from '@repo/shared/definitions';
-import { changeTimestampsToDateISOString, wait } from '@repo/shared/utils';
 
-import { DEFAULT_CONFIG, LOGS } from './pub-sub.service.constants';
-import { PubSubServiceAccount } from './pub-sub.service.interfaces';
+import { ExecutionLogger } from '../../definitions';
+import { changeTimestampsToDateISOString, wait } from '../../utils';
+import { DEFAULT_CONFIG, LOGS } from './pub-subs.service.constants';
+import { PubSubServiceAccount } from './pub-subs.service.interfaces';
 
-export class PubSubService {
-  private static instance: PubSubService;
+export class PubSubsService {
+  private static instance: PubSubsService;
 
-  public static getInstance(): PubSubService {
-    if (!PubSubService.instance) {
-      PubSubService.instance = new PubSubService();
+  public static getInstance(): PubSubsService {
+    if (!PubSubsService.instance) {
+      PubSubsService.instance = new PubSubsService();
     }
-    return PubSubService.instance;
+    return PubSubsService.instance;
   }
   private pubsub: PubSub;
 
