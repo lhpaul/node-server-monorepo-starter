@@ -2,7 +2,8 @@ import * as admin from 'firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 
 import { ExecutionLogger, QueryInput, QueryItem } from '../../../definitions';
-import { FIRESTORE_ERROR_CODE, changeTimestampsToDate, runRetriableAction } from '../../firestore';
+import { changeTimestampsToDate, runRetriableAction } from '../../firestore';
+import { FIRESTORE_ERROR_CODE } from '../../firestore/firestore.constants';
 import { RepositoryError, RepositoryErrorCode } from '../repositories.errors';
 import { FirestoreCollectionRepository } from '../firestore-collection-repository.class';
 import { ERROR_MESSAGES, STEPS } from '../firestore-collection-repository.class.constants';
