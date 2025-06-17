@@ -10,6 +10,7 @@ export default defineConfig([
   globalIgnores(['**/node_modules/**', './dist/**', '**/build/**', '**/isolate/**']),
   {
       files: ['**/*.ts', '**/*.tsx'],
+      ignores: ['jest.config.ts'],
       languageOptions: {
         parserOptions: {
           project: './tsconfig.json',

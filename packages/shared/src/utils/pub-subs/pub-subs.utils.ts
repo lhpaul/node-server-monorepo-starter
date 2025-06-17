@@ -13,9 +13,8 @@ import { LOGS, STEPS } from './pub-subs.utils.constants';
  * @param logger - The logger to use.
  * @param customAttributes - Custom attributes to add to the message.
  */
-export async function publishMessage<T>(classType: new (value: any) => T, topic: string, message: T, logger: ExecutionLogger, customAttributes?: Record<string, string>) {
+export async function publishMessage<T>(classType: new (value: any) => T, topic: string, message: T, logger: ExecutionLogger, customAttributes?: Record<string, string>): Promise<void> {
   try {
-    const pubsubsSvc = PubSubsService.getInstance();
     const parsedMessage = new classType(message);
     logger.startStep(STEPS.VALIDATE_MESSAGE.label);
     const errors = await validate(parsedMessage as object)
@@ -27,7 +26,7 @@ export async function publishMessage<T>(classType: new (value: any) => T, topic:
       }, LOGS.INVALID_MESSAGE_FORMAT.logMessage);
       return;
     }
-    await pubsubsSvc.publishToTopic(topic, logger, parsedMessage as object, customAttributes);
+    await PubSubsService.getInstance().publishToTopic(topic, logger, parsedMessage as object, customAttributes);
   } catch (error) {
     logger.error({
       logId: LOGS.UNKNOWN_ERROR.logId,

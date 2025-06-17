@@ -1,16 +1,16 @@
 import * as admin from 'firebase-admin';
 
-import { checkForAboutToExpireSubscriptionsHandler } from './schedulers/check-for-expired-subscriptions/check-for-about-to-expire-subscriptions.handler';
-import { notifySubscriptionAboutToExpireHandler } from './pub-subs/notify-subscription-about-to-expire/notify-subscription-about-to-expire.handler';
+import { notifySubscriptionAboutToExpireFunction } from './functions/pub-subs/notify-subscription-about-to-expire/notify-subscription-about-to-expire.function';
+import { checkForAboutToExpireSubscriptionsFunction } from './functions/schedulers/check-for-expired-subscriptions/check-for-about-to-expire-subscriptions.function';
 
 admin.initializeApp();
 
 // Pub/Subs
 export const pubSubs = {
-  notifySubscriptionAboutToExpire: notifySubscriptionAboutToExpireHandler,
+  notifySubscriptionAboutToExpire: notifySubscriptionAboutToExpireFunction,
 };
 
 // Schedulers
 export const schedulers = {
-  checkForAboutToExpireSubscriptions: checkForAboutToExpireSubscriptionsHandler,
+  checkForAboutToExpireSubscriptions: checkForAboutToExpireSubscriptionsFunction,
 };

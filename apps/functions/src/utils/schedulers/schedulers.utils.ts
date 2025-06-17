@@ -15,7 +15,7 @@ export function onScheduleWrapper(handlerName: string, schedule: string, handler
   logger.info({
     logId: LOGS.SCHEDULER_STARTED.logId,
     schedule,
-    handler: handler.name,
+    handler: handlerName,
   }, LOGS.SCHEDULER_STARTED.logMessage);
   logger.startStep(STEPS.SCHEDULER_STARTED.label);
   return onSchedule({

@@ -31,7 +31,7 @@ export class PubSubsService {
   }
 
 
-  public async publishToTopic(topicName: string, logger: ExecutionLogger, data = {}, customAttributes = {}, config?: {
+  public async publishToTopic(topicName: string, logger: ExecutionLogger, data: any, customAttributes: Record<string, string> = {}, config?: {
     retries?: {
       maxAttempts: number;
       waitTime?: number;
