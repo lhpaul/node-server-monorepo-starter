@@ -10,5 +10,5 @@ export function printError(error: any): string {
   if (typeof error === 'object') {
     return stringify(error);
   }
-  return error.toString ? error.toString() : error;
+  return error;
 }
