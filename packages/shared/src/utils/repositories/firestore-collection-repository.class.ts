@@ -21,36 +21,50 @@ import { REPOSITORY_ERROR_MESSAGES, RepositoryErrorCode, RepositoryError } from 
  * @template QueryInput - The type of input for querying documents
  */
 export class FirestoreCollectionRepository<DocumentModel, CreateDocumentInput, UpdateDocumentInput, DocumentsQueryInput extends QueryInput> implements Repository<DocumentModel, CreateDocumentInput, UpdateDocumentInput, DocumentsQueryInput> {
+  /**
+   * The full path to the collection. E.g. "companies/{companyId}/transactions"
+   */
+  public readonly collectionPath: string;
+  /**
+   * The last collection in the path. E.g. "companies/{companyId}/transactions" -> "transactions"
+   */
+  public readonly childCollection: string;
+  /**
+   * The labels of the parent IDs. E.g. "companies/{companyId}/transactions" -> ["companyId"]
+   */
+  public readonly parentIdLabels: string[];
+  /**
+   * The Firestore instance
+   */
   protected _db: FirebaseFirestore.Firestore;
-  protected _childCollection?: string; // is the last collection in the path. E.g. "companies/:companyId/transactions" -> "transactions"
-  protected _collectionPath: string; // is the full path to the collection. E.g. "companies/:companyId/transactions"
-  protected _parentIdLabels?: string[]; // is the labels of the parent IDs. E.g. "companies/:companyId/transactions" -> ["companyId"]
   /**
    * Creates a new instance of FirestoreCollectionRepository
    * @param input - Configuration object for the repository
-   * @param input.collectionPath - The path to the collection. Can be a simple collection path or a nested path with parent IDs (e.g., "companies/:companyId/transactions")
+   * @param input.collectionPath - The path to the collection. Can be a simple collection path or a nested path with parent IDs (e.g., "companies/{companyId}/transactions")
    * @param input.mapDocumentFromDb - Optional function to map Firestore document to the document model
    * @param input.onCreateMapDocumentBeforeSaving - Optional function to transform document data before saving on create
    * @param input.onCreateBeforeValidation - Optional function to perform validation before document creation
    * @param input.onUpdateBeforeValidation - Optional function to perform validation before document update
    * @param input.onDeleteBeforeValidation - Optional function to perform validation before document deletion
-   * @throws {Error} If the collection path is invalid (parent ID labels must start with ":")
+   * @throws {Error} If the collection path is invalid (parent ID labels must start with "{" and end with "}")
    */
   constructor(input: {
     collectionPath: string;
   }) {
     this._db = admin.firestore();
-    this._collectionPath = input.collectionPath;
-    if (this._collectionPath.includes('/')) {
-      this._parentIdLabels = [];
-      const pathLevels = this._collectionPath.split('/');
-      for (let i = 1; i < pathLevels.length - 1; i += 2) { // we extract the ":parentId" labels. E.g. "companies/:companyId/transactions" -> ["companyId"]
-        if (!pathLevels[i].startsWith(':')) {
-          throw new Error(ERROR_MESSAGES.INVALID_COLLECTION_PATH(this._collectionPath));
+    this.collectionPath = input.collectionPath;
+    this.parentIdLabels = [];
+    if (this.collectionPath.includes('/')) {
+      const pathLevels = this.collectionPath.split('/');
+      for (let i = 1; i < pathLevels.length - 1; i += 2) { // we extract the "{parentId}" labels. E.g. "companies/{companyId}/transactions" -> ["companyId"]
+        if (!pathLevels[i].startsWith('{') || !pathLevels[i].endsWith('}')) {
+          throw new Error(ERROR_MESSAGES.INVALID_COLLECTION_PATH(this.collectionPath));
         }
-        this._parentIdLabels.push(pathLevels[i].slice(1)); // we remove the ":" from the label
+        this.parentIdLabels.push(pathLevels[i].slice(1, -1)); // we remove the "{" and "}" from the label
       }
-      this._childCollection = pathLevels[pathLevels.length - 1];
+      this.childCollection = pathLevels[pathLevels.length - 1];
+    } else {
+      this.childCollection = this.collectionPath;
     }
   }
 
@@ -66,7 +80,7 @@ export class FirestoreCollectionRepository<DocumentModel, CreateDocumentInput, U
    */
   public async createDocument(data: CreateDocumentInput, logger: ExecutionLogger, config?: CreateDocumentConfig): Promise<string> {
     const { documentRef, documentData } = this._prepareCreate(data, config);
-    if (this._parentIdLabels) {
+    if (this.parentIdLabels.length) {
       // check if parent document exists
       const parentDocumentRef = (documentRef.parent.parent as FirebaseFirestore.DocumentReference);
       const parentDocumentSnapshot = await parentDocumentRef.get();
@@ -104,10 +118,10 @@ export class FirestoreCollectionRepository<DocumentModel, CreateDocumentInput, U
     };
     // we need to extract the parent ids in order to build the path
     let path: string;
-    if (this._parentIdLabels) {
-      const parentIdLabel = this._parentIdLabels[this._parentIdLabels.length - 1];
+    if (this.parentIdLabels.length) {
+      const parentIdLabel = this.parentIdLabels[this.parentIdLabels.length - 1];
       if (!(data as any)[parentIdLabel]) {
-        throw new Error(ERROR_MESSAGES.PARENT_ID_REQUIRED(parentIdLabel, this._collectionPath));
+        throw new Error(ERROR_MESSAGES.PARENT_ID_REQUIRED(parentIdLabel, this.collectionPath));
       }
       const parentCompoundId = (data as any)[parentIdLabel];
       const { documentId: parentDocumentId, parentIds: parentIdsFromParentCompoundId } = this._decodeCompoundId(parentCompoundId);
@@ -205,16 +219,16 @@ export class FirestoreCollectionRepository<DocumentModel, CreateDocumentInput, U
     let queryRef: FirebaseFirestore.Query;
     const modifiedQuery = { ...query };
     const parentIds = { ...config?.parentIds };
-    if (this._parentIdLabels) {
-      for (const parentIdLabel of this._parentIdLabels) {
+    if (this.parentIdLabels.length) {
+      for (const parentIdLabel of this.parentIdLabels) {
         if (query[parentIdLabel]) {
           delete modifiedQuery[parentIdLabel];
           parentIds[parentIdLabel] = typeof(query[parentIdLabel]) === 'object' ? Array.isArray(query[parentIdLabel]) ? query[parentIdLabel][0].value : query[parentIdLabel].value : query[parentIdLabel];
         }
       }
     }
-    if (this._childCollection && !Object.keys(parentIds).length) { // this is for when querying in all sub-collections
-      queryRef = this._db.collectionGroup(this._childCollection);
+    if (this.parentIdLabels.length && !Object.keys(parentIds).length) { // this is for when querying in all sub-collections
+      queryRef = this._db.collectionGroup(this.childCollection);
     } else {
       queryRef = this._db.collection(this._getPath(parentIds));
     }
@@ -313,9 +327,9 @@ export class FirestoreCollectionRepository<DocumentModel, CreateDocumentInput, U
    */
   private _parseDocument(documentSnapshot: FirebaseFirestore.DocumentSnapshot): DocumentModel {
     const output = { id: this._buildCompoundId(documentSnapshot.ref), ...changeTimestampsToDate(documentSnapshot.data()) } as unknown as DocumentModel;
-    if (this._parentIdLabels) {
+    if (this.parentIdLabels.length) {
       const parentId = documentSnapshot.ref.parent.parent?.id as string;
-      const parentIdLabel = this._parentIdLabels[this._parentIdLabels.length - 1];
+      const parentIdLabel = this.parentIdLabels[this.parentIdLabels.length - 1];
       (output as any)[parentIdLabel] = parentId;
       (output as any).id = this._buildCompoundId(documentSnapshot.ref);
     }
@@ -331,8 +345,8 @@ export class FirestoreCollectionRepository<DocumentModel, CreateDocumentInput, U
   private _buildCompoundId(documentRef: FirebaseFirestore.DocumentReference): string {
     let id = documentRef.id;
     let parentRef: FirebaseFirestore.DocumentReference | null = documentRef;
-    if (this._parentIdLabels) {
-      for (const _ of this._parentIdLabels) {
+    if (this.parentIdLabels.length) {
+      for (const _ of this.parentIdLabels) {
         parentRef = parentRef.parent?.parent as FirebaseFirestore.DocumentReference;
         id = `${parentRef.id}-${id}`;
       }
@@ -350,9 +364,9 @@ export class FirestoreCollectionRepository<DocumentModel, CreateDocumentInput, U
   private _decodeCompoundId(id: string): { documentId: string, parentIds: ParentIds } {
     const ids = id.split('-');
     const parentIds: {[parentIdLabel: string]: string} = {};
-    if (this._parentIdLabels) {
-      for (let index = 0; index < this._parentIdLabels.length; index++) {
-        parentIds[this._parentIdLabels[index]] = ids[index];
+    if (this.parentIdLabels.length) {
+      for (let index = 0; index < this.parentIdLabels.length; index++) {
+        parentIds[this.parentIdLabels[index]] = ids[index];
       }
     }
     return { documentId: ids[ids.length - 1], parentIds };
@@ -366,13 +380,13 @@ export class FirestoreCollectionRepository<DocumentModel, CreateDocumentInput, U
    * @private
    */
   private _getPath(parentIds?: ParentIds): string {
-    let path = this._collectionPath;
-    if (this._parentIdLabels) {
-      for (let index = 0; index < this._parentIdLabels.length; index++) {
-        if (!parentIds?.[this._parentIdLabels[index]]) {
-          throw new Error(ERROR_MESSAGES.PARENT_IDS_REQUIRED(this._collectionPath));
+    let path = this.collectionPath;
+    if (this.parentIdLabels.length) {
+      for (let index = 0; index < this.parentIdLabels.length; index++) {
+        if (!parentIds?.[this.parentIdLabels[index]]) {
+          throw new Error(ERROR_MESSAGES.PARENT_IDS_REQUIRED(this.collectionPath));
         }
-        path = path.replace(`:${this._parentIdLabels[index]}`, parentIds[this._parentIdLabels[index]]);
+        path = path.replace(`{${this.parentIdLabels[index]}}`, parentIds[this.parentIdLabels[index]]);
       }
     }
     return path;

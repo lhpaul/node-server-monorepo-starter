@@ -9,6 +9,7 @@ import {
 
 
 export class UsersRepository extends FirestoreCollectionRepository<UserDocument, CreateUserDocumentInput, UpdateUserDocumentInput, QueryUsersInput> {
+  static readonly COLLECTION_PATH = COLLECTION_PATH;
   private static instance: UsersRepository;
   public static getInstance(): UsersRepository {
     if (!UsersRepository.instance) {

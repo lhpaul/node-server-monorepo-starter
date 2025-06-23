@@ -3,6 +3,7 @@ import { COLLECTION_PATH } from './subscriptions.repository.constants';
 import { SubscriptionDocument, CreateSubscriptionDocumentInput, UpdateSubscriptionDocumentInput, QuerySubscriptionsInput } from './subscriptions.repository.interfaces';
 
 export class SubscriptionsRepository extends FirestoreCollectionRepository<SubscriptionDocument, CreateSubscriptionDocumentInput, UpdateSubscriptionDocumentInput, QuerySubscriptionsInput> {
+  static readonly COLLECTION_PATH = COLLECTION_PATH;
   private static instance: SubscriptionsRepository;
   public static getInstance(): SubscriptionsRepository {
     if (!SubscriptionsRepository.instance) {

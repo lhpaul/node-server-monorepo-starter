@@ -1,1 +1,1 @@
-export const COLLECTION_PATH = 'oauthClients/:oauthClientId/privateKeys';
+export const COLLECTION_PATH = 'oauthClients/{oauthClientId}/privateKeys';

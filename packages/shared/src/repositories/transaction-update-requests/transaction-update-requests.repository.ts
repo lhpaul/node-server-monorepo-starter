@@ -8,6 +8,7 @@ import {
 } from './transaction-update-requests.repository.interfaces';
 
 export class TransactionUpdateRequestsRepository extends FirestoreCollectionRepository<TransactionUpdateRequestDocument, CreateTransactionUpdateRequestDocumentInput, UpdateTransactionUpdateRequestDocumentInput, QueryTransactionUpdateRequestsInput> {
+  static readonly COLLECTION_PATH = COLLECTION_PATH;
   private static instance: TransactionUpdateRequestsRepository;
   
   public static getInstance(): TransactionUpdateRequestsRepository {

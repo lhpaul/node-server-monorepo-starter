@@ -25,7 +25,7 @@ describe(FunctionLogger.name, () => {
 
       logger.debug(testData, testMessage);
 
-      expect(debug).toHaveBeenCalledWith(testData, testMessage);
+      expect(debug).toHaveBeenCalledWith(testMessage, testData);
     });
 
     it('should call firebase debug logger with only data when no message provided', () => {
@@ -33,7 +33,7 @@ describe(FunctionLogger.name, () => {
 
       logger.debug(testData);
 
-      expect(debug).toHaveBeenCalledWith(testData, undefined);
+      expect(debug).toHaveBeenCalledWith(undefined, testData);
     });
   });
 
@@ -44,7 +44,7 @@ describe(FunctionLogger.name, () => {
 
       logger.error(testData, testMessage);
 
-      expect(error).toHaveBeenCalledWith(testData, testMessage);
+      expect(error).toHaveBeenCalledWith(testMessage, testData);
     });
 
     it('should call firebase error logger with only data when no message provided', () => {
@@ -52,7 +52,7 @@ describe(FunctionLogger.name, () => {
 
       logger.error(testData);
 
-      expect(error).toHaveBeenCalledWith(testData, undefined);
+      expect(error).toHaveBeenCalledWith(undefined, testData);
     });
   });
 
@@ -63,7 +63,7 @@ describe(FunctionLogger.name, () => {
 
       logger.info(testData, testMessage);
 
-      expect(info).toHaveBeenCalledWith(testData, testMessage);
+      expect(info).toHaveBeenCalledWith(testMessage, testData);
     });
 
     it('should call firebase info logger with only data when no message provided', () => {
@@ -71,7 +71,7 @@ describe(FunctionLogger.name, () => {
 
       logger.info(testData);
 
-      expect(info).toHaveBeenCalledWith(testData, undefined);
+      expect(info).toHaveBeenCalledWith(undefined, testData);
     });
   });
 
@@ -82,7 +82,7 @@ describe(FunctionLogger.name, () => {
 
       logger.warn(testData, testMessage);
 
-      expect(warn).toHaveBeenCalledWith(testData, testMessage);
+      expect(warn).toHaveBeenCalledWith(testMessage, testData);
     });
 
     it('should call firebase warn logger with only data when no message provided', () => {
@@ -90,7 +90,7 @@ describe(FunctionLogger.name, () => {
 
       logger.warn(testData);
 
-      expect(warn).toHaveBeenCalledWith(testData, undefined);
+      expect(warn).toHaveBeenCalledWith(undefined, testData);
     });
   });
 }); 

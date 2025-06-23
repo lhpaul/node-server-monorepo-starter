@@ -1,1 +1,1 @@
-export const COLLECTION_PATH = 'companies/:companyId/subscriptions';
+export const COLLECTION_PATH = 'companies/{companyId}/subscriptions';

@@ -1,9 +1,15 @@
 import * as admin from 'firebase-admin';
 
-import { notifySubscriptionAboutToExpireFunction } from './functions/pub-subs/notify-subscription-about-to-expire/notify-subscription-about-to-expire.function';
-import { checkForAboutToExpireSubscriptionsFunction } from './functions/schedulers/check-for-expired-subscriptions/check-for-about-to-expire-subscriptions.function';
+import { transactionUpdateRequestOnWriteFunction } from './functions/firestore';
+import { notifySubscriptionAboutToExpireFunction } from './functions/pub-subs';
+import { checkForAboutToExpireSubscriptionsFunction } from './functions/schedulers';
 
 admin.initializeApp();
+
+// Firestore
+export const firestore = {
+  transactionUpdateRequestOnWrite: transactionUpdateRequestOnWriteFunction,
+};
 
 // Pub/Subs
 export const pubSubs = {

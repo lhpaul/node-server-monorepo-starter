@@ -18,12 +18,14 @@
     "@repo/shared": "workspace:*",
     "class-validator": "0.14.2",
     "firebase-admin": "13.4.0",
-    "firebase-functions": "6.3.2"
+    "firebase-functions": "6.3.2",
+    "lodash": "4.17.21"
   },
   "devDependencies": {
     "@eslint/js": "^9.28.0",
     "@repo/configs": "workspace:*",
     "@types/jest": "^29.5.14",
+    "@types/lodash": "4.17.18",
     "@types/node": "^22.14.1",
     "@typescript-eslint/eslint-plugin": "^8.33.1",
     "@typescript-eslint/parser": "^8.33.1",

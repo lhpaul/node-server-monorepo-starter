@@ -56,7 +56,7 @@ describe(FirestoreCollectionRepository.name, () => {
   const mockServerTimestamp = 'serverTimestamp';
   const mainCollectionName = 'mainCollection';
   const subCollection = 'childCollection';
-  const subCollectionPath = `${mainCollectionName}/:${mainCollectionName}Id/${subCollection}`;
+  const subCollectionPath = `${mainCollectionName}/{${mainCollectionName}Id}/${subCollection}`;
   let mainDocumentRefMock: any;
   let subCollectionDocumentRefMock: any;
   let repository: FirestoreCollectionRepository<any, any, any, any>;
@@ -808,7 +808,7 @@ describe(FirestoreCollectionRepository.name, () => {
     });
     describe('when the collection is a sub-collection of a sub-collection', () => {
       const subSubCollection = 'subSubCollection';
-      const subSubCollectionPath = `${mainCollectionName}/:${mainCollectionName}Id/${subCollection}/:${subCollection}Id/${subSubCollection}`;
+      const subSubCollectionPath = `${mainCollectionName}/{${mainCollectionName}Id}/${subCollection}/{${subCollection}Id}/${subSubCollection}`;
       let subSubCollectionDocumentRefMock: any;
       let subSubCollectionRefMock: any;
       beforeEach(() => {

@@ -9,6 +9,7 @@ import {
 
 
 export class PrivateKeysRepository extends FirestoreCollectionRepository<PrivateKeyDocument, CreatePrivateKeyDocumentInput, UpdatePrivateKeyDocumentInput, GetPrivateKeysQuery> {
+  static readonly COLLECTION_PATH = COLLECTION_PATH;
   private static instance: PrivateKeysRepository;
 
   public static getInstance(): PrivateKeysRepository {

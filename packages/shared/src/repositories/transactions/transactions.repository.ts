@@ -8,6 +8,7 @@ import {
 } from './transactions.repository.interfaces';
 
 export class TransactionsRepository extends FirestoreCollectionRepository<TransactionDocument, CreateTransactionDocumentInput, UpdateTransactionDocumentInput, QueryTransactionsInput> {
+  static readonly COLLECTION_PATH = COLLECTION_PATH;
   private static instance: TransactionsRepository;
   public static getInstance(): TransactionsRepository {
     if (!TransactionsRepository.instance) {

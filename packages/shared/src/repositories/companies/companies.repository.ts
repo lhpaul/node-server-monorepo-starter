@@ -9,6 +9,7 @@ import {
 
 
 export class CompaniesRepository extends FirestoreCollectionRepository<CompanyDocument, CreateCompanyDocumentInput, UpdateCompanyDocumentInput, QueryCompaniesInput> {
+  static readonly COLLECTION_PATH = COLLECTION_PATH;
   private static instance: CompaniesRepository;
 
   public static getInstance(): CompaniesRepository {

@@ -1,0 +1,179 @@
+import {
+  changeTimestampsToDate,
+  changeTimestampsToDateISOString,
+  checkIfEventHasBeenProcessed,
+  CheckIfEventHasBeenProcessedError,
+  CheckIfEventHasBeenProcessedErrorCode,
+  maskFields,
+  printError,
+  removeDocumentMetadata,
+} from '@repo/shared/utils';
+import { ParamsOf } from 'firebase-functions';
+import { Change } from 'firebase-functions/v1';
+import { CloudFunction } from 'firebase-functions/v2';
+import {
+  DocumentSnapshot,
+  FirestoreAuthEvent,
+  onDocumentWrittenWithAuthContext,
+} from 'firebase-functions/v2/firestore';
+import { isEqual } from 'lodash';
+
+import { FunctionLogger } from '../logging/function-logger.class';
+import { DEFAULT_ON_UPDATE_RETRY_TIMEOUT_IN_MS, EVENT_LABELS, LOGS, PREFIXES, STEPS } from './firestore.utils.constants';
+import {
+  CollectionEventContext,
+  OnCreateHandlerConfig,
+  OnDeleteHandlerConfig,
+  OnUpdateHandlerConfig,
+} from './firestore.utils.interfaces';
+
+
+export function collectionOnWriteFunction<DocumentModel>(options: {
+  path: string;
+  handlers: {
+    onCreate?: OnCreateHandlerConfig<DocumentModel>;
+    onDelete?: OnDeleteHandlerConfig<DocumentModel>;
+    onUpdate?: OnUpdateHandlerConfig<DocumentModel>;
+  };
+  }): CloudFunction<FirestoreAuthEvent<Change<DocumentSnapshot> | undefined, ParamsOf<string>>> {
+  return onDocumentWrittenWithAuthContext(`${options.path}/{documentId}`, async (event) => {
+    const beforeSnapshot = event.data?.before ? event.data.before : null;
+    const afterSnapshot = event.data?.after ? event.data.after : null;
+    const eventName = beforeSnapshot ? afterSnapshot ? EVENT_LABELS.ON_UPDATE : EVENT_LABELS.ON_DELETE : EVENT_LABELS.ON_CREATE;
+    const context: CollectionEventContext = {
+      authType: event.authType,
+      authId: event.authId,
+      eventId: event.id,
+      params: event.params,
+      time: event.time
+    };
+    if (eventName === EVENT_LABELS.ON_CREATE) {
+      await _onCreate(afterSnapshot as DocumentSnapshot, context, options.path, options.handlers.onCreate);
+      return;
+    }
+    if (eventName === EVENT_LABELS.ON_UPDATE) {
+      const documentData = afterSnapshot?.data() as any;
+      /*
+      * This is for when we need to run on create handler on an existing document.
+      * The condition for this to happen is that the _onCreateEventId and _onCreateRetries fields are undefined.
+      */
+      if (options.handlers.onCreate?.function && documentData._onCreateEventId === undefined && documentData._onCreateRetries === undefined) {
+        await _onCreate(afterSnapshot as DocumentSnapshot, context, options.path, options.handlers.onCreate);
+        return;
+      }
+      await _onUpdate(
+        beforeSnapshot as DocumentSnapshot,
+        afterSnapshot as DocumentSnapshot,
+        context,
+        options.path,
+        options.handlers.onUpdate
+      );
+      return;
+    }
+    await _onDelete(beforeSnapshot as DocumentSnapshot, context, options.path, options.handlers.onDelete);
+    return;
+  });
+}
+
+async function _onCreate<DocumentModel>(newDocumentSnap: FirebaseFirestore.DocumentSnapshot, context: CollectionEventContext, documentLabel: string, config?: OnCreateHandlerConfig<DocumentModel>): Promise<void> {
+  const documentData = { ...newDocumentSnap.data(), id: newDocumentSnap.id } as any;
+  const logger = new FunctionLogger();
+  logger.info({
+    id: LOGS.ON_CREATE.id,
+    context,
+    documentId: newDocumentSnap.id,
+    documentData: config?.options?.maskFields ? maskFields(changeTimestampsToDateISOString(documentData), config.options.maskFields) : changeTimestampsToDateISOString(documentData),
+  }, LOGS.ON_CREATE.message(documentLabel, newDocumentSnap.id));
+  if (config) {
+    try {
+      logger.startStep(STEPS.INITIAL_TRANSACTION.id);
+      const db = newDocumentSnap.ref.firestore;
+      const result = await checkIfEventHasBeenProcessed(db, newDocumentSnap.ref, PREFIXES.ON_CREATE, context.eventId, logger, { maxRetries: config.options?.maxRetries });
+      if (result.hasBeenProcessed) {
+        logger.info({
+          id: LOGS.ON_CREATE_ALREADY_PROCESSED.id,
+        }, LOGS.ON_CREATE_ALREADY_PROCESSED.message(documentLabel, newDocumentSnap.id));
+        return;
+      }
+      await config.function({ context, documentData: { ...changeTimestampsToDate(result.documentData), id: newDocumentSnap.id }, logger });
+    } catch (error) {
+      if (error instanceof CheckIfEventHasBeenProcessedError && error.code === CheckIfEventHasBeenProcessedErrorCode.MAX_RETRIES_REACHED) {
+        logger.error({
+          id: LOGS.ON_CREATE_MAX_RETRIES_REACHED.id,
+        }, LOGS.ON_CREATE_MAX_RETRIES_REACHED.message(documentLabel, newDocumentSnap.id));
+        await newDocumentSnap.ref.update({
+          _onCreateMaxRetriesReached: true
+        }).catch((updateError) => {
+          logger.error({
+            id: LOGS.ON_CREATE_MAX_RETRIES_REACHED_UPDATE_ERROR.id,
+            error: printError(updateError)
+          }, LOGS.ON_CREATE_MAX_RETRIES_REACHED_UPDATE_ERROR.message(documentLabel, newDocumentSnap.id, updateError));
+          throw(error);
+        });
+        throw error;
+      }
+      logger.error({
+        id: LOGS.ON_CREATE_UNKNOWN_ERROR.id,
+      }, LOGS.ON_CREATE_UNKNOWN_ERROR.message(documentLabel, newDocumentSnap.id));
+      await newDocumentSnap.ref.update({
+        _onCreateEventId: null
+      }).catch((updateError) => {
+        logger.error({
+          id: LOGS.ON_CREATE_UNKNOWN_ERROR_UPDATE_ERROR.id,
+          error: printError(updateError)
+        }, LOGS.ON_CREATE_UNKNOWN_ERROR_UPDATE_ERROR.message(documentLabel, newDocumentSnap.id, updateError));
+        return Promise.reject(error);
+      });
+      throw error;
+    }
+  }
+}
+
+async function _onDelete<DocumentModel>(documentSnap: FirebaseFirestore.DocumentSnapshot, context: CollectionEventContext, documentLabel: string, config?: OnDeleteHandlerConfig<DocumentModel>): Promise<void> {
+  const documentId = documentSnap.id;
+  const documentData = { ...documentSnap.data(), id: documentSnap.id } as any;
+  const logger = new FunctionLogger();
+  logger.info({
+    id: LOGS.ON_DELETE.id,
+    context,
+    documentId
+  }, LOGS.ON_DELETE.message(documentLabel, documentId));
+  if (config?.function) {
+    await config.function({ documentData: { ...documentData, id: documentId }, context, logger })
+  }
+}
+
+async function _onUpdate<DocumentModel>(beforeDocumentSnap: FirebaseFirestore.DocumentSnapshot, afterDocumentSnap: FirebaseFirestore.DocumentSnapshot, context: CollectionEventContext, documentLabel: string, config?: OnUpdateHandlerConfig<DocumentModel>): Promise<void> {
+  const beforeData = { ...beforeDocumentSnap.data(), id: beforeDocumentSnap.id } as any;
+  const afterData = { ...afterDocumentSnap.data(), id: afterDocumentSnap.id } as any;
+  const logger = new FunctionLogger();
+  logger.info({
+    id: LOGS.ON_UPDATE.id,
+    context,
+    documentId: afterDocumentSnap.id
+  }, LOGS.ON_UPDATE.message(documentLabel, afterDocumentSnap.id));
+  if (config && !_isOnCreateUpdate(beforeData, afterData)) {
+    const updatedAtChanged = beforeData.updatedAt.toDate().getTime() !== afterData.updatedAt.toDate().getTime();
+    const updatedAtValid = updatedAtChanged && beforeData.updatedAt < afterData.updatedAt;
+    if (!updatedAtValid && !isEqual(removeDocumentMetadata(beforeData), removeDocumentMetadata(afterData))) {
+      logger.warn({
+        id: LOGS.ON_UPDATE_INVALID_UPDATED_AT.id,
+      }, LOGS.ON_UPDATE_INVALID_UPDATED_AT.message(documentLabel, afterDocumentSnap.id));
+    }
+    // this is so avoid infinite retries
+    const retryTimeout = config.options?.retryTimeout || DEFAULT_ON_UPDATE_RETRY_TIMEOUT_IN_MS;
+    const eventAgeMs = Date.now() - Date.parse(context.time);
+    if (eventAgeMs > retryTimeout) {
+      logger.error({
+        id: LOGS.ON_UPDATE_RETRY_TIMEOUT.id,
+      }, LOGS.ON_UPDATE_RETRY_TIMEOUT.message(documentLabel, afterDocumentSnap.id));
+      return;
+    }
+    await config.function({ afterData: changeTimestampsToDate(afterData), beforeData: changeTimestampsToDate(beforeData), context, logger });
+  }
+}
+
+// This method is to identify if the update was for an onCreate event
+function _isOnCreateUpdate(beforeData: any, afterData: any): boolean {
+  return (!beforeData._onCreateEventId && afterData._onCreateEventId) as boolean;
+}

@@ -1,1 +1,1 @@
-export const COLLECTION_PATH = 'companies/:companyId/transactions';
+export const COLLECTION_PATH = 'companies/{companyId}/transactions';

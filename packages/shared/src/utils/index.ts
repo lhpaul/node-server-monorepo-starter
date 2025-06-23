@@ -5,5 +5,6 @@ export * from './firestore/index.js';
 export * from './logging/index.js';
 export * from './mask/index.js';
 export * from './pub-subs/index.js';
+export * from './repositories/index.js';
 export * from './services/domain-model-service.class.errors.js'
 export * from './time/index.js';

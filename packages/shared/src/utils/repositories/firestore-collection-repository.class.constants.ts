@@ -1,5 +1,5 @@
 export const ERROR_MESSAGES = {
-  INVALID_COLLECTION_PATH: (collectionPath: string) => `Invalid collection path: ${collectionPath}. Parent ID labels must start with ":"`,
+  INVALID_COLLECTION_PATH: (collectionPath: string) => `Invalid collection path: ${collectionPath}. Parent ID labels must start with "{" and end with "}"`,
   PARENT_ID_REQUIRED: (parentIdLabel: string, collectionPath: string) => `${parentIdLabel} parameter must be submitted since ${collectionPath} is a sub-collection`,
   PARENT_IDS_REQUIRED: (collectionPath: string) => `parentIds parameter must be submitted since ${collectionPath} is a sub-collection`,
   PARENT_DOCUMENT_NOT_FOUND: (parentDocumentRef: string) => `Parent document not found: ${parentDocumentRef}`,

@@ -1,0 +1,1 @@
+export * from './transaction-update-requests/transaction-update-request.firestore.function';
