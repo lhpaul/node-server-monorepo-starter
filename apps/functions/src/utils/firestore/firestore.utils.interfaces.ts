@@ -11,7 +11,6 @@ export interface CollectionEventContext {
 export interface OnCreateHandlerConfig<DocumentModel> {
   function: OnCreateFunction<DocumentModel>;
   options?: {
-    maskFields?: string[];
     maxRetries?: number;
   };
 }
@@ -21,7 +20,6 @@ export interface OnDeleteHandlerConfig<DocumentModel> {
 export interface OnUpdateHandlerConfig<DocumentModel> {
   function: OnUpdateFunction<DocumentModel>;
   options?: {
-    maskFields?: string[];
     retryTimeout: number;
   };
 }

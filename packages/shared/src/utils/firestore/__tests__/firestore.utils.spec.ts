@@ -1,10 +1,18 @@
-import { FIRESTORE_ERROR_CODE } from '../firestore.constants';
+import { Timestamp } from 'firebase-admin/firestore';
+
 import { ExecutionLogger } from '../../../definitions';
 import { wait } from '../../time/time.utils';
-import { RunRetriableActionError, RunRetriableActionErrorCode } from '../firestore.utils.errors';
-import { LOGS, STEPS } from '../firestore.utils.constants';
-import { runRetriableAction, runRetriableTransaction, changeTimestampsToDateISOString, changeTimestampsToDate } from '../firestore.utils';
-import { Timestamp } from 'firebase-admin/firestore';
+import { FIRESTORE_ERROR_CODE } from '../firestore.constants';
+import { DEFAULT_MAX_ATTEMPTS, LOGS, STEPS } from '../firestore.utils.constants';
+import { CheckIfEventHasBeenProcessedError, CheckIfEventHasBeenProcessedErrorCode, RunRetriableActionError, RunRetriableActionErrorCode } from '../firestore.utils.errors';
+import {
+  runRetriableAction,
+  runRetriableTransaction,
+  changeTimestampsToDateISOString,
+  changeTimestampsToDate,
+  checkIfEventHasBeenProcessed,
+  removeDocumentMetadata
+} from '../firestore.utils';
 
 jest.mock('../../time/time.utils', () => ({
   wait: jest.fn(),
@@ -267,5 +275,160 @@ describe(changeTimestampsToDate.name, () => {
     const result = changeTimestampsToDate(input);
 
     expect(result).toEqual(input);
+  });
+});
+
+describe(checkIfEventHasBeenProcessed.name, () => {
+  let mockDb: FirebaseFirestore.Firestore;
+  let mockDocRef: FirebaseFirestore.DocumentReference;
+  let mockLogger: ExecutionLogger;
+
+  beforeEach(() => {
+    mockDb = {
+      doc: jest.fn(),
+      runTransaction: jest.fn(),
+    } as unknown as FirebaseFirestore.Firestore;
+    mockDocRef = {
+      get: jest.fn(),
+    } as unknown as FirebaseFirestore.DocumentReference;
+    mockLogger = {
+      startStep: jest.fn(),
+      endStep: jest.fn(),
+      warn: jest.fn(),
+    } as unknown as ExecutionLogger;
+  });
+
+  describe('when the document exists and the field of the event is present', () => {
+    let transactionMock: FirebaseFirestore.Transaction;
+    let snapshotData: any;
+    const eventName = 'test';
+
+    beforeEach(() => {
+      snapshotData = { [`${eventName}EventId`]: 'event-Id' };
+      const snapshotMock = {
+        exists: true,
+        data: () => snapshotData,
+      } as unknown as FirebaseFirestore.DocumentSnapshot;
+      transactionMock = {
+        get: jest.fn().mockResolvedValue(snapshotMock),
+        update: jest.fn(),
+      } as unknown as FirebaseFirestore.Transaction;
+      (mockDb.runTransaction as jest.Mock).mockImplementation((fn) => fn(transactionMock));
+    });
+
+    it('should return the document data and hasBeenProcessed is true without updating the document', async () => {
+      const { documentData, hasBeenProcessed } = await checkIfEventHasBeenProcessed(mockDb, mockDocRef, eventName, 'some-other-event-id', mockLogger);
+      expect(documentData).toEqual(snapshotData);
+      expect(hasBeenProcessed).toBe(true);
+      expect(transactionMock.update).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('when the document exists and the field of the event is not present', () => {
+    let transactionMock: FirebaseFirestore.Transaction;
+    let snapshotData: any;
+    const eventName = 'test';
+    beforeEach(() => {
+      snapshotData = {};
+      const snapshotMock = {
+        exists: true,
+        data: () => snapshotData,
+      } as unknown as FirebaseFirestore.DocumentSnapshot;
+      transactionMock = {
+        get: jest.fn().mockResolvedValue(snapshotMock),
+        update: jest.fn(),
+      } as unknown as FirebaseFirestore.Transaction;
+      (mockDb.runTransaction as jest.Mock).mockImplementation((fn) => fn(transactionMock));
+    });
+
+    it('should return the document data and hasBeenProcessed is false and update the document', async () => {
+      const eventId = 'event-id';
+      const { documentData, hasBeenProcessed } = await checkIfEventHasBeenProcessed(mockDb, mockDocRef, eventName, eventId, mockLogger);
+      expect(documentData).toEqual({
+        [`${eventName}EventId`]: eventId,
+        [`${eventName}Retries`]: 0,
+        [`${eventName}MaxRetries`]: DEFAULT_MAX_ATTEMPTS,
+      });
+      expect(hasBeenProcessed).toBe(false);
+      expect(transactionMock.update).toHaveBeenCalledWith(mockDocRef, {
+        [`${eventName}EventId`]: eventId,
+        [`${eventName}Retries`]: 0,
+        [`${eventName}MaxRetries`]: DEFAULT_MAX_ATTEMPTS,
+      });
+    });
+    it('should use the options maxRetries if provided', async () => {
+      const eventId = 'event-id';
+      const maxRetries = 10;
+      const { documentData, hasBeenProcessed } = await checkIfEventHasBeenProcessed(mockDb, mockDocRef, eventName, eventId, mockLogger, { maxRetries });
+      expect(documentData).toEqual({
+        [`${eventName}EventId`]: eventId,
+        [`${eventName}Retries`]: 0,
+        [`${eventName}MaxRetries`]: maxRetries,
+      });
+      expect(hasBeenProcessed).toBe(false);
+      expect(transactionMock.update).toHaveBeenCalledWith(mockDocRef, {
+        [`${eventName}EventId`]: eventId,
+        [`${eventName}Retries`]: 0,
+        [`${eventName}MaxRetries`]: maxRetries,
+      });
+    });
+
+    it('should throw max retries reached error if the retries are greater than the max retries', async () => {
+      const eventId = 'event-id';
+      const maxRetries = 3;
+      (mockDb.runTransaction as jest.Mock).mockImplementation((fn) => fn({
+        get: jest.fn().mockResolvedValue({
+          exists: true,
+          data: () => ({
+            [`${eventName}EventId`]: undefined,
+            [`${eventName}Retries`]: maxRetries,
+            [`${eventName}MaxRetries`]: maxRetries,
+          }),
+        }),
+      }));
+      try {
+          await checkIfEventHasBeenProcessed(mockDb, mockDocRef, eventName, eventId, mockLogger, { maxRetries });
+        expect(true).toBe(false);
+      } catch (error: any) {
+        expect(error).toBeInstanceOf(CheckIfEventHasBeenProcessedError);
+        expect(error.code).toBe(CheckIfEventHasBeenProcessedErrorCode.MAX_RETRIES_REACHED);
+      }
+    });
+  });
+
+  describe('when the document does not exist', () => {
+    let transactionMock: FirebaseFirestore.Transaction;
+    beforeEach(() => {
+      const snapshotMock = {
+        exists: false,
+      } as unknown as FirebaseFirestore.DocumentSnapshot;
+      transactionMock = {
+        get: jest.fn().mockResolvedValue(snapshotMock),
+      } as unknown as FirebaseFirestore.Transaction;
+      (mockDb.runTransaction as jest.Mock).mockImplementation((fn) => fn(transactionMock));
+    });
+
+    it('should throw document not found error', async () => {
+      try {
+        await checkIfEventHasBeenProcessed(mockDb, mockDocRef, 'testEvent', 'event-id', mockLogger);
+        expect(true).toBe(false);
+      } catch (error: any) {
+        expect(error).toBeInstanceOf(CheckIfEventHasBeenProcessedError);
+        expect(error.code).toBe(CheckIfEventHasBeenProcessedErrorCode.DOCUMENT_NOT_FOUND);
+      }
+    });
+  });
+});
+
+describe(removeDocumentMetadata.name, () => {
+  it('should remove metadata from the document data', () => {
+    const documentData = {
+      normalField: 'some-value',
+      _metadata: 'some-metadata',
+    };
+    const result = removeDocumentMetadata(documentData);
+    expect(result).toEqual({
+      normalField: documentData.normalField,
+    });
   });
 });

@@ -30,11 +30,12 @@ import {
 
 export function collectionOnWriteFunction<DocumentModel>(options: {
   path: string;
-  handlers: {
+  handlers?: {
     onCreate?: OnCreateHandlerConfig<DocumentModel>;
     onDelete?: OnDeleteHandlerConfig<DocumentModel>;
     onUpdate?: OnUpdateHandlerConfig<DocumentModel>;
-  };
+  },
+  maskFields?: string[];
   }): CloudFunction<FirestoreAuthEvent<Change<DocumentSnapshot> | undefined, ParamsOf<string>>> {
   return onDocumentWrittenWithAuthContext(`${options.path}/{documentId}`, async (event) => {
     const beforeSnapshot = event.data?.before ? event.data.before : null;
@@ -48,7 +49,7 @@ export function collectionOnWriteFunction<DocumentModel>(options: {
       time: event.time
     };
     if (eventName === EVENT_LABELS.ON_CREATE) {
-      await _onCreate(afterSnapshot as DocumentSnapshot, context, options.path, options.handlers.onCreate);
+      await _onCreate(afterSnapshot as DocumentSnapshot, context, options.path, options.handlers?.onCreate, { maskFields: options.maskFields });
       return;
     }
     if (eventName === EVENT_LABELS.ON_UPDATE) {
@@ -57,8 +58,8 @@ export function collectionOnWriteFunction<DocumentModel>(options: {
       * This is for when we need to run on create handler on an existing document.
       * The condition for this to happen is that the _onCreateEventId and _onCreateRetries fields are undefined.
       */
-      if (options.handlers.onCreate?.function && documentData._onCreateEventId === undefined && documentData._onCreateRetries === undefined) {
-        await _onCreate(afterSnapshot as DocumentSnapshot, context, options.path, options.handlers.onCreate);
+      if (options.handlers?.onCreate && documentData._onCreateEventId === undefined && documentData._onCreateRetries === undefined) {
+        await _onCreate(afterSnapshot as DocumentSnapshot, context, options.path, options.handlers.onCreate, { maskFields: options.maskFields });
         return;
       }
       await _onUpdate(
@@ -66,36 +67,37 @@ export function collectionOnWriteFunction<DocumentModel>(options: {
         afterSnapshot as DocumentSnapshot,
         context,
         options.path,
-        options.handlers.onUpdate
+        options.handlers?.onUpdate,
+        { maskFields: options.maskFields }
       );
       return;
     }
-    await _onDelete(beforeSnapshot as DocumentSnapshot, context, options.path, options.handlers.onDelete);
+    await _onDelete(beforeSnapshot as DocumentSnapshot, context, options.path, options.handlers?.onDelete);
     return;
   });
 }
 
-async function _onCreate<DocumentModel>(newDocumentSnap: FirebaseFirestore.DocumentSnapshot, context: CollectionEventContext, documentLabel: string, config?: OnCreateHandlerConfig<DocumentModel>): Promise<void> {
+async function _onCreate<DocumentModel>(newDocumentSnap: FirebaseFirestore.DocumentSnapshot, context: CollectionEventContext, documentLabel: string, handlerConfig?: OnCreateHandlerConfig<DocumentModel>, collectionConfig?: { maskFields?: string[] }): Promise<void> {
   const documentData = { ...newDocumentSnap.data(), id: newDocumentSnap.id } as any;
   const logger = new FunctionLogger();
   logger.info({
     id: LOGS.ON_CREATE.id,
     context,
     documentId: newDocumentSnap.id,
-    documentData: config?.options?.maskFields ? maskFields(changeTimestampsToDateISOString(documentData), config.options.maskFields) : changeTimestampsToDateISOString(documentData),
+    documentData: collectionConfig?.maskFields ? maskFields(changeTimestampsToDateISOString(documentData), collectionConfig.maskFields) : changeTimestampsToDateISOString(documentData),
   }, LOGS.ON_CREATE.message(documentLabel, newDocumentSnap.id));
-  if (config) {
+  if (handlerConfig) {
     try {
       logger.startStep(STEPS.INITIAL_TRANSACTION.id);
       const db = newDocumentSnap.ref.firestore;
-      const result = await checkIfEventHasBeenProcessed(db, newDocumentSnap.ref, PREFIXES.ON_CREATE, context.eventId, logger, { maxRetries: config.options?.maxRetries });
+      const result = await checkIfEventHasBeenProcessed(db, newDocumentSnap.ref, PREFIXES.ON_CREATE, context.eventId, logger, { maxRetries: handlerConfig.options?.maxRetries });
       if (result.hasBeenProcessed) {
         logger.info({
           id: LOGS.ON_CREATE_ALREADY_PROCESSED.id,
         }, LOGS.ON_CREATE_ALREADY_PROCESSED.message(documentLabel, newDocumentSnap.id));
         return;
       }
-      await config.function({ context, documentData: { ...changeTimestampsToDate(result.documentData), id: newDocumentSnap.id }, logger });
+      await handlerConfig.function({ context, documentData: { ...changeTimestampsToDate(result.documentData), id: newDocumentSnap.id }, logger });
     } catch (error) {
       if (error instanceof CheckIfEventHasBeenProcessedError && error.code === CheckIfEventHasBeenProcessedErrorCode.MAX_RETRIES_REACHED) {
         logger.error({
@@ -114,6 +116,7 @@ async function _onCreate<DocumentModel>(newDocumentSnap: FirebaseFirestore.Docum
       }
       logger.error({
         id: LOGS.ON_CREATE_UNKNOWN_ERROR.id,
+        error: printError(error)
       }, LOGS.ON_CREATE_UNKNOWN_ERROR.message(documentLabel, newDocumentSnap.id));
       await newDocumentSnap.ref.update({
         _onCreateEventId: null
@@ -143,25 +146,29 @@ async function _onDelete<DocumentModel>(documentSnap: FirebaseFirestore.Document
   }
 }
 
-async function _onUpdate<DocumentModel>(beforeDocumentSnap: FirebaseFirestore.DocumentSnapshot, afterDocumentSnap: FirebaseFirestore.DocumentSnapshot, context: CollectionEventContext, documentLabel: string, config?: OnUpdateHandlerConfig<DocumentModel>): Promise<void> {
+async function _onUpdate<DocumentModel>(beforeDocumentSnap: FirebaseFirestore.DocumentSnapshot, afterDocumentSnap: FirebaseFirestore.DocumentSnapshot, context: CollectionEventContext, documentLabel: string, handlerConfig?: OnUpdateHandlerConfig<DocumentModel>, collectionConfig?: { maskFields?: string[] }): Promise<void> {
   const beforeData = { ...beforeDocumentSnap.data(), id: beforeDocumentSnap.id } as any;
   const afterData = { ...afterDocumentSnap.data(), id: afterDocumentSnap.id } as any;
   const logger = new FunctionLogger();
   logger.info({
     id: LOGS.ON_UPDATE.id,
     context,
-    documentId: afterDocumentSnap.id
+    documentId: afterDocumentSnap.id,
+    afterDocumentData: collectionConfig?.maskFields ? maskFields(changeTimestampsToDateISOString(afterData), collectionConfig.maskFields) : changeTimestampsToDateISOString(afterData),
+    beforeDocumentData: collectionConfig?.maskFields ? maskFields(changeTimestampsToDateISOString(beforeData), collectionConfig.maskFields) : changeTimestampsToDateISOString(beforeData),
   }, LOGS.ON_UPDATE.message(documentLabel, afterDocumentSnap.id));
-  if (config && !_isOnCreateUpdate(beforeData, afterData)) {
-    const updatedAtChanged = beforeData.updatedAt.toDate().getTime() !== afterData.updatedAt.toDate().getTime();
-    const updatedAtValid = updatedAtChanged && beforeData.updatedAt < afterData.updatedAt;
-    if (!updatedAtValid && !isEqual(removeDocumentMetadata(beforeData), removeDocumentMetadata(afterData))) {
-      logger.warn({
-        id: LOGS.ON_UPDATE_INVALID_UPDATED_AT.id,
-      }, LOGS.ON_UPDATE_INVALID_UPDATED_AT.message(documentLabel, afterDocumentSnap.id));
-    }
+  const beforeUpdatedAt = beforeData.updatedAt.toDate();
+  const afterUpdatedAt = afterData.updatedAt.toDate();
+  const updatedAtChanged = beforeUpdatedAt.getTime() !== afterUpdatedAt.getTime();
+  const updatedAtValid = updatedAtChanged && beforeUpdatedAt < afterUpdatedAt;
+  if (!updatedAtValid && !isEqual(removeDocumentMetadata(beforeData), removeDocumentMetadata(afterData))) {
+    logger.warn({
+      id: LOGS.ON_UPDATE_INVALID_UPDATED_AT.id,
+    }, LOGS.ON_UPDATE_INVALID_UPDATED_AT.message(documentLabel, afterDocumentSnap.id));
+  }
+  if (handlerConfig && !_isOnCreateUpdate(beforeData, afterData)) {
     // this is so avoid infinite retries
-    const retryTimeout = config.options?.retryTimeout || DEFAULT_ON_UPDATE_RETRY_TIMEOUT_IN_MS;
+    const retryTimeout = handlerConfig.options?.retryTimeout || DEFAULT_ON_UPDATE_RETRY_TIMEOUT_IN_MS;
     const eventAgeMs = Date.now() - Date.parse(context.time);
     if (eventAgeMs > retryTimeout) {
       logger.error({
@@ -169,7 +176,7 @@ async function _onUpdate<DocumentModel>(beforeDocumentSnap: FirebaseFirestore.Do
       }, LOGS.ON_UPDATE_RETRY_TIMEOUT.message(documentLabel, afterDocumentSnap.id));
       return;
     }
-    await config.function({ afterData: changeTimestampsToDate(afterData), beforeData: changeTimestampsToDate(beforeData), context, logger });
+    await handlerConfig.function({ afterData: changeTimestampsToDate(afterData), beforeData: changeTimestampsToDate(beforeData), context, logger });
   }
 }
 

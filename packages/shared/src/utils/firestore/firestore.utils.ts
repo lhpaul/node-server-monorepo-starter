@@ -74,29 +74,24 @@ export function changeTimestampsToDate(obj: any): any {
  * @throws {RunRetriableTransactionError} When there is an error in the transaction
  *
  */
-export function checkIfEventHasBeenProcessed(db: FirebaseFirestore.Firestore, ref: string | FirebaseFirestore.DocumentReference, eventName: string, eventId: string, logger: ExecutionLogger, options?: CheckIfEventHasBeenProcessedOptions): Promise<{
+export function checkIfEventHasBeenProcessed(db: FirebaseFirestore.Firestore, docRef: FirebaseFirestore.DocumentReference, eventName: string, eventId: string, logger: ExecutionLogger, options?: CheckIfEventHasBeenProcessedOptions): Promise<{
     documentData: any;
     hasBeenProcessed: boolean;
   }> {
   const config = {
     maxRetries: options?.maxRetries || DEFAULT_MAX_ATTEMPTS
   };
-  const docRef = typeof(ref) === 'string' ? db.doc(ref) : ref;
   return runRetriableTransaction(db, (async (transaction) => {
     const snapshot = await transaction.get(docRef);
     const eventLabel = `${eventName}EventId`, eventRetriesLabel = `${eventName}Retries`, eventMaxRetriesLabel = `${eventName}MaxRetries`;
-    const newData = {} as any;
-    newData[eventLabel] = eventId;
+    
     if (snapshot.exists) {
       const data = snapshot.data() as any;
       if (data[eventLabel]) {
-        return { documentData: { ...data, ...newData }, hasBeenProcessed: true };
+        return { documentData: data, hasBeenProcessed: true };
       }
-      for (const key in newData) {
-        if (data[key] !== undefined) {
-          newData[key] = data[key];
-        }
-      }
+      const newData = {} as any;
+      newData[eventLabel] = eventId;
       if (data[eventRetriesLabel] === undefined) {
         newData[eventRetriesLabel] = 0;
         newData[eventMaxRetriesLabel] = config.maxRetries;
