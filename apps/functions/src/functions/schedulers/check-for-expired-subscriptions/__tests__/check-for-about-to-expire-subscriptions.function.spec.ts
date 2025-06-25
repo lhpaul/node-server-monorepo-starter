@@ -10,6 +10,7 @@ describe('checkForAboutToExpireSubscriptionsFunction', () => {
 
 
   beforeEach(() => {
+    jest.clearAllMocks();
     fn = jest.requireActual('../check-for-about-to-expire-subscriptions.function');
     mockWrapper = jest.mocked(onScheduleWrapper);
   });

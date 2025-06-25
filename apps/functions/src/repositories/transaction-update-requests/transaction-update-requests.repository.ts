@@ -1,4 +1,5 @@
-import { FirestoreCollectionRepository } from '../../utils/repositories';
+import { FirestoreCollectionRepository } from '@repo/shared/utils';
+
 import { COLLECTION_PATH } from './transaction-update-requests.repository.constants';
 import {
   TransactionUpdateRequestDocument,
@@ -6,6 +7,13 @@ import {
   UpdateTransactionUpdateRequestDocumentInput,
   QueryTransactionUpdateRequestsInput,
 } from './transaction-update-requests.repository.interfaces';
+
+export type {
+  TransactionUpdateRequestDocument,
+  CreateTransactionUpdateRequestDocumentInput,
+  UpdateTransactionUpdateRequestDocumentInput,
+  QueryTransactionUpdateRequestsInput,
+};
 
 export class TransactionUpdateRequestsRepository extends FirestoreCollectionRepository<TransactionUpdateRequestDocument, CreateTransactionUpdateRequestDocumentInput, UpdateTransactionUpdateRequestDocumentInput, QueryTransactionUpdateRequestsInput> {
   static readonly COLLECTION_PATH = COLLECTION_PATH;

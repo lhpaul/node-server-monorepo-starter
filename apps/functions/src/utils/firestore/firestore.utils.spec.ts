@@ -1,7 +1,7 @@
 import { maskFields } from '@repo/shared/utils';
 import { onDocumentWrittenWithAuthContext } from 'firebase-functions/v2/firestore';
 
-import { collectionOnWriteFunction } from './firestore.utils';
+import { collectionOnWriteFunctionWrapper } from './firestore.utils';
 import { DEFAULT_ON_UPDATE_RETRY_TIMEOUT_IN_MS, LOGS, PREFIXES } from './firestore.utils.constants';
 import { FunctionLogger } from '../logging/function-logger.class';
 import { checkIfEventHasBeenProcessed, CheckIfEventHasBeenProcessedError, CheckIfEventHasBeenProcessedErrorCode } from '@repo/shared/utils';
@@ -16,14 +16,17 @@ jest.mock('@repo/shared/utils', () => ({
 jest.mock('firebase-functions/v2/firestore');
 jest.mock('../logging/function-logger.class');
 
-describe(collectionOnWriteFunction.name, () => {
-  const documentId = 'doc1';
+describe(collectionOnWriteFunctionWrapper.name, () => {
+  const subCollectionDocumentId = 'id-2';
+  const collectionDocumentId = 'id-1';
+  const compoundDocumentId = `${collectionDocumentId}-${subCollectionDocumentId}`;
+  const documentPath = `collection/${collectionDocumentId}/subCollection/${subCollectionDocumentId}`;
   const baseEventValues = {
     id: 'event-id',
     authType: 'admin',
     authId: 'user-id',
     eventId: 'event-id',
-    params: { documentId },
+    params: { collectionDocumentId, documentId: subCollectionDocumentId },
     time: new Date().toISOString(),
   };
   const expectedContext = {
@@ -49,19 +52,17 @@ describe(collectionOnWriteFunction.name, () => {
       createdAt: { toDate: () => new Date() },
     };
     const documentSnapshot = {
-      id: documentId,
+      id: subCollectionDocumentId,
       data: () => documentData,
       ref: {
         firestore: {
           collection: jest.fn(),
         },
         update: jest.fn(),
+        path: documentPath,
       },
     };
-    const expectedDocumentData = {
-      ...documentData,
-      id: documentId,
-    };
+
     const event = {
       ...baseEventValues,
       data: {
@@ -70,7 +71,7 @@ describe(collectionOnWriteFunction.name, () => {
       },
     };
     it('should take into account the maskFields option when logging the event', async () => {
-      const fn = collectionOnWriteFunction({
+      const fn = collectionOnWriteFunctionWrapper({
         path: 'testCollection',
         maskFields: ['field1'],
       });
@@ -79,16 +80,16 @@ describe(collectionOnWriteFunction.name, () => {
       };
       (maskFields as jest.Mock).mockReturnValue(returnedDataFromMaskFields);
       await fn(event as any);
-      expect(maskFields as jest.Mock).toHaveBeenCalledWith(expectedDocumentData, ['field1']);
+      expect(maskFields as jest.Mock).toHaveBeenCalledWith(documentData, ['field1']);
       expect(mockLogger.info).toHaveBeenCalledWith({
         id: LOGS.ON_CREATE.id,
         context: expectedContext,
-        documentId,
+        documentId: compoundDocumentId,
         documentData: returnedDataFromMaskFields,
       }, expect.any(String));
     });
     it('should just log the event when no onCreate handler is provided', async () => {
-      const fn = collectionOnWriteFunction({
+      const fn = collectionOnWriteFunctionWrapper({
         path: 'testCollection',
         handlers: {},
       });
@@ -96,8 +97,8 @@ describe(collectionOnWriteFunction.name, () => {
       expect(mockLogger.info).toHaveBeenCalledWith({
         id: LOGS.ON_CREATE.id,
         context: expectedContext,
-        documentId,
-        documentData: expectedDocumentData,
+        documentId: compoundDocumentId,
+        documentData: documentData,
       }, expect.any(String));
     });
     describe('when the event has been processed', () => {
@@ -109,7 +110,7 @@ describe(collectionOnWriteFunction.name, () => {
       });
       it('should log the event as already processed and not call the handler', async () => {
         const handler = jest.fn();
-        const fn = collectionOnWriteFunction({
+        const fn = collectionOnWriteFunctionWrapper({
           path: 'testCollection',
           handlers: {
             onCreate: {
@@ -121,8 +122,8 @@ describe(collectionOnWriteFunction.name, () => {
         expect(mockLogger.info).toHaveBeenCalledWith({
           id: LOGS.ON_CREATE.id,
           context: expectedContext,
-          documentId,
-          documentData: expectedDocumentData,
+          documentId: compoundDocumentId,
+          documentData: documentData,
         }, expect.any(String));
         expect(checkIfEventHasBeenProcessed).toHaveBeenCalledWith(documentSnapshot.ref.firestore, documentSnapshot.ref, PREFIXES.ON_CREATE, event.id, mockLogger, { maxRetries: undefined });
         expect(mockLogger.info).toHaveBeenCalledWith({
@@ -140,7 +141,7 @@ describe(collectionOnWriteFunction.name, () => {
       });
       it('should call the handler', async () => {
         const handler = jest.fn();
-        const fn = collectionOnWriteFunction({
+        const fn = collectionOnWriteFunctionWrapper({
           path: 'testCollection',
           handlers: {
             onCreate: {
@@ -152,13 +153,16 @@ describe(collectionOnWriteFunction.name, () => {
         expect(mockLogger.info).toHaveBeenCalledWith({
           id: LOGS.ON_CREATE.id,
           context: expectedContext,
-          documentId,
-          documentData: expectedDocumentData,
+          documentId: compoundDocumentId,
+          documentData: documentData,
         }, expect.any(String));
         expect(checkIfEventHasBeenProcessed).toHaveBeenCalledWith(documentSnapshot.ref.firestore, documentSnapshot.ref, PREFIXES.ON_CREATE, event.id, mockLogger, { maxRetries: undefined });
         expect(handler).toHaveBeenCalledWith({
           context: expectedContext,
-          documentData: expectedDocumentData,
+          documentData: {
+            ...documentData,
+            id: compoundDocumentId,
+          },
           logger: mockLogger,
         });
       });
@@ -171,7 +175,7 @@ describe(collectionOnWriteFunction.name, () => {
         });
         it('should update the document with the max retries reached flag and throw an error', async () => {
           const handler = jest.fn();
-          const fn = collectionOnWriteFunction({
+          const fn = collectionOnWriteFunctionWrapper({
             path: 'testCollection',
             handlers: {
               onCreate: {
@@ -194,7 +198,7 @@ describe(collectionOnWriteFunction.name, () => {
         });
         it('should log critical error log if the update fails', async () => {
           const handler = jest.fn();
-          const fn = collectionOnWriteFunction({
+          const fn = collectionOnWriteFunctionWrapper({
             path: 'testCollection',
             handlers: {
               onCreate: {
@@ -219,7 +223,7 @@ describe(collectionOnWriteFunction.name, () => {
     });
     it('should throw an error if there is an error when checking if the event has been processed', async () => {
       const handler = jest.fn();
-      const fn = collectionOnWriteFunction({
+      const fn = collectionOnWriteFunctionWrapper({
         path: 'testCollection',
         handlers: {
           onCreate: {
@@ -246,7 +250,7 @@ describe(collectionOnWriteFunction.name, () => {
     });
     it('should log critical error log if the update fails', async () => {
       const handler = jest.fn();
-      const fn = collectionOnWriteFunction({
+      const fn = collectionOnWriteFunctionWrapper({
         path: 'testCollection',
         handlers: {
           onCreate: {
@@ -264,7 +268,7 @@ describe(collectionOnWriteFunction.name, () => {
     });
     it('should throw an error if the handler throws an error', async () => {
       const handler = jest.fn().mockRejectedValue(new Error('Unknown error'));
-      const fn = collectionOnWriteFunction({
+      const fn = collectionOnWriteFunctionWrapper({
         path: 'testCollection',
         handlers: {
           onCreate: {
@@ -302,32 +306,34 @@ describe(collectionOnWriteFunction.name, () => {
       updatedAt: { toDate: () => now },
     };
     const beforeDocumentSnapshot = {
-      id: documentId,
+      id: subCollectionDocumentId,
       data: () => beforeDocumentData,
       ref: {
         firestore: {
           collection: jest.fn(),
         },
         update: jest.fn(),
+        path: documentPath,
       },
     };
     const afterDocumentSnapshot = {
-      id: documentId,
+      id: subCollectionDocumentId,
       data: () => afterDocumentData,
       ref: {
         firestore: {
           collection: jest.fn(),
         },
         update: jest.fn(),
+        path: documentPath,
       },
     };
     const expectedBeforeDocumentData = {
       ...beforeDocumentData,
-      id: documentId,
+      id: compoundDocumentId,
     };
     const expectedAfterDocumentData = {
       ...afterDocumentData,
-      id: documentId,
+      id: compoundDocumentId,
     };
     const event = {
       ...baseEventValues,
@@ -355,7 +361,7 @@ describe(collectionOnWriteFunction.name, () => {
       
       it('should call the on create handler', async () => {
         const handler = jest.fn();
-        const fn = collectionOnWriteFunction({
+        const fn = collectionOnWriteFunctionWrapper({
           path: 'testCollection',
           handlers: {
             onCreate: {
@@ -377,7 +383,7 @@ describe(collectionOnWriteFunction.name, () => {
           context: expectedContext,
           documentData: {
             ...afterCheckDocumentData,
-            id: documentId,
+            id: compoundDocumentId,
           },
           logger: mockLogger,
         });
@@ -385,7 +391,7 @@ describe(collectionOnWriteFunction.name, () => {
     });
     describe('when the update is from a changing a field in the document', () => {
       it('should take into account the maskFields option when logging the event', async () => {
-        const fn = collectionOnWriteFunction({
+        const fn = collectionOnWriteFunctionWrapper({
           path: 'testCollection',
           maskFields: ['field1'],
         });
@@ -394,7 +400,7 @@ describe(collectionOnWriteFunction.name, () => {
       });
       it('should not log a warning and call the on update handler if the updatedAt is valid', async () => {
         const handler = jest.fn();
-        const fn = collectionOnWriteFunction({
+        const fn = collectionOnWriteFunctionWrapper({
           path: 'testCollection',
           handlers: {
             onUpdate: {
@@ -406,7 +412,7 @@ describe(collectionOnWriteFunction.name, () => {
         expect(mockLogger.info).toHaveBeenCalledWith({
           id: LOGS.ON_UPDATE.id,
           context: expectedContext,
-          documentId,
+          documentId: compoundDocumentId,
           afterDocumentData: expectedAfterDocumentData,
           beforeDocumentData: expectedBeforeDocumentData,
         }, expect.any(String));
@@ -420,7 +426,7 @@ describe(collectionOnWriteFunction.name, () => {
       });
       it('should log a warning and call the on update handler if the updatedAt is invalid', async () => {
         const handler = jest.fn();
-        const fn = collectionOnWriteFunction({
+        const fn = collectionOnWriteFunctionWrapper({
           path: 'testCollection',
           handlers: {
             onUpdate: {
@@ -442,6 +448,10 @@ describe(collectionOnWriteFunction.name, () => {
             },
           },
         };
+        const expectedAfterDocumentData = {
+          ...modifiedAfterDocumentData,
+          id: compoundDocumentId,
+        };
         await fn(modifiedEvent as any);
         expect(mockLogger.warn).toHaveBeenCalledWith({
           id: LOGS.ON_UPDATE_INVALID_UPDATED_AT.id,
@@ -449,26 +459,20 @@ describe(collectionOnWriteFunction.name, () => {
         expect(mockLogger.info).toHaveBeenCalledWith({
           id: LOGS.ON_UPDATE.id,
           context: expectedContext,
-          documentId,
-          afterDocumentData: {
-            ...modifiedAfterDocumentData,
-            id: documentId,
-          },
+          documentId: compoundDocumentId,
+          afterDocumentData: expectedAfterDocumentData,
           beforeDocumentData: expectedBeforeDocumentData,
         }, expect.any(String));
         expect(handler).toHaveBeenCalledWith({
           context: expectedContext, 
-          afterData: {
-            ...modifiedAfterDocumentData,
-            id: documentId,
-          },
+          afterData: expectedAfterDocumentData,
           beforeData: expectedBeforeDocumentData,
           logger: mockLogger,
         });
       });
       it('should log an error and not call the on update handler if the retry timeout is reached', async () => {
         const handler = jest.fn();
-        const fn = collectionOnWriteFunction({
+        const fn = collectionOnWriteFunctionWrapper({
           path: 'testCollection',
           handlers: {
             onUpdate: {
@@ -489,7 +493,7 @@ describe(collectionOnWriteFunction.name, () => {
       it('should take into account the retry timeout if it is provided', async () => {
         const handler = jest.fn();
         const retryTimeout = 1000;
-        const fn = collectionOnWriteFunction({
+        const fn = collectionOnWriteFunctionWrapper({
           path: 'testCollection',
           handlers: {
             onUpdate: {
@@ -530,7 +534,7 @@ describe(collectionOnWriteFunction.name, () => {
           },
         };
         const handler = jest.fn();
-        const fn = collectionOnWriteFunction({
+        const fn = collectionOnWriteFunctionWrapper({
           path: 'testCollection',
           handlers: {
             onUpdate: {
@@ -542,11 +546,11 @@ describe(collectionOnWriteFunction.name, () => {
         expect(mockLogger.info).toHaveBeenCalledWith({
           id: LOGS.ON_UPDATE.id,
           context: expectedContext,
-          documentId,
+          documentId: compoundDocumentId,
           afterDocumentData: expectedAfterDocumentData,
           beforeDocumentData: {
             ...modifiedBeforeDocumentData,
-            id: documentId,
+            id: compoundDocumentId,
           },
         }, expect.any(String));
         expect(handler).not.toHaveBeenCalled();
@@ -560,18 +564,19 @@ describe(collectionOnWriteFunction.name, () => {
       updatedAt: { toDate: () => new Date() },
     };
     const documentSnapshot = {
-      id: documentId,
+      id: subCollectionDocumentId,
       data: () => documentData,
       ref: {
         firestore: {
           collection: jest.fn(),
         },
         update: jest.fn(),
+        path: documentPath,
       },
     };
     const expectedDocumentData = {
       ...documentData,
-      id: documentId,
+      id: compoundDocumentId,
     };
     const event = {
       ...baseEventValues,
@@ -582,7 +587,7 @@ describe(collectionOnWriteFunction.name, () => {
     };
     it('should log and call the on delete handler', async () => {
       const handler = jest.fn();
-      const fn = collectionOnWriteFunction({
+      const fn = collectionOnWriteFunctionWrapper({
         path: 'testCollection',
         handlers: {
           onDelete: {
@@ -594,7 +599,7 @@ describe(collectionOnWriteFunction.name, () => {
       expect(mockLogger.info).toHaveBeenCalledWith({
         id: LOGS.ON_DELETE.id,
         context: expectedContext,
-        documentId,
+        documentId: compoundDocumentId,
       }, expect.any(String));
       expect(handler).toHaveBeenCalledWith({
         context: expectedContext,

@@ -30,5 +30,5 @@ export const ERROR_MESSAGES = {
   ACTION_HAS_BEEN_RETRIED: (maxRetries: number) => `Action has been retried ${maxRetries} times and did not finish successfully.`,
 };
 
-export const DEFAULT_MAX_ATTEMPTS = 5;
+export const DEFAULT_MAX_RETRIES = 0;
 export const DEFAULT_DELAY = 1000;

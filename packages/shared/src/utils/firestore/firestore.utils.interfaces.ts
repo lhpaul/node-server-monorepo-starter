@@ -4,10 +4,10 @@ export interface CheckIfEventHasBeenProcessedOptions {
 
 export interface RetriableActionOptions {
   delay?: number;
-  maxAttempts?: number;
+  maxRetries?: number;
 }
 
 export interface RunRetriableTransactionOptions {
   delay?: number;
-  maxAttempts?: number;
+  maxRetries?: number;
 }

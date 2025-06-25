@@ -1,7 +1,7 @@
 import { FIRESTORE_ERROR_CODE } from './firestore.constants';
 import { ExecutionLogger } from '../../definitions';
 import { wait } from '../time/time.utils';
-import { DEFAULT_DELAY, DEFAULT_MAX_ATTEMPTS, ERROR_MESSAGES, LOGS, RETRY_CODE, STEPS } from './firestore.utils.constants';
+import { DEFAULT_DELAY, DEFAULT_MAX_RETRIES, ERROR_MESSAGES, LOGS, RETRY_CODE, STEPS } from './firestore.utils.constants';
 import { CheckIfEventHasBeenProcessedError, CheckIfEventHasBeenProcessedErrorCode, RunRetriableActionError, RunRetriableActionErrorCode } from './firestore.utils.errors';
 import { CheckIfEventHasBeenProcessedOptions, RetriableActionOptions, RunRetriableTransactionOptions } from './firestore.utils.interfaces';
 
@@ -79,7 +79,7 @@ export function checkIfEventHasBeenProcessed(db: FirebaseFirestore.Firestore, do
     hasBeenProcessed: boolean;
   }> {
   const config = {
-    maxRetries: options?.maxRetries || DEFAULT_MAX_ATTEMPTS
+    maxRetries: options?.maxRetries ?? DEFAULT_MAX_RETRIES
   };
   return runRetriableTransaction(db, (async (transaction) => {
     const snapshot = await transaction.get(docRef);
@@ -143,7 +143,7 @@ export function removeDocumentMetadata(documentData: any): any {
  * @throws {RunRetriableActionError} When max retries are reached
  */
 export function runRetriableAction<T>(actionFn: (...args: any[]) => Promise<T>, logger: ExecutionLogger, options?: RetriableActionOptions): Promise<T> {
-  const config = { delay: DEFAULT_DELAY, maxAttempts: DEFAULT_MAX_ATTEMPTS, ...options };
+  const config = { delay: DEFAULT_DELAY, maxRetries: DEFAULT_MAX_RETRIES, ...options };
   const runAction = async (retries = 0): Promise<T> => {
     try {
       logger.startStep(STEPS.RETRIABLE_ACTION.id);
@@ -160,10 +160,10 @@ export function runRetriableAction<T>(actionFn: (...args: any[]) => Promise<T>, 
         if (error.code === FIRESTORE_ERROR_CODE.INTERNAL
           || error.code === FIRESTORE_ERROR_CODE.UNAVAILABLE
           || error.code === RETRY_CODE) {
-          if (retries >= config.maxAttempts) {
+          if (retries >= config.maxRetries) {
             throw new RunRetriableActionError({
               code: RunRetriableActionErrorCode.MAX_RETRIES_REACHED,
-              message: ERROR_MESSAGES.ACTION_HAS_BEEN_RETRIED(config.maxAttempts)
+              message: ERROR_MESSAGES.ACTION_HAS_BEEN_RETRIED(config.maxRetries)
             });
           }
           await wait(error.delay || config.delay);
@@ -195,7 +195,7 @@ export function runRetriableAction<T>(actionFn: (...args: any[]) => Promise<T>, 
  * @throws {RunRetriableActionError} When max retries are reached
  */
 export function runRetriableTransaction<T>(db: FirebaseFirestore.Firestore, transactionFn: (transaction: FirebaseFirestore.Transaction) => Promise<T>, logger: ExecutionLogger, options?: RunRetriableTransactionOptions): Promise<T> {
-  const config = { delay: DEFAULT_DELAY, maxAttempts: DEFAULT_MAX_ATTEMPTS, ...options };
+  const config = { delay: DEFAULT_DELAY, maxRetries: DEFAULT_MAX_RETRIES, ...options };
   const runTransaction = async (retries = 0): Promise<T> => {
     try {
       logger.startStep(STEPS.RETRIABLE_TRANSACTION.id);
@@ -214,10 +214,10 @@ export function runRetriableTransaction<T>(db: FirebaseFirestore.Firestore, tran
           || error.code === FIRESTORE_ERROR_CODE.UNAVAILABLE
           || error.code === RETRY_CODE
         ) {
-          if (retries >= config.maxAttempts) {
+          if (retries >= config.maxRetries) {
             throw new RunRetriableActionError({
               code: RunRetriableActionErrorCode.MAX_RETRIES_REACHED,
-              message: ERROR_MESSAGES.ACTION_HAS_BEEN_RETRIED(config.maxAttempts)
+              message: ERROR_MESSAGES.ACTION_HAS_BEEN_RETRIED(config.maxRetries)
             });
           }
           await wait(error.delay || config.delay);

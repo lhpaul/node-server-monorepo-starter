@@ -3,7 +3,7 @@ import { Timestamp } from 'firebase-admin/firestore';
 import { ExecutionLogger } from '../../../definitions';
 import { wait } from '../../time/time.utils';
 import { FIRESTORE_ERROR_CODE } from '../firestore.constants';
-import { DEFAULT_MAX_ATTEMPTS, LOGS, STEPS } from '../firestore.utils.constants';
+import { DEFAULT_MAX_RETRIES, LOGS, STEPS } from '../firestore.utils.constants';
 import { CheckIfEventHasBeenProcessedError, CheckIfEventHasBeenProcessedErrorCode, RunRetriableActionError, RunRetriableActionErrorCode } from '../firestore.utils.errors';
 import {
   runRetriableAction,
@@ -50,7 +50,7 @@ describe(runRetriableAction.name, () => {
       .mockRejectedValueOnce({ code: FIRESTORE_ERROR_CODE.INTERNAL })
       .mockResolvedValueOnce(expectedResult);
 
-    const result = await runRetriableAction(mockActionFn, mockLogger);
+    const result = await runRetriableAction(mockActionFn, mockLogger, { maxRetries: 2 });
 
     expect(result).toEqual(expectedResult);
     expect(mockActionFn).toHaveBeenCalledTimes(2);
@@ -119,7 +119,7 @@ describe(runRetriableTransaction.name, () => {
       .mockRejectedValueOnce({ code: FIRESTORE_ERROR_CODE.TOO_MUCH_CONTENTION })
       .mockResolvedValueOnce(expectedResult);
 
-    const result = await runRetriableTransaction(mockDb, mockTransactionFn, mockLogger);
+    const result = await runRetriableTransaction(mockDb, mockTransactionFn, mockLogger, { maxRetries: 2 });
 
     expect(result).toEqual(expectedResult);
     expect(mockDb.runTransaction).toHaveBeenCalledTimes(2);
@@ -347,13 +347,13 @@ describe(checkIfEventHasBeenProcessed.name, () => {
       expect(documentData).toEqual({
         [`${eventName}EventId`]: eventId,
         [`${eventName}Retries`]: 0,
-        [`${eventName}MaxRetries`]: DEFAULT_MAX_ATTEMPTS,
+        [`${eventName}MaxRetries`]: DEFAULT_MAX_RETRIES,
       });
       expect(hasBeenProcessed).toBe(false);
       expect(transactionMock.update).toHaveBeenCalledWith(mockDocRef, {
         [`${eventName}EventId`]: eventId,
         [`${eventName}Retries`]: 0,
-        [`${eventName}MaxRetries`]: DEFAULT_MAX_ATTEMPTS,
+        [`${eventName}MaxRetries`]: DEFAULT_MAX_RETRIES,
       });
     });
     it('should use the options maxRetries if provided', async () => {

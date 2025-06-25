@@ -28,7 +28,7 @@ import {
 } from './firestore.utils.interfaces';
 
 
-export function collectionOnWriteFunction<DocumentModel>(options: {
+export function collectionOnWriteFunctionWrapper<DocumentModel>(options: {
   path: string;
   handlers?: {
     onCreate?: OnCreateHandlerConfig<DocumentModel>;
@@ -78,14 +78,15 @@ export function collectionOnWriteFunction<DocumentModel>(options: {
 }
 
 async function _onCreate<DocumentModel>(newDocumentSnap: FirebaseFirestore.DocumentSnapshot, context: CollectionEventContext, documentLabel: string, handlerConfig?: OnCreateHandlerConfig<DocumentModel>, collectionConfig?: { maskFields?: string[] }): Promise<void> {
-  const documentData = { ...newDocumentSnap.data(), id: newDocumentSnap.id } as any;
+  const compoundDocumentId = _getCompoundId(newDocumentSnap);
+  const documentData = newDocumentSnap.data();
   const logger = new FunctionLogger();
   logger.info({
     id: LOGS.ON_CREATE.id,
     context,
-    documentId: newDocumentSnap.id,
+    documentId: compoundDocumentId,
     documentData: collectionConfig?.maskFields ? maskFields(changeTimestampsToDateISOString(documentData), collectionConfig.maskFields) : changeTimestampsToDateISOString(documentData),
-  }, LOGS.ON_CREATE.message(documentLabel, newDocumentSnap.id));
+  }, LOGS.ON_CREATE.message(documentLabel, compoundDocumentId));
   if (handlerConfig) {
     try {
       logger.startStep(STEPS.INITIAL_TRANSACTION.id);
@@ -94,22 +95,22 @@ async function _onCreate<DocumentModel>(newDocumentSnap: FirebaseFirestore.Docum
       if (result.hasBeenProcessed) {
         logger.info({
           id: LOGS.ON_CREATE_ALREADY_PROCESSED.id,
-        }, LOGS.ON_CREATE_ALREADY_PROCESSED.message(documentLabel, newDocumentSnap.id));
+        }, LOGS.ON_CREATE_ALREADY_PROCESSED.message(documentLabel, compoundDocumentId));
         return;
       }
-      await handlerConfig.function({ context, documentData: { ...changeTimestampsToDate(result.documentData), id: newDocumentSnap.id }, logger });
+      await handlerConfig.function({ context, documentData: { ...changeTimestampsToDate(result.documentData), id: compoundDocumentId }, logger });
     } catch (error) {
       if (error instanceof CheckIfEventHasBeenProcessedError && error.code === CheckIfEventHasBeenProcessedErrorCode.MAX_RETRIES_REACHED) {
         logger.error({
           id: LOGS.ON_CREATE_MAX_RETRIES_REACHED.id,
-        }, LOGS.ON_CREATE_MAX_RETRIES_REACHED.message(documentLabel, newDocumentSnap.id));
+        }, LOGS.ON_CREATE_MAX_RETRIES_REACHED.message(documentLabel, compoundDocumentId));
         await newDocumentSnap.ref.update({
           _onCreateMaxRetriesReached: true
         }).catch((updateError) => {
           logger.error({
             id: LOGS.ON_CREATE_MAX_RETRIES_REACHED_UPDATE_ERROR.id,
             error: printError(updateError)
-          }, LOGS.ON_CREATE_MAX_RETRIES_REACHED_UPDATE_ERROR.message(documentLabel, newDocumentSnap.id, updateError));
+          }, LOGS.ON_CREATE_MAX_RETRIES_REACHED_UPDATE_ERROR.message(documentLabel, compoundDocumentId, updateError));
           throw(error);
         });
         throw error;
@@ -117,15 +118,15 @@ async function _onCreate<DocumentModel>(newDocumentSnap: FirebaseFirestore.Docum
       logger.error({
         id: LOGS.ON_CREATE_UNKNOWN_ERROR.id,
         error: printError(error)
-      }, LOGS.ON_CREATE_UNKNOWN_ERROR.message(documentLabel, newDocumentSnap.id));
+      }, LOGS.ON_CREATE_UNKNOWN_ERROR.message(documentLabel, compoundDocumentId));
       await newDocumentSnap.ref.update({
         _onCreateEventId: null
       }).catch((updateError) => {
         logger.error({
           id: LOGS.ON_CREATE_UNKNOWN_ERROR_UPDATE_ERROR.id,
           error: printError(updateError)
-        }, LOGS.ON_CREATE_UNKNOWN_ERROR_UPDATE_ERROR.message(documentLabel, newDocumentSnap.id, updateError));
-        return Promise.reject(error);
+        }, LOGS.ON_CREATE_UNKNOWN_ERROR_UPDATE_ERROR.message(documentLabel, compoundDocumentId, updateError));
+        throw error;
       });
       throw error;
     }
@@ -133,30 +134,31 @@ async function _onCreate<DocumentModel>(newDocumentSnap: FirebaseFirestore.Docum
 }
 
 async function _onDelete<DocumentModel>(documentSnap: FirebaseFirestore.DocumentSnapshot, context: CollectionEventContext, documentLabel: string, config?: OnDeleteHandlerConfig<DocumentModel>): Promise<void> {
-  const documentId = documentSnap.id;
-  const documentData = { ...documentSnap.data(), id: documentSnap.id } as any;
+  const compoundDocumentId = _getCompoundId(documentSnap);
+  const documentData = documentSnap.data() as any;
   const logger = new FunctionLogger();
   logger.info({
     id: LOGS.ON_DELETE.id,
     context,
-    documentId
-  }, LOGS.ON_DELETE.message(documentLabel, documentId));
+    documentId: compoundDocumentId
+  }, LOGS.ON_DELETE.message(documentLabel, compoundDocumentId));
   if (config?.function) {
-    await config.function({ documentData: { ...documentData, id: documentId }, context, logger })
+    await config.function({ documentData: { ...documentData, id: compoundDocumentId }, context, logger })
   }
 }
 
 async function _onUpdate<DocumentModel>(beforeDocumentSnap: FirebaseFirestore.DocumentSnapshot, afterDocumentSnap: FirebaseFirestore.DocumentSnapshot, context: CollectionEventContext, documentLabel: string, handlerConfig?: OnUpdateHandlerConfig<DocumentModel>, collectionConfig?: { maskFields?: string[] }): Promise<void> {
-  const beforeData = { ...beforeDocumentSnap.data(), id: beforeDocumentSnap.id } as any;
-  const afterData = { ...afterDocumentSnap.data(), id: afterDocumentSnap.id } as any;
+  const compoundDocumentId = _getCompoundId(afterDocumentSnap);
+  const beforeData = { ...beforeDocumentSnap.data(), id: compoundDocumentId } as any;
+  const afterData = { ...afterDocumentSnap.data(), id: compoundDocumentId } as any;
   const logger = new FunctionLogger();
   logger.info({
     id: LOGS.ON_UPDATE.id,
     context,
-    documentId: afterDocumentSnap.id,
+    documentId: compoundDocumentId,
     afterDocumentData: collectionConfig?.maskFields ? maskFields(changeTimestampsToDateISOString(afterData), collectionConfig.maskFields) : changeTimestampsToDateISOString(afterData),
     beforeDocumentData: collectionConfig?.maskFields ? maskFields(changeTimestampsToDateISOString(beforeData), collectionConfig.maskFields) : changeTimestampsToDateISOString(beforeData),
-  }, LOGS.ON_UPDATE.message(documentLabel, afterDocumentSnap.id));
+  }, LOGS.ON_UPDATE.message(documentLabel, compoundDocumentId));
   const beforeUpdatedAt = beforeData.updatedAt.toDate();
   const afterUpdatedAt = afterData.updatedAt.toDate();
   const updatedAtChanged = beforeUpdatedAt.getTime() !== afterUpdatedAt.getTime();
@@ -164,7 +166,7 @@ async function _onUpdate<DocumentModel>(beforeDocumentSnap: FirebaseFirestore.Do
   if (!updatedAtValid && !isEqual(removeDocumentMetadata(beforeData), removeDocumentMetadata(afterData))) {
     logger.warn({
       id: LOGS.ON_UPDATE_INVALID_UPDATED_AT.id,
-    }, LOGS.ON_UPDATE_INVALID_UPDATED_AT.message(documentLabel, afterDocumentSnap.id));
+    }, LOGS.ON_UPDATE_INVALID_UPDATED_AT.message(documentLabel, compoundDocumentId));
   }
   if (handlerConfig && !_isOnCreateUpdate(beforeData, afterData)) {
     // this is so avoid infinite retries
@@ -173,7 +175,7 @@ async function _onUpdate<DocumentModel>(beforeDocumentSnap: FirebaseFirestore.Do
     if (eventAgeMs > retryTimeout) {
       logger.error({
         id: LOGS.ON_UPDATE_RETRY_TIMEOUT.id,
-      }, LOGS.ON_UPDATE_RETRY_TIMEOUT.message(documentLabel, afterDocumentSnap.id));
+      }, LOGS.ON_UPDATE_RETRY_TIMEOUT.message(documentLabel, compoundDocumentId));
       return;
     }
     await handlerConfig.function({ afterData: changeTimestampsToDate(afterData), beforeData: changeTimestampsToDate(beforeData), context, logger });
@@ -183,4 +185,18 @@ async function _onUpdate<DocumentModel>(beforeDocumentSnap: FirebaseFirestore.Do
 // This method is to identify if the update was for an onCreate event
 function _isOnCreateUpdate(beforeData: any, afterData: any): boolean {
   return (!beforeData._onCreateEventId && afterData._onCreateEventId) as boolean;
+}
+
+function _getCompoundId(documentSnap: FirebaseFirestore.DocumentSnapshot): string {
+  let compoundId = '';
+  const splitPath = documentSnap.ref.path.split('/');
+  splitPath.forEach((path, index) => {
+    if (index % 2 !== 0) {
+      compoundId += path;
+      if (index < splitPath.length - 1) {
+        compoundId += '-';
+      }
+    }
+  });
+  return compoundId;
 }

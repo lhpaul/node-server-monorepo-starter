@@ -1,8 +1,8 @@
-import { FirestoreCollectionRepository } from '../../../utils/repositories';
+import { FirestoreCollectionRepository } from '@repo/shared/utils';
 import { COLLECTION_PATH } from '../transaction-update-requests.repository.constants';
 import { TransactionUpdateRequestsRepository } from '../transaction-update-requests.repository';
 
-jest.mock('../../../utils/repositories');
+jest.mock('@repo/shared/utils');
 
 describe(TransactionUpdateRequestsRepository.name, () => {
 
