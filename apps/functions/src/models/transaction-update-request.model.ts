@@ -12,6 +12,7 @@ export class TransactionUpdateRequest implements ProcessResource {
   public readonly transactionId: string; // id of the transaction to update
   public readonly type?: TransactionType;
   public readonly updatedAt: Date;
+  public readonly userId: string;
 
   constructor(transactionUpdateRequest: Required<TransactionUpdateRequest>) {
     Object.assign(this, transactionUpdateRequest);

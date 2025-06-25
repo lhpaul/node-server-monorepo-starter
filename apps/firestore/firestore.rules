@@ -6,21 +6,24 @@ service cloud.firestore {
     }
     match /companies/{companyId} {
       allow get: if isSignedIn()
-      && hasAtLeastOnePrivilegeOnAccount(companyId, ['company:read', 'company:write']);
+      && hasAtLeastOnePrivilegeOnCompany(companyId, ['company:read', 'company:write']);
 
       match /subscriptions/{subscriptionId} {
         allow read: if isSignedIn()
-        && hasAtLeastOnePrivilegeOnAccount(companyId, ['subscriptions:read']);
+        && hasAtLeastOnePrivilegeOnCompany(companyId, ['subscriptions:read']);
       }
 
       match /transactions/{transactionId} {
         allow read: if isSignedIn()
-        && hasAtLeastOnePrivilegeOnAccount(companyId, ['transactions:read', 'transactions:write']);
+        && hasAtLeastOnePrivilegeOnCompany(companyId, ['transactions:read', 'transactions:write']);
       }
 
       match /transactionUpdateRequests/{transactionUpdateRequestId} {
-        allow create, read: if isSignedIn()
-        && hasAtLeastOnePrivilegeOnAccount(companyId, ['transactions:write']);
+        allow create: if isSignedIn()
+        && isOwner(incomingData().userId) && hasAtLeastOnePrivilegeOnCompany(companyId, ['transactions:write'])
+
+        allow read: if isSignedIn()
+        && isOwner(existingData().userId) && hasAtLeastOnePrivilegeOnCompany(companyId, ['transactions:write']);
       }
     }
     function existingData() {
@@ -31,6 +34,9 @@ service cloud.firestore {
     }
     function incomingData() {
       return request.resource.data
+    }
+    function isOwner(userId) {
+      return request.auth.token.app_user_id == userId;
     }
     function isSignedIn() {
       return request.auth.uid != null;
