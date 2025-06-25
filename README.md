@@ -1,22 +1,51 @@
-# Monorepo Starter
+# Monorepo Starter - Google Cloud
 
-This repository provides a robust foundation for developing a server-side application with a well-structured domain architecture.
+This repository provides a robust foundation for developing server-side applications with a well-structured domain architecture.
 
-This starter template is designed to be cloud platform and database independent, giving you the flexibility to choose your preferred infrastructure. For specialized implementations tailored to specific cloud providers, explore these extensions:
+## Table of Contents
 
-- [Google Cloud Platform (GCP)](https://github.com/lhpaul/node-server-monorepo-starter/tree/extensions/google-cloud): A complete implementation leveraging [Firebase Authentication](https://firebase.google.com/docs/auth) for user authentication, [Cloud Firestore](https://firebase.google.com/docs/firestore) for data storage, and [Cloud Run](https://cloud.google.com/run) for serverless deployment.
+- [Overview](#overview)
+- [What's Inside?](#whats-inside)
+- [Project Structure](#project-structure)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Setup & Authentication](#setup--authentication)
+  - [Installation](#installation)
+- [Development](#development)
+- [Build](#build)
+- [Testing](#testing)
+- [Project Conventions](#project-conventions)
+- [Additional Resources](#additional-resources)
+- [Contributing](#contributing)
+- [License](#license)
+- [Contact](#contact)
+
+## Overview
+
+This implementation leverages:
+
+- [Firebase Authentication](https://firebase.google.com/docs/auth) for user authentication
+- [Cloud Firestore](https://firebase.google.com/docs/firestore) for data storage
+- [Cloud Run](https://cloud.google.com/run) for serverless deployment
+- [Cloud Functions](https://cloud.google.com/functions?hl=en) for:
+  - [Firestore Triggers](https://firebase.google.com/docs/firestore/extend-with-functions)
+  - [Pub/Sub Events](https://firebase.google.com/docs/functions/pubsub-events?gen=2nd)
+  - [Scheduled Functions](https://firebase.google.com/docs/functions/schedule-functions?gen=2nd)
 
 ## What's Inside?
 
-This monorepo includes the following packages and applications:
+### Applications
 
-### Apps and Packages
+- **internal-api**: [Fastify](https://fastify.dev/) REST API & MCP server for internal, server-to-server communication (API keys/service accounts).
+- **public-api**: [Fastify](https://fastify.dev/) REST API for public/OIDC access using [Firebase Authentication](https://firebase.google.com/docs/auth).
+- **functions**: [Firebase Functions](https://firebase.google.com/docs/functions) for Firestore, Pub/Sub, and Scheduler triggers.
+- **firestore**: Firestore configuration for [rules](https://firebase.google.com/docs/firestore/security/get-started#use_the_cli) and [indexes](https://firebase.google.com/docs/firestore/query-data/indexing#use_the_firebase_cli).
 
-- `internal-api`: A [Fastify](https://fastify.dev/) application that provides a REST API and MCP server implementation. Designed for server-to-server communication with authentication via API keys or service accounts. Ideally it should be used in a internal network to ensure secure data transmission.
-- `public-api`: A [Fastify](https://fastify.dev/) application that provides a REST API implementation. Designed for secure internet-facing access with robust authentication and authorization protocols such as OIDC.
-- `@repo/configs`: Shared configuration files for ESLint, Jest, Prettier and TypeScript to ensure consistent code quality and style across all packages.
-- `@repo/fastify`: Shared Fastify utilities and plugins providing common server functionality, middleware, and helper methods.
-- `@repo/shared`: Shared business logic including domain models, services, interfaces and utilities used across all applications.
+### Packages
+
+- **@repo/configs**: Shared ESLint, Jest, Prettier, and TypeScript configs.
+- **@repo/fastify**: Shared Fastify utilities and plugins.
+- **@repo/shared**: Shared business logic, domain models, services, interfaces, and utilities.
 
 ### Development Tools
 
@@ -27,150 +56,196 @@ This monorepo comes pre-configured with essential development tools:
 - [TypeScript](https://www.typescriptlang.org/) for robust type checking.
 - [ESLint](https://eslint.org/) for code quality and consistency.
 - [Prettier](https://prettier.io) for automated code formatting.
+- [Lint Staged](https://github.com/lint-staged/lint-staged) for running tasks on staged files instead of the whole project.
+- [Firebase Tools](https://firebase.google.com/docs/cli) for managing firebase products.
+- [Isolate](https://www.npmjs.com/package/isolate-package/v/1.4.1-0) needed for deploying cloud functions.
 
 ## Project Structure
 
 ```bash
-.vscode/                   # VS Code workspace settings and configurations
-apps/                      # Application source codes
-contexts/                  # Documentation for developers and vibe coding to be used as context.
+.vscode/                   # VS Code workspace settings
+apps/                      # Application source code
+contexts/                  # Project conventions & documentation
 packages/                  # Shared packages and libraries
-.gitignore                 # Git ignore rules for the project
-.lintstagedrc.json         # Lint-staged configuration for pre-commit hooks
+.firebaserc                # Firebase projects config
+.gitignore                 # Git ignore rules
+.lintstagedrc.json         # Lint-staged config
 .markdownlint.json         # Markdown linting rules
-.monorepo.code-workspace   # VS Code workspace configuration
-package.json               # Root package.json for workspace configuration
-pnpm-lock.yaml             # PNPM lock file for dependency versioning
-pnpm-workspace.yaml        # PNPM workspace configuration
-PROMPTS.md                 # AI prompt templates for development assistance
-TODOs.md                   # Project roadmap and pending tasks
-turbo.json                 # Turborepo configuration file
+firebase.json              # Firebase config
+isolate.config.json        # Isolate package config
+monorepo.code-workspace    # VS Code workspace config
+package.json               # Root package.json
+pnpm-lock.yaml             # PNPM lock file
+pnpm-workspace.yaml        # PNPM workspace config
+PROMPTS.md                 # AI prompt templates
+TODOs.md                   # Roadmap & pending tasks
+turbo.json                 # Turborepo config
 ```
 
 ## Getting Started
 
-### Setup
+### Prerequisites
 
-#### Prerequisites
+- Node.js **v22** ([nvm recommended](https://github.com/nvm-sh/nvm))
+- [pnpm](https://pnpm.io/installation)
+- [Turborepo CLI](https://turborepo.com/) (`pnpm install turbo --global`)
+- [Google Cloud CLI (gcloud)](https://cloud.google.com/sdk/docs/install)
+- [Firebase CLI](https://firebase.google.com/docs/cli)
+- Access to at least the development environment Google Cloud project
 
-Before you begin, ensure you have the following installed:
+### Setup & Authentication
 
-1. Node.js version 22 (we recommend using [nvm](https://github.com/nvm-sh/nvm) for version management)
-2. [pnpm](https://pnpm.io/installation) package manager.
-3. Turborepo CLI globally installed:
+1. **Install Google Cloud CLI:** [Guide](https://cloud.google.com/sdk/docs/install)
+2. **Authenticate with Google Cloud:**
 
    ```bash
-   pnpm install turbo --global
+   gcloud auth login
    ```
 
-#### Installation
+3. **Authenticate with Firebase:**
 
-Install all repository dependencies by running:
+   ```bash
+   firebase login
+   ```
+
+4. **Configure Projects:**
+   - Add your Google Cloud project IDs to `.firebaserc`.
+
+### Installation
+
+Install all dependencies:
 
 ```bash
 pnpm install
 ```
 
-### Build
+## Development
 
-The build process will create optimized production bundles in the `dist` directory of each package.
+Each application can be run independently. Use the following commands from the root:
 
-To build all applications and packages in the monorepo:
+- **Internal API:**
+
+  ```bash
+  pnpm run dev:internal-api
+  ```
+
+- **Public API:**
+
+  ```bash
+  pnpm run dev:public-api
+  ```
+
+> **Note:** Each app may require environment variables. Copy `.env.example` to `.env` in each app directory and fill in required values.
+
+- **Functions:**
+  - Deploy all functions:
+
+    ```bash
+    pnpm run deploy:functions
+    ```
+
+  - Deploy a specific function:
+
+    ```bash
+    turbo run build --parallel && firebase deploy --only functions:{function-name}
+    ```
+
+    - Function names follow `{functionType}-{functionName}` (e.g., `firestore-transactionUpdateRequestOnWrite`).
+
+- **Firestore:**
+  - Deploy rules:
+
+    ```bash
+    pnpm run deploy:firestore:rules
+    ```
+
+  - Deploy indexes:
+
+    ```bash
+    pnpm run deploy:firestore:indexes
+    ```
+
+  - Deploy both:
+
+    ```bash
+    pnpm run deploy:firestore
+    ```
+
+## Build
+
+Build all apps and packages:
 
 ```bash
-# Build for production (with optimizations)
 pnpm build
 ```
 
-You can also build individual packages or applications by navigating to their respective directories:
+Or build individually:
 
 ```bash
-# Example: Building a shared package
-cd packages/shared
-pnpm run build
-
-# Example: Building a specific application
-cd apps/public-api
+cd packages/shared      # or any app/package
 pnpm run build
 ```
 
-### Development
+## Testing
 
-This project contains multiple applications that can be run independently. For development, we use development builds that support hot-reloading and provide better debugging capabilities.
-
-To start development, choose one of the following applications:
-
-#### Internal API
-
-```bash
-pnpm run dev:internal-api
-```
-
-#### Public API
-
-```bash
-pnpm run dev:public-api
-```
-
-> **Note**: Each application may require specific environment variables to function properly. Check the `.env.example` file in each application's directory and create a `.env` file with the required variables before starting the development server.
-
-### Testing
-
-The project uses Jest as the testing framework. Here's how to run tests:
-
-#### Running All Tests
-
-To run tests across all apps and packages from the root directory:
+Run all tests from the root:
 
 ```bash
 pnpm run test
 ```
 
-#### Running Specific Tests
-
-To run tests for a specific app or package:
-
-1. Navigate to the target directory:
+Run tests for a specific app/package:
 
 ```bash
-cd packages/shared  # or any other package/app directory
-```
-
-2. Run the tests:
-
-```bash
+cd packages/shared  # or any app/package
 pnpm run test
 ```
 
-#### Test Coverage
+**Test Coverage:**
 
-Each package and app generates test coverage reports. To view detailed coverage information:
-
-1. Navigate to the package/app directory
-2. Open `coverage/lcov-report/index.html` in your browser
+- Coverage reports are generated in `coverage/lcov-report/index.html` in each app/package.
 
 ## Project Conventions
 
-Before starting a new development, please review the [Project Conventions] documentation inside the `/contexts` folder. Following these guidelines helps ensure consistency, maintainability, and smoother code reviews during Pull Requests.
+Before starting development, review the [Project Conventions](./contexts/) in the `/contexts` folder. Following these guidelines ensures consistency and smoother code reviews.
+
+## Troubleshooting
+
+Each application has its own README file in its directory where you can find detailed information about the application, including troubleshooting guides for common problems.
+
+### Common Issues
+
+- **Permission Denied on Deployment**: If you encounter permission errors during deployment, you may need to unset service account impersonation. See the individual application READMEs for specific solutions.
+
+- **Build Failures**: Ensure all dependencies are installed and TypeScript configurations are properly set up.
+
+- **Test Failures**: Check that test environments are properly configured and all required services are running.
+
+For application-specific troubleshooting, refer to:
+
+- [Internal API README](./apps/internal-api/README.md)
+- [Public API README](./apps/public-api/README.md)
+- [Functions README](./apps/functions/README.md)
+- [Firestore README](./apps/firestore/README.md)
 
 ## Additional Resources
 
-Explore more Turborepo features:
-
-- [Tasks](https://turborepo.com/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.com/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.com/docs/reference/configuration)
-- [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
+- [Turborepo](https://turborepo.com/)
+   - [Tasks](https://turborepo.com/docs/crafting-your-repository/running-tasks)
+   - [Caching](https://turborepo.com/docs/crafting-your-repository/caching)
+   - [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching)
+   - [Filtering](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters)
+   - [Configuration Options](https://turborepo.com/docs/reference/configuration)
+   - [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
+- [Firebase](https://firebase.google.com/)
 
 ## Contributing
 
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/your-feature`).
-3. Commit your changes (`git commit -am 'Add new feature'`).
-4. Push to the branch (`git push origin feature/your-feature`).
-5. Open a pull request from your branch to `main`.
+2. Create your feature branch (`git checkout -b feature/your-feature`)
+3. Commit your changes (`git commit -am 'Add new feature'`)
+4. Push to the branch (`git push origin feature/your-feature`)
+5. Open a pull request to the branch you checked out from.
 
 ## License
 
@@ -178,4 +253,4 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## Contact
 
-For questions or feedback, please contact [lhpaul11@gmail.com](mailto:lhpaul11@gmail.com).
+For questions or feedback, contact [lhpaul11@gmail.com](mailto:lhpaul11@gmail.com).

@@ -1,13 +1,10 @@
 # Compiled JavaScript files
-lib/**/*.js
-lib/**/*.js.map
+dist/**/*.js
+dist/**/*.js.map
 
-# TypeScript v1 declaration files
-typings/
+# Isolate folder used for deployment
+isolate/
 
 # Node.js dependency directory
 node_modules/
-*.local
 
-# Isolate
-isolate/
