@@ -4,5 +4,36 @@ service cloud.firestore {
     match /{document=**} {
       allow read, write: if false;
     }
+    match /companies/{companyId} {
+      allow get: if isSignedIn()
+      && hasAtLeastOnePrivilegeOnAccount(companyId, ['company:read', 'company:write']);
+
+      match /subscriptions/{subscriptionId} {
+        allow read: if isSignedIn()
+        && hasAtLeastOnePrivilegeOnAccount(companyId, ['subscriptions:read']);
+      }
+
+      match /transactions/{transactionId} {
+        allow read: if isSignedIn()
+        && hasAtLeastOnePrivilegeOnAccount(companyId, ['transactions:read', 'transactions:write']);
+      }
+
+      match /transactionUpdateRequests/{transactionUpdateRequestId} {
+        allow create, read: if isSignedIn()
+        && hasAtLeastOnePrivilegeOnAccount(companyId, ['transactions:write']);
+      }
+    }
+    function existingData() {
+      return resource.data
+    }
+    function hasAtLeastOnePrivilegeOnCompany(companyId, privileges) {
+      return request.auth.token.companies != null && request.auth.token.companies.keys().hasAny([companyId]) && request.auth.token.companies[companyId].hasAny(privileges);
+    }
+    function incomingData() {
+      return request.resource.data
+    }
+    function isSignedIn() {
+      return request.auth.uid != null;
+    }
   }
 }
