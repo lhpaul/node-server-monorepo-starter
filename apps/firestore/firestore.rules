@@ -20,10 +20,18 @@ service cloud.firestore {
 
       match /transactionUpdateRequests/{transactionUpdateRequestId} {
         allow create: if isSignedIn()
+        && validCreateValues(incomingData())
         && isOwner(incomingData().userId) && hasAtLeastOnePrivilegeOnCompany(companyId, ['transactions:write'])
 
         allow read: if isSignedIn()
         && isOwner(existingData().userId) && hasAtLeastOnePrivilegeOnCompany(companyId, ['transactions:write']);
+      }
+
+      function validCreateValues(incomingData) {
+        return (!("amount" in incomingData) || incomingData.amount is number )
+        && (!("date" in incomingData) || incomingData.date is string )
+        && (!("type" in incomingData) || incomingData.type in ['credit', 'debit'] );
+
       }
     }
     function existingData() {
