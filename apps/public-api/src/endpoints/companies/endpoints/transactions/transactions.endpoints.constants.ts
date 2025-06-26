@@ -14,7 +14,7 @@ export const CREATE_COMPANY_TRANSACTION_BODY_JSON_SCHEMA = {
   type: 'object',
   properties: {
     amount: { type: 'number' },
-    date: { type: 'string' },
+    date: { type: 'string', format: 'date' },
     type: { enum: Object.values(TransactionType) },
   },
   required: ['amount', 'date', 'type'],

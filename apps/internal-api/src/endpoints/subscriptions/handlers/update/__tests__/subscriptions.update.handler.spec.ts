@@ -8,11 +8,6 @@ import { STEPS } from '../subscriptions.update.handler.constants';
 import { updateSubscriptionHandler } from '../subscriptions.update.handler';
 
 jest.mock('@repo/shared/services');
-jest.mock('@repo/shared/utils', () => ({
-  ...jest.requireActual('@repo/shared/utils'),
-  DomainModelServiceError: jest.fn(),
-  DomainModelServiceErrorCode: jest.fn(),
-}));
 
 describe(updateSubscriptionHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;
@@ -57,6 +52,7 @@ describe(updateSubscriptionHandler.name, () => {
   });
 
   it('should successfully update a subscription', async () => {
+    jest.spyOn(mockService, 'updateResource').mockResolvedValueOnce(undefined);
     await updateSubscriptionHandler(
       mockRequest as FastifyRequest,
       mockReply as FastifyReply,
@@ -80,7 +76,7 @@ describe(updateSubscriptionHandler.name, () => {
   });
 
   it('should handle subscription not found error', async () => {
-    jest.spyOn(mockService, 'updateResource').mockRejectedValue(
+    jest.spyOn(mockService, 'updateResource').mockRejectedValueOnce(
       new DomainModelServiceError({
         code: DomainModelServiceErrorCode.RESOURCE_NOT_FOUND,
         message: 'Subscription not found',
@@ -109,6 +105,41 @@ describe(updateSubscriptionHandler.name, () => {
     expect(mockReply.send).toHaveBeenCalledWith(
       ERROR_RESPONSES.SUBSCRIPTION_NOT_FOUND,
     );
+  });
+
+  it('should handle invalid input error', async () => {
+    const errorMessage = 'Invalid input';
+    const errorData = {
+      startsAt: {
+        code: 'INVALID_DATE_FORMAT',
+        message: 'Invalid date format',
+      },
+    };
+    const error = new DomainModelServiceError({ code: DomainModelServiceErrorCode.INVALID_INPUT, message: errorMessage, data: errorData });
+    jest.spyOn(mockService, 'updateResource').mockRejectedValue(error);
+
+    await updateSubscriptionHandler(
+      mockRequest as FastifyRequest,
+      mockReply as FastifyReply,
+    );
+
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_SUBSCRIPTION.id);
+    expect(mockService.updateResource).toHaveBeenCalledWith(
+      mockParams.id,
+      {
+        ...mockBody,
+        startsAt: new Date(mockBody.startsAt),
+        endsAt: new Date(mockBody.endsAt),
+      },
+      mockLogger,
+    );
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_SUBSCRIPTION.id);
+    expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.BAD_REQUEST);
+    expect(mockReply.send).toHaveBeenCalledWith({
+      code: DomainModelServiceErrorCode.INVALID_INPUT,
+      message: errorMessage,
+      data: errorData,
+    });
   });
 
   it('should throw unexpected errors', async () => {

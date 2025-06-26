@@ -33,8 +33,17 @@ export const updateTransactionHandler = async (
     .finally(() => logger.endStep(STEPS.UPDATE_TRANSACTION.id));
     return reply.code(STATUS_CODES.NO_CONTENT).send();
   } catch (error) {
-    if (error instanceof DomainModelServiceError && error.code === DomainModelServiceErrorCode.RESOURCE_NOT_FOUND) {
-      return reply.code(STATUS_CODES.NOT_FOUND).send(ERROR_RESPONSES.TRANSACTION_NOT_FOUND);
+    if (error instanceof DomainModelServiceError) {
+      if (error.code === DomainModelServiceErrorCode.INVALID_INPUT) {
+        return reply.code(STATUS_CODES.BAD_REQUEST).send({
+          code: error.code,
+          message: error.message,
+          data: error.data,
+        });
+      }
+      if (error.code === DomainModelServiceErrorCode.RESOURCE_NOT_FOUND) {
+        return reply.code(STATUS_CODES.NOT_FOUND).send(ERROR_RESPONSES.TRANSACTION_NOT_FOUND);
+      }
     }
     throw error;
   }
