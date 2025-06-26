@@ -1,6 +1,6 @@
 import { TransactionType } from '@repo/shared/domain';
 import { TransactionsService } from '@repo/shared/services';
-import { printError } from '@repo/shared/utils';
+import { DomainModelServiceError, DomainModelServiceErrorCode, printError } from '@repo/shared/utils';
 
 import { ProcessStatus } from '../../../../../../definitions/models.interfaces';
 import { TransactionUpdateRequestsRepository } from '../../../../../../repositories/transaction-update-requests';
@@ -13,6 +13,7 @@ jest.mock('@repo/shared/services', () => ({
   },
 }));
 jest.mock('@repo/shared/utils', () => ({
+  ...jest.requireActual('@repo/shared/utils'),
   printError: jest.fn(),
 }));
 jest.mock('../../../../../../repositories/transaction-update-requests', () => ({
@@ -72,27 +73,7 @@ describe(transactionUpdateRequestOnCreateHandler.name, () => {
     jest.clearAllMocks();
   });
 
-  it('should update status to FAILED with TRANSACTION_NOT_FOUND error if transaction does not exist', async () => {
-    mockTransactionsService.getResource.mockResolvedValue(null);
-    mockTransactionUpdateRequestsRepository.updateDocument.mockResolvedValue(undefined);
-    await transactionUpdateRequestOnCreateHandler({
-      context: mockContext,
-      documentData: mockTransactionUpdateRequest,
-      logger: mockLogger as any,
-    });
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION.id);
-    expect(mockTransactionsService.getResource).toHaveBeenCalledWith(transactionId, mockLogger);
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION.id);
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION_NOT_FOUND_FAILED_STATUS.id);
-    expect(mockTransactionUpdateRequestsRepository.updateDocument).toHaveBeenCalledWith(mockTransactionUpdateRequest.id, {
-      status: ProcessStatus.FAILED,
-      error: ERRORS.TRANSACTION_NOT_FOUND,
-    }, mockLogger);
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION_NOT_FOUND_FAILED_STATUS.id);
-  });
-
-  it('should update status to DONE when transaction exists and update request is valid', async () => {
-    mockTransactionsService.getResource.mockResolvedValue(mockTransaction);
+  it('should update status to DONE when the transaction is updated successfully', async () => {
     mockTransactionsService.updateResource.mockResolvedValue(undefined);
     mockTransactionUpdateRequestsRepository.updateDocument.mockResolvedValue(undefined);
     await transactionUpdateRequestOnCreateHandler({
@@ -100,9 +81,6 @@ describe(transactionUpdateRequestOnCreateHandler.name, () => {
       documentData: mockTransactionUpdateRequest,
       logger: mockLogger as any,
     });
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION.id);
-    expect(mockTransactionsService.getResource).toHaveBeenCalledWith(transactionId, mockLogger);
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION.id);
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION.id);
     expect(mockTransactionsService.updateResource).toHaveBeenCalledWith(transactionId, {
       amount: mockTransactionUpdateRequest.amount,
@@ -115,8 +93,45 @@ describe(transactionUpdateRequestOnCreateHandler.name, () => {
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_DONE_STATUS.id);
   });
 
+  it('should update status to FAILED with TRANSACTION_NOT_FOUND error if transaction does not exist', async () => {
+    const error = new DomainModelServiceError({ code: DomainModelServiceErrorCode.RESOURCE_NOT_FOUND, message: 'Transaction not found' });
+    mockTransactionsService.updateResource.mockRejectedValue(error);
+    mockTransactionUpdateRequestsRepository.updateDocument.mockResolvedValue(undefined);
+    await transactionUpdateRequestOnCreateHandler({
+      context: mockContext,
+      documentData: mockTransactionUpdateRequest,
+      logger: mockLogger as any,
+    });
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_INVALID_UPDATE_FAILED_STATUS.id);
+    expect(mockTransactionUpdateRequestsRepository.updateDocument).toHaveBeenCalledWith(mockTransactionUpdateRequest.id, {
+      status: ProcessStatus.FAILED,
+      error: ERRORS.TRANSACTION_NOT_FOUND,
+    }, mockLogger);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_INVALID_UPDATE_FAILED_STATUS.id);
+  });
+
+  it('should update status to FAILED with INVALID_INPUT error if the transaction is invalid', async () => {
+    const errorMessage = 'Invalid input';
+    const error = new DomainModelServiceError({ code: DomainModelServiceErrorCode.INVALID_INPUT, message: errorMessage });
+    mockTransactionsService.updateResource.mockRejectedValue(error);
+    mockTransactionUpdateRequestsRepository.updateDocument.mockResolvedValue(undefined);
+    await transactionUpdateRequestOnCreateHandler({
+      context: mockContext,
+      documentData: mockTransactionUpdateRequest,
+      logger: mockLogger as any,
+    });
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_INVALID_UPDATE_FAILED_STATUS.id);
+    expect(mockTransactionUpdateRequestsRepository.updateDocument).toHaveBeenCalledWith(mockTransactionUpdateRequest.id, {
+      status: ProcessStatus.FAILED,
+      error: {
+        code: DomainModelServiceErrorCode.INVALID_INPUT,
+        message: errorMessage,
+      },
+    }, mockLogger);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_INVALID_UPDATE_FAILED_STATUS.id);
+  });
+
   it('should update status to FAILED when there is an error updating the transaction', async () => {
-    mockTransactionsService.getResource.mockResolvedValue(mockTransaction);
     const error = new Error('error');
     mockTransactionsService.updateResource.mockRejectedValue(error);
     mockTransactionUpdateRequestsRepository.updateDocument.mockResolvedValue(undefined);
@@ -132,9 +147,6 @@ describe(transactionUpdateRequestOnCreateHandler.name, () => {
     } catch (error) {
       expect(error).toBe(error);
     }
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION.id);
-    expect(mockTransactionsService.getResource).toHaveBeenCalledWith(transactionId, mockLogger);
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION.id);
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_UNKNOWN_ERROR_FAILED_STATUS.id);
     expect(printError).toHaveBeenCalledWith(error);
     expect(mockTransactionUpdateRequestsRepository.updateDocument).toHaveBeenCalledWith(mockTransactionUpdateRequest.id, {
