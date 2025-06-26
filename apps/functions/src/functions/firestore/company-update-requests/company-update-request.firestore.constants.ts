@@ -1,0 +1,1 @@
+export const MAX_RETRIES = 0; // Company update requests can only be processed once since when they fail, they update their status to failed. 

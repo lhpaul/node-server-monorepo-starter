@@ -25,13 +25,25 @@ service cloud.firestore {
 
         allow read: if isSignedIn()
         && isOwner(existingData().userId) && hasAtLeastOnePrivilegeOnCompany(companyId, ['transactions:write']);
+
+        function validCreateValues(incomingData) {
+          return (!("amount" in incomingData) || incomingData.amount is number )
+          && (!("date" in incomingData) || incomingData.date is string )
+          && (!("type" in incomingData) || incomingData.type in ['credit', 'debit'] );
+        }
       }
 
-      function validCreateValues(incomingData) {
-        return (!("amount" in incomingData) || incomingData.amount is number )
-        && (!("date" in incomingData) || incomingData.date is string )
-        && (!("type" in incomingData) || incomingData.type in ['credit', 'debit'] );
+      match /updateRequests/{updateRequestId} {
+        allow create: if isSignedIn()
+        && validCreateValues(incomingData())
+        && isOwner(incomingData().userId) && hasAtLeastOnePrivilegeOnCompany(companyId, ['company:write'])
 
+        allow read: if isSignedIn()
+        && isOwner(existingData().userId) && hasAtLeastOnePrivilegeOnCompany(companyId, ['company:write']);
+
+        function validCreateValues(incomingData) {
+          return (!("name" in incomingData) || incomingData.name is string );
+        }
       }
     }
     function existingData() {

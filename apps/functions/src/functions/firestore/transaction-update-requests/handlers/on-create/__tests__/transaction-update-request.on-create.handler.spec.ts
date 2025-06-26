@@ -7,20 +7,12 @@ import { TransactionUpdateRequestsRepository } from '../../../../../../repositor
 import { transactionUpdateRequestOnCreateHandler } from '../transaction-update-request.on-create.handler';
 import { ERRORS, STEPS } from '../transaction-update-request.on-create.constants';
 
-jest.mock('@repo/shared/services', () => ({
-  TransactionsService: {
-    getInstance: jest.fn(),
-  },
-}));
+jest.mock('@repo/shared/services');
 jest.mock('@repo/shared/utils', () => ({
   ...jest.requireActual('@repo/shared/utils'),
   printError: jest.fn(),
 }));
-jest.mock('../../../../../../repositories/transaction-update-requests', () => ({
-  TransactionUpdateRequestsRepository: {
-    getInstance: jest.fn(),
-  },
-}));
+jest.mock('../../../../../../repositories/transaction-update-requests');
 
 describe(transactionUpdateRequestOnCreateHandler.name, () => {
   const documentId = 'doc-id';
