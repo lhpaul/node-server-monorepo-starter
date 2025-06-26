@@ -174,6 +174,7 @@ describe(AuthService.name, () => {
         endsAt: [{ operator: '>=', value: now }],
       }, mockLogger);
       expect(mockFirebaseAuth.createCustomToken).toHaveBeenCalledWith(mockUserId, {
+        app_user_id: mockUserId,
         companies: {
           company1: PERMISSIONS_BY_ROLE.admin,
           company2: PERMISSIONS_BY_ROLE.admin.map((permission) => permission.replace(PERMISSIONS_SUFFIXES.WRITE, PERMISSIONS_SUFFIXES.READ)),
@@ -261,6 +262,7 @@ describe(AuthService.name, () => {
         endsAt: [{ operator: '>=', value: now }],
       }, mockLogger);
       expect(result).toEqual({
+        app_user_id: mockUserId,
         companies: {
           company1: PERMISSIONS_BY_ROLE.admin,
           company2: PERMISSIONS_BY_ROLE.admin.map((permission) => permission.replace(PERMISSIONS_SUFFIXES.WRITE, PERMISSIONS_SUFFIXES.READ)),
@@ -274,7 +276,7 @@ describe(AuthService.name, () => {
     it('should return empty companies object when user has no company relations', async () => {
       mockUserCompanyRelationsRepo.getDocumentsList.mockResolvedValue([]);
       const result = await authService.getUserPermissions(mockUserId, mockLogger);
-      expect(result).toEqual({ companies: {} });
+      expect(result).toEqual({ app_user_id: mockUserId, companies: {} });
     });
     
     it('should remove write permissions to companies without active subscriptions', async () => {
@@ -306,6 +308,7 @@ describe(AuthService.name, () => {
         endsAt: [{ operator: '>=', value: now }],
       }, mockLogger);
       expect(result).toEqual({
+        app_user_id: mockUserId,
         companies: {
           company1: PERMISSIONS_BY_ROLE.admin,
           company2: PERMISSIONS_BY_ROLE.admin.map((permission) => permission.replace(PERMISSIONS_SUFFIXES.WRITE, PERMISSIONS_SUFFIXES.READ)),

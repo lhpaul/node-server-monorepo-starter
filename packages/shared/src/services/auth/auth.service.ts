@@ -62,7 +62,7 @@ export class AuthService {
     const userCompanyRelations = await UserCompanyRelationsRepository.getInstance().getDocumentsList({
       userId: [{ operator: '==', value: userId }],
     }, logger).finally(() => logger.endStep(STEPS.GET_USER_COMPANY_RELATIONS.id));
-    const response: { companies: { [companyId: string]: string[] } } = { companies: {} };
+    const response: {app_user_id: string, companies: { [companyId: string]: string[] } } = { app_user_id: userId, companies: {} };
     // get subscriptions of this companies
     const now = new Date();
     logger.startStep(STEPS.GET_SUBSCRIPTIONS.id);
