@@ -18,6 +18,24 @@ service cloud.firestore {
         && hasAtLeastOnePrivilegeOnCompany(companyId, ['transactions:read', 'transactions:write']);
       }
 
+      match /transactionCreateRequests/{transactionCreateRequestId} {
+        allow create: if isSignedIn()
+        && validCreateValues(incomingData())
+        && isOwner(incomingData().userId) && hasAtLeastOnePrivilegeOnCompany(companyId, ['transactions:write'])
+
+        allow read: if isSignedIn()
+        && isOwner(existingData().userId) && hasAtLeastOnePrivilegeOnCompany(companyId, ['transactions:write']);
+
+        function validCreateValues(incomingData) {
+          return validDefaultCreationFields()
+          && validRequestsCreationFields(incomingData)
+          && incomingData.amount is number
+          && incomingData.date is string
+          && incomingData.type in ['credit', 'debit']
+          && transactionId == null;
+        }
+      }
+
       match /transactionUpdateRequests/{transactionUpdateRequestId} {
         allow create: if isSignedIn()
         && validCreateValues(incomingData())
@@ -27,9 +45,11 @@ service cloud.firestore {
         && isOwner(existingData().userId) && hasAtLeastOnePrivilegeOnCompany(companyId, ['transactions:write']);
 
         function validCreateValues(incomingData) {
-          return (!("amount" in incomingData) || incomingData.amount is number )
-          && (!("date" in incomingData) || incomingData.date is string )
-          && (!("type" in incomingData) || incomingData.type in ['credit', 'debit'] );
+          return validDefaultCreationFields(incomingData)
+          && validRequestsCreationFields(incomingData)
+          && (!('amount' in incomingData) || incomingData.amount is number )
+          && (!('date' in incomingData) || incomingData.date is string )
+          && (!('type' in incomingData) || incomingData.type in ['credit', 'debit'] );
         }
       }
 
@@ -42,7 +62,9 @@ service cloud.firestore {
         && isOwner(existingData().userId) && hasAtLeastOnePrivilegeOnCompany(companyId, ['company:write']);
 
         function validCreateValues(incomingData) {
-          return (!("name" in incomingData) || incomingData.name is string );
+          return validDefaultCreationFields(incomingData)
+          && validRequestsCreationFields(incomingData)
+          && (!('name' in incomingData) || incomingData.name is string );
         }
       }
     }
@@ -60,6 +82,17 @@ service cloud.firestore {
     }
     function isSignedIn() {
       return request.auth.uid != null;
+    }
+    function validDefaultCreationFields(incomingData) {
+      return incomingData.keys().hasAny(['_onCreateEventId', '_onCreateMaxRetries', '_onCreateMaxRetriesReached', '_onCreateEventRetries']) == false
+        && incomingData.createdAt == request.time && incomingData.updatedAt == request.time;
+    }
+    function validRequestsCreationFields(incomingData) {
+      return incomingData.status == 'pending'
+      && incomingData.error == null;
+    }
+    function validUpdateTimestamp(incomingData) {
+      return incomingData.updatedAt == request.time && incomingData.createdAt == existingData.createdAt;
     }
   }
 }
