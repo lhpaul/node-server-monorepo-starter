@@ -3,6 +3,7 @@ import { KnownError } from '../errors/errors.utils.classes';
 export enum DomainModelServiceErrorCode {
   RESOURCE_NOT_FOUND = 'resource-not-found',
   RELATED_RESOURCE_NOT_FOUND = 'related-resource-not-found',
+  INVALID_INPUT = 'invalid-input',
   UNKNOWN_ERROR = 'unknown-error',
 }
 

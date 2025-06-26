@@ -8,29 +8,7 @@ import { ERROR_RESPONSES } from '../../../transactions.endpoints.constants';
 import { STEPS } from '../transactions.update.handler.constants';
 import { updateTransactionHandler } from '../transactions.update.handler';
 
-
-jest.mock('@repo/fastify', () => ({
-  STATUS_CODES: {
-    NO_CONTENT: 204,
-    FORBIDDEN: 403,
-    NOT_FOUND: 404,
-  },
-  RESOURCE_NOT_FOUND_ERROR: {
-    responseCode: 'not-found',
-    responseMessage: 'The requested resource was not found',
-  },
-  FORBIDDEN_ERROR: {
-    responseCode: 403,
-    responseMessage: 'Forbidden'
-  }
-}));
-
 jest.mock('@repo/shared/services');
-
-jest.mock('@repo/shared/utils', () => ({
-  DomainModelServiceError: jest.fn(),
-  DomainModelServiceErrorCode: jest.fn(),
-}));
 
 jest.mock('../../../../../../../utils/auth/auth.utils', () => ({
   hasCompanyTransactionsUpdatePermission: jest.fn(),
@@ -128,6 +106,42 @@ describe(updateTransactionHandler.name, () => {
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION.id);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.NOT_FOUND);
     expect(mockReply.send).toHaveBeenCalledWith(ERROR_RESPONSES.TRANSACTION_NOT_FOUND);
+  });
+
+  it('should handle invalid input error', async () => {
+    const errorMessage = 'Invalid input';
+    const errorData = {
+      date: {
+        code: 'INVALID_DATE_FORMAT',
+        message: 'Invalid date format',
+      },
+    };
+    jest.spyOn(mockService, 'updateResource').mockRejectedValue(
+      new DomainModelServiceError({
+        code: DomainModelServiceErrorCode.INVALID_INPUT,
+        message: errorMessage,
+        data: errorData,
+      }),
+    );
+
+    await updateTransactionHandler(
+      mockRequest as FastifyRequest,
+      mockReply as FastifyReply,
+    );
+
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION.id);
+    expect(mockService.updateResource).toHaveBeenCalledWith(
+      mockParams.id,
+      mockBody,
+      mockLogger,
+    );
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION.id);
+    expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.BAD_REQUEST);
+    expect(mockReply.send).toHaveBeenCalledWith({
+      code: DomainModelServiceErrorCode.INVALID_INPUT,
+      message: errorMessage,
+      data: errorData,
+    });
   });
 
   it('should handle service errors', async () => {

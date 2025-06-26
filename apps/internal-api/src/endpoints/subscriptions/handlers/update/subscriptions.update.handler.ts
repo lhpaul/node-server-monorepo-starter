@@ -17,13 +17,21 @@ export const updateSubscriptionHandler = async (
   const body = request.body as UpdateSubscriptionBody;
   try {
     logger.startStep(STEPS.UPDATE_SUBSCRIPTION.id);
-    await service.updateResource(id, mapDateQueryParams(body as Record<string, string>, ['startsAt', 'endsAt']), logger);
-    logger.endStep(STEPS.UPDATE_SUBSCRIPTION.id);
+    await service.updateResource(id, mapDateQueryParams(body as Record<string, string>, ['startsAt', 'endsAt']), logger)
+    .finally(() => logger.endStep(STEPS.UPDATE_SUBSCRIPTION.id));
     return reply.code(STATUS_CODES.NO_CONTENT).send();
   } catch (error) {
-    logger.endStep(STEPS.UPDATE_SUBSCRIPTION.id);
-    if (error instanceof DomainModelServiceError && error.code === DomainModelServiceErrorCode.RESOURCE_NOT_FOUND) {
-      return reply.code(STATUS_CODES.NOT_FOUND).send(ERROR_RESPONSES.SUBSCRIPTION_NOT_FOUND);
+    if (error instanceof DomainModelServiceError) {
+      if (error.code === DomainModelServiceErrorCode.RESOURCE_NOT_FOUND) {
+        return reply.code(STATUS_CODES.NOT_FOUND).send(ERROR_RESPONSES.SUBSCRIPTION_NOT_FOUND);
+      }
+      if (error.code === DomainModelServiceErrorCode.INVALID_INPUT) {
+        return reply.code(STATUS_CODES.BAD_REQUEST).send({
+          code: error.code,
+          message: error.message,
+          data: error.data,
+        });
+      }
     }
     throw error;
   }

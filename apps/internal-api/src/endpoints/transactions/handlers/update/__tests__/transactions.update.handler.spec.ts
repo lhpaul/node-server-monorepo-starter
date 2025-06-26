@@ -8,19 +8,16 @@ import { STEPS } from '../transactions.update.handler.constants';
 import { updateTransactionHandler } from '../transactions.update.handler';
 
 jest.mock('@repo/shared/services');
-jest.mock('@repo/shared/utils', () => ({
-  ...jest.requireActual('@repo/shared/utils'),
-  DomainModelServiceError: jest.fn(),
-  DomainModelServiceErrorCode: jest.fn(),
-}));
 
 describe(updateTransactionHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;
   let mockReply: Partial<FastifyReply>;
   let mockService: Partial<TransactionsService>;
   let mockLogger: Partial<FastifyBaseLogger>;
+  let id = '123';
 
   beforeEach(() => {
+    jest.clearAllMocks();
     mockLogger = {
       child: jest.fn().mockReturnThis(),
       startStep: jest.fn(),
@@ -29,7 +26,7 @@ describe(updateTransactionHandler.name, () => {
 
     mockRequest = {
       log: mockLogger as FastifyBaseLogger,
-      params: { id: '123' },
+      params: { id },
       body: {
         amount: 100,
         date: '2024-03-20',
@@ -51,11 +48,8 @@ describe(updateTransactionHandler.name, () => {
     );
   });
 
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
   it('should successfully update a transaction', async () => {
+    jest.spyOn(mockService, 'updateResource').mockResolvedValueOnce(undefined);
     await updateTransactionHandler(
       mockRequest as FastifyRequest,
       mockReply as FastifyReply,
@@ -63,7 +57,7 @@ describe(updateTransactionHandler.name, () => {
 
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION.id);
     expect(mockService.updateResource).toHaveBeenCalledWith(
-      '123',
+      id,
       mockRequest.body,
       mockLogger,
     );
@@ -89,7 +83,7 @@ describe(updateTransactionHandler.name, () => {
 
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION.id);
     expect(mockService.updateResource).toHaveBeenCalledWith(
-      '123',
+      id,
       mockRequest.body,
       mockLogger,
     );
@@ -100,6 +94,44 @@ describe(updateTransactionHandler.name, () => {
     expect(mockReply.send).toHaveBeenCalledWith(
       ERROR_RESPONSES.TRANSACTION_NOT_FOUND,
     );
+  });
+
+  it('should handle invalid input error', async () => {
+    const errorMessage = 'Invalid input';
+    const errorData = {
+      date: {
+        code: 'INVALID_DATE_FORMAT',
+        message: 'Invalid date format',
+      },
+    };
+    jest.spyOn(mockService, 'updateResource').mockRejectedValueOnce(
+      new DomainModelServiceError({
+        code: DomainModelServiceErrorCode.INVALID_INPUT,
+        message: errorMessage,
+        data: errorData,
+      }),
+    );
+
+    await updateTransactionHandler(
+      mockRequest as FastifyRequest,
+      mockReply as FastifyReply,
+    );
+
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION.id);
+    expect(mockService.updateResource).toHaveBeenCalledWith(
+      id,
+      mockRequest.body,
+      mockLogger,
+    );
+    expect(mockLogger.endStep).toHaveBeenCalledWith(
+      STEPS.UPDATE_TRANSACTION.id,
+    );
+    expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.BAD_REQUEST);
+    expect(mockReply.send).toHaveBeenCalledWith({
+      code: DomainModelServiceErrorCode.INVALID_INPUT,
+      message: errorMessage,
+      data: errorData,
+    });
   });
 
   it('should throw unexpected errors', async () => {
@@ -115,7 +147,7 @@ describe(updateTransactionHandler.name, () => {
 
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION.id);
     expect(mockService.updateResource).toHaveBeenCalledWith(
-      '123',
+      id,
       mockRequest.body,
       mockLogger,
     );
