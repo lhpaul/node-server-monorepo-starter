@@ -8,11 +8,6 @@ import { STEPS } from '../subscriptions.create.handler.constants';
 import { createSubscriptionHandler } from '../subscriptions.create.handler';
 
 jest.mock('@repo/shared/services');
-jest.mock('@repo/shared/utils', () => ({
-  ...jest.requireActual('@repo/shared/utils'),
-  DomainModelServiceError: jest.fn(),
-  DomainModelServiceErrorCode: jest.fn(),
-}));
 
 describe(createSubscriptionHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;
@@ -107,6 +102,40 @@ describe(createSubscriptionHandler.name, () => {
     expect(mockReply.send).toHaveBeenCalledWith({
       code: ERROR_RESPONSES.COMPANY_NOT_FOUND.code,
       message: ERROR_RESPONSES.COMPANY_NOT_FOUND.message(mockBody.companyId),
+    });
+  });
+
+  it('should handle invalid input error', async () => {
+    const errorMessage = 'Invalid input';
+    const errorData = {
+      startsAt: {
+        code: 'INVALID_DATE_FORMAT',
+        message: 'Invalid date format',
+      },
+    };
+    const error = new DomainModelServiceError({ code: DomainModelServiceErrorCode.INVALID_INPUT, message: errorMessage, data: errorData });
+    jest.spyOn(mockService, 'createResource').mockRejectedValue(error);
+
+    await createSubscriptionHandler(
+      mockRequest as FastifyRequest,
+      mockReply as FastifyReply,
+    );
+
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_SUBSCRIPTION.id);
+    expect(mockService.createResource).toHaveBeenCalledWith(
+      {
+        ...mockBody,
+        startsAt: new Date(mockBody.startsAt),
+        endsAt: new Date(mockBody.endsAt),
+      },
+      mockLogger,
+    );
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.CREATE_SUBSCRIPTION.id);
+    expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.BAD_REQUEST);
+    expect(mockReply.send).toHaveBeenCalledWith({
+      code: DomainModelServiceErrorCode.INVALID_INPUT,
+      message: errorMessage,
+      data: errorData,
     });
   });
 

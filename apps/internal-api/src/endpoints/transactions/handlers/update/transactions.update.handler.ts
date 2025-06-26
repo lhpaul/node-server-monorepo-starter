@@ -20,13 +20,21 @@ export const updateTransactionHandler = async (
   const body = request.body as UpdateTransactionBody;
   try {
     logger.startStep(STEPS.UPDATE_TRANSACTION.id);
-    await service.updateResource(id, body, logger);
-    logger.endStep(STEPS.UPDATE_TRANSACTION.id);
+    await service.updateResource(id, body, logger)
+    .finally(() => logger.endStep(STEPS.UPDATE_TRANSACTION.id));
     return reply.code(STATUS_CODES.NO_CONTENT).send();
   } catch (error) {
-    logger.endStep(STEPS.UPDATE_TRANSACTION.id);
-    if (error instanceof DomainModelServiceError && error.code === DomainModelServiceErrorCode.RESOURCE_NOT_FOUND) {
-      return reply.code(STATUS_CODES.NOT_FOUND).send(ERROR_RESPONSES.TRANSACTION_NOT_FOUND);
+    if (error instanceof DomainModelServiceError) {
+      if (error.code === DomainModelServiceErrorCode.RESOURCE_NOT_FOUND) {
+        return reply.code(STATUS_CODES.NOT_FOUND).send(ERROR_RESPONSES.TRANSACTION_NOT_FOUND);
+      }
+      if (error.code === DomainModelServiceErrorCode.INVALID_INPUT) {
+        return reply.code(STATUS_CODES.BAD_REQUEST).send({
+          code: error.code,
+          message: error.message,
+          data: error.data,
+        });
+      }
     }
     throw error;
   }

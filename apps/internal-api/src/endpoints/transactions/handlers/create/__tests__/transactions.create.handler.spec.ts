@@ -9,11 +9,6 @@ import { createTransactionHandler } from '../transactions.create.handler';
 import { STEPS } from '../transactions.create.handler.constants';
 
 jest.mock('@repo/shared/services');
-jest.mock('@repo/shared/utils', () => ({
-  ...jest.requireActual('@repo/shared/utils'),
-  DomainModelServiceError: jest.fn(),
-  DomainModelServiceErrorCode: jest.fn(),
-}));
 
 describe(createTransactionHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;
@@ -95,6 +90,42 @@ describe(createTransactionHandler.name, () => {
     expect(mockReply.send).toHaveBeenCalledWith({
       code: ERROR_RESPONSES.COMPANY_NOT_FOUND.code,
       message: ERROR_RESPONSES.COMPANY_NOT_FOUND.message((mockRequest.body as any).companyId as string),
+    });
+  });
+
+  it('should handle invalid input error', async () => {
+    const errorMessage = 'Invalid input';
+    const errorData = {
+      date: {
+        code: 'INVALID_DATE_FORMAT',
+        message: 'Invalid date format',
+      },
+    };
+    const mockError = new DomainModelServiceError({
+      code: DomainModelServiceErrorCode.INVALID_INPUT,
+      message: errorMessage,
+      data: errorData,
+    });
+    jest.spyOn(mockService, 'createResource').mockRejectedValue(mockError);
+
+    await createTransactionHandler(
+      mockRequest as FastifyRequest,
+      mockReply as FastifyReply,
+    );
+
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_TRANSACTION.id);
+    expect(mockService.createResource).toHaveBeenCalledWith(
+      mockRequest.body,
+      mockLogger,
+    );
+    expect(mockLogger.endStep).toHaveBeenCalledWith(
+      STEPS.CREATE_TRANSACTION.id,
+    );
+    expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.BAD_REQUEST);
+    expect(mockReply.send).toHaveBeenCalledWith({
+      code: DomainModelServiceErrorCode.INVALID_INPUT,
+      message: errorMessage,
+      data: errorData,
     });
   });
 

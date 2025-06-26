@@ -14,8 +14,8 @@ export const createSubscriptionHandler = async (
   const logger = request.log.child({ handler: createSubscriptionHandler.name });
   const service = SubscriptionsService.getInstance();
   const body = request.body as CreateSubscriptionBody;
-  logger.startStep(STEPS.CREATE_SUBSCRIPTION.id);
   try {
+    logger.startStep(STEPS.CREATE_SUBSCRIPTION.id);
     const id = await service
       .createResource({
         ...body,
@@ -25,11 +25,20 @@ export const createSubscriptionHandler = async (
       .finally(() => logger.endStep(STEPS.CREATE_SUBSCRIPTION.id));
     return reply.code(STATUS_CODES.CREATED).send({ id });
   } catch (error) {
-    if (error instanceof DomainModelServiceError && error.code === DomainModelServiceErrorCode.RELATED_RESOURCE_NOT_FOUND) {
+    if (error instanceof DomainModelServiceError) {
+      if (error.code === DomainModelServiceErrorCode.RELATED_RESOURCE_NOT_FOUND) {
       return reply.code(STATUS_CODES.BAD_REQUEST).send({
         code: ERROR_RESPONSES.COMPANY_NOT_FOUND.code,
         message: ERROR_RESPONSES.COMPANY_NOT_FOUND.message(body.companyId),
       });
+      }
+      if (error.code === DomainModelServiceErrorCode.INVALID_INPUT) {
+        return reply.code(STATUS_CODES.BAD_REQUEST).send({
+          code: error.code,
+          message: error.message,
+          data: error.data,
+        });
+      }
     }
     throw error;
   }

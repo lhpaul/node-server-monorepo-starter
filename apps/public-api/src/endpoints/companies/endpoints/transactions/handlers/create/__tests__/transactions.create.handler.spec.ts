@@ -1,6 +1,7 @@
 import { FORBIDDEN_ERROR, STATUS_CODES } from '@repo/fastify';
 import { TransactionType } from '@repo/shared/domain';
 import { TransactionsService } from '@repo/shared/services';
+import { DomainModelServiceError, DomainModelServiceErrorCode } from '@repo/shared/utils';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../../../definitions/auth.interfaces';
@@ -9,17 +10,6 @@ import { STEPS } from '../transactions.create.handler.constants';
 import { createTransactionHandler } from '../transactions.create.handler';
 import { CreateCompanyTransactionBody } from '../transactions.create.handler.interfaces';
 
-// Mock dependencies
-jest.mock('@repo/fastify', () => ({
-  STATUS_CODES: {
-    CREATED: 201,
-    FORBIDDEN: 403
-  },
-  FORBIDDEN_ERROR: {
-    responseCode: 'forbidden',
-    responseMessage: 'Forbidden request'
-  }
-}));
 
 jest.mock('@repo/shared/services');
 jest.mock('../../../../../../../utils/auth/auth.utils', () => ({
@@ -138,6 +128,44 @@ describe(createTransactionHandler.name, () => {
   describe('error handling', () => {
     beforeEach(() => {
       (hasCompanyTransactionsCreatePermission as jest.Mock).mockReturnValue(true);
+    });
+
+    it('should handle invalid input error', async () => {
+      const errorMessage = 'Invalid input';
+      const errorData = {
+        date: {
+          code: 'INVALID_DATE_FORMAT',
+          message: 'Invalid date format',
+        },
+      };
+      jest.spyOn(mockService, 'createResource').mockRejectedValue(
+        new DomainModelServiceError({
+          code: DomainModelServiceErrorCode.INVALID_INPUT,
+          message: errorMessage,
+          data: errorData,
+        }),
+      );
+
+      await createTransactionHandler(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+      );
+
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_TRANSACTION.id);
+      expect(mockService.createResource).toHaveBeenCalledWith(
+        {
+          ...mockBody,
+          companyId: mockParams.companyId,
+        } as CreateCompanyTransactionBody,
+        mockLogger,
+      );
+      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.CREATE_TRANSACTION.id);
+      expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.BAD_REQUEST);
+      expect(mockReply.send).toHaveBeenCalledWith({
+        code: DomainModelServiceErrorCode.INVALID_INPUT,
+        message: errorMessage,
+        data: errorData,
+      });
     });
 
     it('should handle service errors gracefully', async () => {

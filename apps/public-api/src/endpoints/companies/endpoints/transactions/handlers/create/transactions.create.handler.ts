@@ -1,5 +1,6 @@
 import { FORBIDDEN_ERROR, STATUS_CODES } from '@repo/fastify';
 import { TransactionsService } from '@repo/shared/services';
+import { DomainModelServiceError, DomainModelServiceErrorCode } from '@repo/shared/utils';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../../definitions/auth.interfaces';
@@ -22,12 +23,25 @@ export const createTransactionHandler = async (
   }
   const service = TransactionsService.getInstance();
   const body = request.body as CreateCompanyTransactionBody;
-  logger.startStep(STEPS.CREATE_TRANSACTION.id);
-  const id = await service
-    .createResource({
-      ...body,
-      companyId,
-    }, logger)
-    .finally(() => logger.endStep(STEPS.CREATE_TRANSACTION.id));
-  return reply.code(STATUS_CODES.CREATED).send({ id });
+  try {
+    logger.startStep(STEPS.CREATE_TRANSACTION.id);
+    const id = await service
+      .createResource({
+        ...body,
+        companyId,
+      }, logger)
+      .finally(() => logger.endStep(STEPS.CREATE_TRANSACTION.id));
+    return reply.code(STATUS_CODES.CREATED).send({ id });
+  } catch (error) {
+    if (error instanceof DomainModelServiceError) {
+      if (error.code === DomainModelServiceErrorCode.INVALID_INPUT) {
+        return reply.code(STATUS_CODES.BAD_REQUEST).send({
+          code: error.code,
+          message: error.message,
+          data: error.data,
+        });
+      }
+    }
+    throw error;
+  }
 };
