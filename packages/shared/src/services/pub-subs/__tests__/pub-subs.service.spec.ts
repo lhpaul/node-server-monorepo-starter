@@ -22,19 +22,10 @@ jest.mock('../../../utils', () => ({
 }));
 
 const mockLogger: jest.Mocked<ExecutionLogger> = {
-  lastStep: { id: '' },
-  stepsCounter: 0,
-  initTime: 0,
-  startStep: jest.fn(),
-  endStep: jest.fn(),
-  getStepElapsedTime: jest.fn(),
-  getTotalElapsedTime: jest.fn(),
   info: jest.fn(),
   error: jest.fn(),
   warn: jest.fn(),
-  debug: jest.fn(),
-  trace: jest.fn(),
-};
+} as unknown as jest.Mocked<ExecutionLogger>;
 
 describe(PubSubsService.name, () => {
   beforeEach(() => {

@@ -3,7 +3,7 @@ import { Timestamp } from 'firebase-admin/firestore';
 import { ExecutionLogger } from '../../../definitions';
 import { wait } from '../../time/time.utils';
 import { FIRESTORE_ERROR_CODE } from '../firestore.constants';
-import { DEFAULT_MAX_RETRIES, LOGS, STEPS } from '../firestore.utils.constants';
+import { DEFAULT_MAX_RETRIES, LOG_GROUP, LOGS, STEPS } from '../firestore.utils.constants';
 import { CheckIfEventHasBeenProcessedError, CheckIfEventHasBeenProcessedErrorCode, RunRetriableActionError, RunRetriableActionErrorCode } from '../firestore.utils.errors';
 import {
   runRetriableAction,
@@ -21,6 +21,7 @@ jest.mock('../../time/time.utils', () => ({
 describe(runRetriableAction.name, () => {
   let mockLogger: ExecutionLogger;
   let mockActionFn: jest.Mock;
+  const logGroup = `${LOG_GROUP}.${runRetriableAction.name}`;
 
   beforeEach(() => {
     mockLogger = {
@@ -39,7 +40,7 @@ describe(runRetriableAction.name, () => {
     const result = await runRetriableAction(mockActionFn, mockLogger);
 
     expect(result).toEqual(expectedResult);
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.RETRIABLE_ACTION.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.RETRIABLE_ACTION.id, logGroup);
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.RETRIABLE_ACTION.id);
     expect(mockActionFn).toHaveBeenCalledTimes(1);
   });
@@ -87,6 +88,7 @@ describe(runRetriableTransaction.name, () => {
   let mockLogger: ExecutionLogger;
   let mockDb: any;
   let mockTransactionFn: jest.Mock;
+  const logGroup = `${LOG_GROUP}.${runRetriableTransaction.name}`;
 
   beforeEach(() => {
     mockLogger = {
@@ -108,7 +110,7 @@ describe(runRetriableTransaction.name, () => {
     const result = await runRetriableTransaction(mockDb, mockTransactionFn, mockLogger);
 
     expect(result).toEqual(expectedResult);
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.RETRIABLE_TRANSACTION.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.RETRIABLE_TRANSACTION.id, logGroup);
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.RETRIABLE_TRANSACTION.id);
     expect(mockDb.runTransaction).toHaveBeenCalledTimes(1);
   });

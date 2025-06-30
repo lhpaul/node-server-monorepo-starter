@@ -18,8 +18,9 @@ export async function companyUpdateRequestOnCreateHandler<DocumentModel extends 
   logger: FunctionLogger;
 }): Promise<void> {
   const companyUpdateRequestsRepo = CompanyUpdateRequestsRepository.getInstance();
+  const logGroup = companyUpdateRequestOnCreateHandler.name;
   try {
-    logger.startStep(STEPS.UPDATE_COMPANY.id);
+    logger.startStep(STEPS.UPDATE_COMPANY.id, logGroup);
     const updateData: Partial<Company> = {
       ...(companyUpdateRequest.name && { name: companyUpdateRequest.name }),
     };
@@ -27,7 +28,7 @@ export async function companyUpdateRequestOnCreateHandler<DocumentModel extends 
     const companyId = context.params.companyId;
     await CompaniesService.getInstance().updateResource(companyId, updateData, logger)
     .finally(() => logger.endStep(STEPS.UPDATE_COMPANY.id));
-    logger.startStep(STEPS.UPDATE_DONE_STATUS.id);
+    logger.startStep(STEPS.UPDATE_DONE_STATUS.id, logGroup);
     await companyUpdateRequestsRepo.updateDocument(companyUpdateRequest.id, {
       status: ProcessStatus.DONE,
     }, logger)
@@ -45,7 +46,7 @@ export async function companyUpdateRequestOnCreateHandler<DocumentModel extends 
         errorData = ERRORS.COMPANY_NOT_FOUND;
       }
       if (errorData) {
-        logger.startStep(STEPS.UPDATE_INVALID_UPDATE_FAILED_STATUS.id);
+        logger.startStep(STEPS.UPDATE_INVALID_UPDATE_FAILED_STATUS.id, logGroup);
         await companyUpdateRequestsRepo.updateDocument(companyUpdateRequest.id, {
           status: ProcessStatus.FAILED,
           error: errorData,
@@ -54,7 +55,7 @@ export async function companyUpdateRequestOnCreateHandler<DocumentModel extends 
         return;
       }
     }
-    logger.startStep(STEPS.UPDATE_UNKNOWN_ERROR_FAILED_STATUS.id);
+    logger.startStep(STEPS.UPDATE_UNKNOWN_ERROR_FAILED_STATUS.id, logGroup);
     await companyUpdateRequestsRepo.updateDocument(companyUpdateRequest.id, {
       status: ProcessStatus.FAILED,
       error: printError(error),

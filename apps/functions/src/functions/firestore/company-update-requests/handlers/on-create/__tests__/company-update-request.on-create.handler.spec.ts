@@ -21,6 +21,7 @@ describe(companyUpdateRequestOnCreateHandler.name, () => {
   let mockCompanyUpdateRequestsRepo: jest.Mocked<CompanyUpdateRequestsRepository>;
   let mockContext: CollectionEventContext;
   let mockDocumentData: CompanyUpdateRequestDocument;
+  const logGroup = companyUpdateRequestOnCreateHandler.name;
 
   beforeEach(() => {
     mockLogger = {
@@ -67,14 +68,14 @@ describe(companyUpdateRequestOnCreateHandler.name, () => {
       logger: mockLogger,
     });
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_COMPANY.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_COMPANY.id, logGroup);
     expect(mockCompaniesService.updateResource).toHaveBeenCalledWith(
       mockContext.params.companyId,
       { name: mockDocumentData.name },
       mockLogger,
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_COMPANY.id);
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_DONE_STATUS.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_DONE_STATUS.id, logGroup);
     expect(mockCompanyUpdateRequestsRepo.updateDocument).toHaveBeenCalledWith(
       mockDocumentData.id,
       { status: ProcessStatus.DONE },
@@ -97,7 +98,7 @@ describe(companyUpdateRequestOnCreateHandler.name, () => {
       logger: mockLogger,
     });
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_INVALID_UPDATE_FAILED_STATUS.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_INVALID_UPDATE_FAILED_STATUS.id, logGroup);
     expect(mockCompanyUpdateRequestsRepo.updateDocument).toHaveBeenCalledWith(
       mockDocumentData.id,
       {
@@ -123,7 +124,7 @@ describe(companyUpdateRequestOnCreateHandler.name, () => {
       logger: mockLogger,
     });
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_INVALID_UPDATE_FAILED_STATUS.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_INVALID_UPDATE_FAILED_STATUS.id, logGroup);
     expect(mockCompanyUpdateRequestsRepo.updateDocument).toHaveBeenCalledWith(
       mockDocumentData.id,
       {
@@ -153,7 +154,7 @@ describe(companyUpdateRequestOnCreateHandler.name, () => {
       }),
     ).rejects.toThrow(error);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_UNKNOWN_ERROR_FAILED_STATUS.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_UNKNOWN_ERROR_FAILED_STATUS.id, logGroup);
     expect(printError).toHaveBeenCalledWith(error);
     expect(mockCompanyUpdateRequestsRepo.updateDocument).toHaveBeenCalledWith(
       mockDocumentData.id,

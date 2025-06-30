@@ -5,7 +5,7 @@ import { MessagePublishedData } from 'firebase-functions/v2/pubsub';
 
 import { FunctionLogger } from '../../logging/function-logger.class';
 import { onMessagePublishedWrapper } from '../pub-subs.utils';
-import { LOGS, STEPS } from '../pub-subs.utils.constants';
+import { LOG_GROUP, LOGS, STEPS } from '../pub-subs.utils.constants';
 
 jest.mock('@repo/shared/utils');
 jest.mock('class-validator');
@@ -39,6 +39,7 @@ describe(onMessagePublishedWrapper.name, () => {
   } as unknown as FunctionLogger;
 
   const printedErrorMock = 'printed error';
+  const logGroup = `${LOG_GROUP}.${onMessagePublishedWrapper.name}`;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -60,7 +61,7 @@ describe(onMessagePublishedWrapper.name, () => {
       },
       LOGS.MESSAGE_RECEIVED.logMessage
     );
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.VALIDATE_MESSAGE.label);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.VALIDATE_MESSAGE.label, logGroup);
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.VALIDATE_MESSAGE.label);
     expect(mockHandler).toHaveBeenCalledWith(expect.any(Object), mockLogger, mockEvent);
   });

@@ -1,6 +1,6 @@
 import { TransactionType } from '@repo/shared/domain';
 
-import { RequestModel } from '../utils/models/request-model.classes';
+import { RequestModel } from '../utils/models/request-model.class';
 
 export class TransactionCreateRequest extends RequestModel {
   public readonly amount: number;

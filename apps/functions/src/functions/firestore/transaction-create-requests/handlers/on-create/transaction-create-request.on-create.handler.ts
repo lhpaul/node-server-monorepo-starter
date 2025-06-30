@@ -17,8 +17,9 @@ export async function transactionCreateRequestOnCreateHandler<DocumentModel exte
   logger: FunctionLogger;
 }): Promise<void> {
   const transactionCreateRequestsRepo = TransactionCreateRequestsRepository.getInstance();
+  const logGroup = transactionCreateRequestOnCreateHandler.name;
   try {
-    logger.startStep(STEPS.CREATE_TRANSACTION.id);
+    logger.startStep(STEPS.CREATE_TRANSACTION.id, logGroup);
     const createData = {
       amount: transactionCreateRequest.amount,
       companyId: context.params.companyId,
@@ -27,7 +28,7 @@ export async function transactionCreateRequestOnCreateHandler<DocumentModel exte
     };
     const transactionId = await TransactionsService.getInstance().createResource(createData, logger)
     .finally(() => logger.endStep(STEPS.CREATE_TRANSACTION.id));
-    logger.startStep(STEPS.UPDATE_DONE_STATUS.id);
+    logger.startStep(STEPS.UPDATE_DONE_STATUS.id, logGroup);
     await transactionCreateRequestsRepo.updateDocument(transactionCreateRequest.id, {
       status: ProcessStatus.DONE,
       transactionId,
@@ -35,7 +36,7 @@ export async function transactionCreateRequestOnCreateHandler<DocumentModel exte
     .finally(() => logger.endStep(STEPS.UPDATE_DONE_STATUS.id));
   } catch (error) {
     if (error instanceof DomainModelServiceError && error.code === DomainModelServiceErrorCode.INVALID_INPUT) {
-      logger.startStep(STEPS.UPDATE_INVALID_CREATE_FAILED_STATUS.id);
+      logger.startStep(STEPS.UPDATE_INVALID_CREATE_FAILED_STATUS.id, logGroup);
       await transactionCreateRequestsRepo.updateDocument(transactionCreateRequest.id, {
         status: ProcessStatus.FAILED,
         error: {
@@ -46,7 +47,7 @@ export async function transactionCreateRequestOnCreateHandler<DocumentModel exte
       .finally(() => logger.endStep(STEPS.UPDATE_INVALID_CREATE_FAILED_STATUS.id));
       return;
     }
-    logger.startStep(STEPS.UPDATE_UNKNOWN_ERROR_FAILED_STATUS.id);
+    logger.startStep(STEPS.UPDATE_UNKNOWN_ERROR_FAILED_STATUS.id, logGroup);
     await transactionCreateRequestsRepo.updateDocument(transactionCreateRequest.id, {
       status: ProcessStatus.FAILED,
       error: printError(error),

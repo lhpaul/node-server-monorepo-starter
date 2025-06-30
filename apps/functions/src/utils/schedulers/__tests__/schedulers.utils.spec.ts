@@ -1,7 +1,7 @@
 import { onSchedule } from 'firebase-functions/v2/scheduler';
 import { FunctionLogger } from '../../logging/function-logger.class';
 import { onScheduleWrapper } from '../schedulers.utils';
-import { LOGS, SCHEDULE_DEFAULT_OPTIONS, STEPS } from '../schedulers.utils.constants';
+import { LOG_GROUP, LOGS, SCHEDULE_DEFAULT_OPTIONS, STEPS } from '../schedulers.utils.constants';
 
 jest.mock('firebase-functions/v2/scheduler', () => ({
   onSchedule: jest.fn(),
@@ -13,6 +13,8 @@ describe(onScheduleWrapper.name, () => {
   let mockLogger: jest.Mocked<FunctionLogger>;
   let mockHandler: jest.Mock;
   let mockEvent: any;
+
+  const logGroup = `${LOG_GROUP}.${onScheduleWrapper.name}`;
 
   beforeEach(() => {
     mockLogger = {
@@ -83,7 +85,7 @@ describe(onScheduleWrapper.name, () => {
   it('should start and end steps correctly', async () => {
     const schedule = 'every 1 hours';
     const handlerName = 'testHandler';
-
+    
     onScheduleWrapper(handlerName, schedule, mockHandler);
 
     // Get the handler function passed to onSchedule
@@ -92,7 +94,7 @@ describe(onScheduleWrapper.name, () => {
     // Execute the handler
     await scheduleHandler(mockEvent);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.SCHEDULER_STARTED.label);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.SCHEDULER_STARTED.label, logGroup);
     expect(mockHandler).toHaveBeenCalledWith(mockLogger, mockEvent);
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.SCHEDULER_STARTED.label);
   });

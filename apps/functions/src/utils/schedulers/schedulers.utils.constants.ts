@@ -1,3 +1,4 @@
+export const LOG_GROUP = 'SchedulersUtils';
 export const SCHEDULE_DEFAULT_OPTIONS = {
   timeZone: 'America/Santiago',
 };

@@ -1,3 +1,4 @@
+export const LOG_GROUP = 'PubSubsUtils';
 export const STEPS = {
   VALIDATE_MESSAGE: { label: 'validate-message' },
 };

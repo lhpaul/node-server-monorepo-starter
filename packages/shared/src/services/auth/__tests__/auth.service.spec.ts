@@ -137,6 +137,8 @@ describe(AuthService.name, () => {
   });
 
   describe(AuthService.prototype.generateUserToken.name, () => {
+    const logGroup = `${AuthService.name}.${AuthService.prototype.generateUserToken.name}`;
+    const logGroup2 = `${AuthService.name}.${AuthService.prototype.getUserPermissions.name}`;
     it('should generate token with user permissions', async () => {
       const mockToken = 'custom-token'; 
 
@@ -149,11 +151,11 @@ describe(AuthService.name, () => {
       const result = await authService.generateUserToken(mockUserId, mockLogger);
 
       expect(result).toBe(mockToken);
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_USER_COMPANY_RELATIONS.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_USER_COMPANY_RELATIONS.id, logGroup);
       expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_USER_COMPANY_RELATIONS.id);
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTIONS.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTIONS.id, logGroup2);
       expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTIONS.id);
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GENERATE_USER_TOKEN.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GENERATE_USER_TOKEN.id, logGroup);
       expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GENERATE_USER_TOKEN.id);
       expect(mockUserCompanyRelationsRepo.getDocumentsList).toHaveBeenCalledWith({
         userId: [{ operator: '==', value: mockUserId }],
@@ -186,6 +188,8 @@ describe(AuthService.name, () => {
 
   describe(AuthService.prototype.updatePermissionsToUser.name, () => {
     const mockUid = 'uid123';
+    const logGroup = `${AuthService.name}.${AuthService.prototype.updatePermissionsToUser.name}`;
+    const logGroup2 = `${AuthService.name}.${AuthService.prototype.getUserPermissions.name}`;
     it('should update the permissions of a user correctly', async () => {
       mockUserCompanyRelationsRepo.getDocumentsList.mockResolvedValue(mockUserCompanyRelations);
       mockSubscriptionsRepo.getDocumentsList.mockResolvedValueOnce([mockSubscriptions[0]]);
@@ -198,11 +202,11 @@ describe(AuthService.name, () => {
         uid: mockUid,
       }, mockLogger);
 
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_USER_COMPANY_RELATIONS.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_USER_COMPANY_RELATIONS.id, logGroup);
       expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_USER_COMPANY_RELATIONS.id);
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTIONS.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTIONS.id, logGroup2);
       expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTIONS.id);
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_USER_PERMISSIONS.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_USER_PERMISSIONS.id, logGroup);
       expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_USER_PERMISSIONS.id);
       expect(mockUserCompanyRelationsRepo.getDocumentsList).toHaveBeenCalledWith({
         userId: [{ operator: '==', value: mockUserId }],
@@ -233,15 +237,16 @@ describe(AuthService.name, () => {
     });
   });
   describe(AuthService.prototype.getUserPermissions.name, () => {
+    const logGroup = `${AuthService.name}.${AuthService.prototype.getUserPermissions.name}`;
     it('should return user permissions for all companies', async () => {
       mockUserCompanyRelationsRepo.getDocumentsList.mockResolvedValue(mockUserCompanyRelations);
       mockSubscriptionsRepo.getDocumentsList.mockResolvedValueOnce([mockSubscriptions[0]]);
       mockSubscriptionsRepo.getDocumentsList.mockResolvedValueOnce([]);
       mockSubscriptionsRepo.getDocumentsList.mockResolvedValueOnce([]);
       const result = await authService.getUserPermissions(mockUserId, mockLogger);
-      expect(mockLogger.startStep).toHaveBeenNthCalledWith(1, STEPS.GET_USER_COMPANY_RELATIONS.id);
+      expect(mockLogger.startStep).toHaveBeenNthCalledWith(1, STEPS.GET_USER_COMPANY_RELATIONS.id, logGroup);
       expect(mockLogger.endStep).toHaveBeenNthCalledWith(1, STEPS.GET_USER_COMPANY_RELATIONS.id);
-      expect(mockLogger.startStep).toHaveBeenNthCalledWith(2, STEPS.GET_SUBSCRIPTIONS.id);
+      expect(mockLogger.startStep).toHaveBeenNthCalledWith(2, STEPS.GET_SUBSCRIPTIONS.id, logGroup);
       expect(mockLogger.endStep).toHaveBeenNthCalledWith(2, STEPS.GET_SUBSCRIPTIONS.id);
       expect(mockUserCompanyRelationsRepo.getDocumentsList).toHaveBeenCalledWith({
         userId: [{ operator: '==', value: mockUserId }],
@@ -269,7 +274,7 @@ describe(AuthService.name, () => {
           company3: PERMISSIONS_BY_ROLE.member,
         },
       });
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_USER_COMPANY_RELATIONS.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_USER_COMPANY_RELATIONS.id, logGroup);
       expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_USER_COMPANY_RELATIONS.id);
     });
 
@@ -285,9 +290,9 @@ describe(AuthService.name, () => {
       mockSubscriptionsRepo.getDocumentsList.mockResolvedValueOnce([]);
       mockSubscriptionsRepo.getDocumentsList.mockResolvedValueOnce([]);
       const result = await authService.getUserPermissions(mockUserId, mockLogger);
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_USER_COMPANY_RELATIONS.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_USER_COMPANY_RELATIONS.id, logGroup);
       expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_USER_COMPANY_RELATIONS.id);
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTIONS.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTIONS.id, logGroup);
       expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTIONS.id);
       expect(mockUserCompanyRelationsRepo.getDocumentsList).toHaveBeenCalledWith({
         userId: [{ operator: '==', value: mockUserId }],

@@ -1,3 +1,4 @@
+export const LOG_GROUP = 'PubSubsUtils';
 export const LOGS = {
   INVALID_MESSAGE_FORMAT: {
     logMessage: 'Invalid message format',

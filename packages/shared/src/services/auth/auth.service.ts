@@ -33,10 +33,11 @@ export class AuthService {
   }
 
   public async generateUserToken(userId: string, logger: ExecutionLogger): Promise<string> {
-    logger.startStep(STEPS.GET_USER_COMPANY_RELATIONS.id);
+    const logGroup = `${this.constructor.name}.${this.generateUserToken.name}`;
+    logger.startStep(STEPS.GET_USER_COMPANY_RELATIONS.id, logGroup);
     const permissions = await this.getUserPermissions(userId, logger);
     logger.endStep(STEPS.GET_USER_COMPANY_RELATIONS.id);
-    logger.startStep(STEPS.GENERATE_USER_TOKEN.id);
+    logger.startStep(STEPS.GENERATE_USER_TOKEN.id, logGroup);
     const token = await admin.auth().createCustomToken(userId, permissions);
     logger.endStep(STEPS.GENERATE_USER_TOKEN.id);
     return token;
@@ -46,10 +47,11 @@ export class AuthService {
     userId: string,
     uid: string,
   }, logger: ExecutionLogger): Promise<void> {
-    logger.startStep(STEPS.GET_USER_COMPANY_RELATIONS.id);
+    const logGroup = `${this.constructor.name}.${this.updatePermissionsToUser.name}`;
+    logger.startStep(STEPS.GET_USER_COMPANY_RELATIONS.id, logGroup);
     const permissions = await this.getUserPermissions(input.userId, logger);
     logger.endStep(STEPS.GET_USER_COMPANY_RELATIONS.id);
-    logger.startStep(STEPS.UPDATE_USER_PERMISSIONS.id);
+    logger.startStep(STEPS.UPDATE_USER_PERMISSIONS.id, logGroup);
     await admin.auth().setCustomUserClaims(input.uid, {
       ...permissions,
       app_user_id: input.userId,
@@ -58,14 +60,15 @@ export class AuthService {
   }
 
   public async getUserPermissions(userId: string, logger: ExecutionLogger): Promise<UserPermissions> {
-    logger.startStep(STEPS.GET_USER_COMPANY_RELATIONS.id);
+    const logGroup = `${this.constructor.name}.${this.getUserPermissions.name}`;
+    logger.startStep(STEPS.GET_USER_COMPANY_RELATIONS.id, logGroup);
     const userCompanyRelations = await UserCompanyRelationsRepository.getInstance().getDocumentsList({
       userId: [{ operator: '==', value: userId }],
     }, logger).finally(() => logger.endStep(STEPS.GET_USER_COMPANY_RELATIONS.id));
     const response: {app_user_id: string, companies: { [companyId: string]: string[] } } = { app_user_id: userId, companies: {} };
     // get subscriptions of this companies
     const now = new Date();
-    logger.startStep(STEPS.GET_SUBSCRIPTIONS.id);
+    logger.startStep(STEPS.GET_SUBSCRIPTIONS.id, logGroup);
     const companySubscriptions = await Promise.all(userCompanyRelations.map(async (relation) => SubscriptionsRepository.getInstance().getDocumentsList({
       companyId: [{ operator: '==', value: relation.companyId }],
       startsAt: [{ operator: '<=', value: now }],

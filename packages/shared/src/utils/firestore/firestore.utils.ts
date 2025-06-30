@@ -1,7 +1,7 @@
 import { FIRESTORE_ERROR_CODE } from './firestore.constants';
 import { ExecutionLogger } from '../../definitions';
 import { wait } from '../time/time.utils';
-import { DEFAULT_DELAY, DEFAULT_MAX_RETRIES, ERROR_MESSAGES, LOGS, RETRY_CODE, STEPS } from './firestore.utils.constants';
+import { DEFAULT_DELAY, DEFAULT_MAX_RETRIES, ERROR_MESSAGES, LOG_GROUP, LOGS, RETRY_CODE, STEPS } from './firestore.utils.constants';
 import { CheckIfEventHasBeenProcessedError, CheckIfEventHasBeenProcessedErrorCode, RunRetriableActionError, RunRetriableActionErrorCode } from './firestore.utils.errors';
 import { CheckIfEventHasBeenProcessedOptions, RetriableActionOptions, RunRetriableTransactionOptions } from './firestore.utils.interfaces';
 
@@ -144,9 +144,10 @@ export function removeDocumentMetadata(documentData: any): any {
  */
 export function runRetriableAction<T>(actionFn: (...args: any[]) => Promise<T>, logger: ExecutionLogger, options?: RetriableActionOptions): Promise<T> {
   const config = { delay: DEFAULT_DELAY, maxRetries: DEFAULT_MAX_RETRIES, ...options };
+  const logGroup = `${LOG_GROUP}.${runRetriableAction.name}`;
   const runAction = async (retries = 0): Promise<T> => {
     try {
-      logger.startStep(STEPS.RETRIABLE_ACTION.id);
+      logger.startStep(STEPS.RETRIABLE_ACTION.id, logGroup);
       const result = await actionFn().finally(() => logger.endStep(STEPS.RETRIABLE_ACTION.id));
       return result;
     } catch (error: any) {
@@ -196,9 +197,10 @@ export function runRetriableAction<T>(actionFn: (...args: any[]) => Promise<T>, 
  */
 export function runRetriableTransaction<T>(db: FirebaseFirestore.Firestore, transactionFn: (transaction: FirebaseFirestore.Transaction) => Promise<T>, logger: ExecutionLogger, options?: RunRetriableTransactionOptions): Promise<T> {
   const config = { delay: DEFAULT_DELAY, maxRetries: DEFAULT_MAX_RETRIES, ...options };
+  const logGroup = `${LOG_GROUP}.${runRetriableTransaction.name}`;
   const runTransaction = async (retries = 0): Promise<T> => {
     try {
-      logger.startStep(STEPS.RETRIABLE_TRANSACTION.id);
+      logger.startStep(STEPS.RETRIABLE_TRANSACTION.id, logGroup);
       const result = await db.runTransaction(transactionFn).finally(() => logger.endStep(STEPS.RETRIABLE_TRANSACTION.id));
       return result;
     } catch (error: any) {

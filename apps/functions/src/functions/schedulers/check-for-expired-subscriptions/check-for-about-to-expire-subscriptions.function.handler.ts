@@ -7,7 +7,8 @@ import { NOTIFY_SUBSCRIPTION_ABOUT_TO_EXPIRE_TOPIC } from '../../pub-subs/notify
 import { DAYS_TO_EXPIRE_TO_NOTIFY, HANDLER_NAME, LOGS, STEPS } from './check-for-about-to-expire-subscriptions.function.constants';
 
 export async function checkForAboutToExpireSubscriptionsHandler(logger: FunctionLogger) {
-  logger.startStep(STEPS.GET_SUBSCRIPTIONS);
+  const logGroup = checkForAboutToExpireSubscriptionsHandler.name;
+  logger.startStep(STEPS.GET_SUBSCRIPTIONS, logGroup);
   const subscriptionsSvc = SubscriptionsService.getInstance();
   const aboutToExpireSubscriptionsPerInterval = await Promise.all(DAYS_TO_EXPIRE_TO_NOTIFY.map((daysToExpire) => subscriptionsSvc.getAboutToExpireSubscriptions(daysToExpire, logger)))
   .finally(() => logger.endStep(STEPS.GET_SUBSCRIPTIONS));
@@ -22,7 +23,7 @@ export async function checkForAboutToExpireSubscriptionsHandler(logger: Function
     }, LOGS.NOTIFY_SUBSCRIPTION.logMessage(daysToExpire, aboutToExpireSubscriptions.length));
     for (const subscription of aboutToExpireSubscriptions) {
       const logId = `${STEPS.NOTIFY_SUBSCRIPTIONS}-${subscription.id}`;
-      logger.startStep(logId);
+      logger.startStep(logId, logGroup);
       await publishMessage<NotifySubscriptionAboutToExpireMessage>(NotifySubscriptionAboutToExpireMessage, NOTIFY_SUBSCRIPTION_ABOUT_TO_EXPIRE_TOPIC, {
         companyId: subscription.companyId,
         daysToExpire,

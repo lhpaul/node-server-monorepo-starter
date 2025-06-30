@@ -1,5 +1,7 @@
 import { printError } from '@repo/shared/utils';
 
+export const LOG_GROUP = 'FirestoreUtils';
+
 export enum EVENT_LABELS {
   ON_CREATE = 'on-create',
   ON_UPDATE = 'on-update',

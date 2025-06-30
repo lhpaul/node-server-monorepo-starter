@@ -18,8 +18,9 @@ export async function transactionUpdateRequestOnCreateHandler<DocumentModel exte
   logger: FunctionLogger;
 }): Promise<void> {
   const transactionUpdateRequestsRepo = TransactionUpdateRequestsRepository.getInstance();
+  const logGroup = transactionUpdateRequestOnCreateHandler.name;
   try {
-    logger.startStep(STEPS.UPDATE_TRANSACTION.id);
+    logger.startStep(STEPS.UPDATE_TRANSACTION.id, logGroup);
     const updateData: Partial<Transaction> = {
       ...(transactionUpdateRequest.amount && { amount: transactionUpdateRequest.amount }),
       ...(transactionUpdateRequest.date && { date: transactionUpdateRequest.date }),
@@ -27,7 +28,7 @@ export async function transactionUpdateRequestOnCreateHandler<DocumentModel exte
     };
     await TransactionsService.getInstance().updateResource(transactionUpdateRequest.transactionId, updateData, logger)
     .finally(() => logger.endStep(STEPS.UPDATE_TRANSACTION.id));
-    logger.startStep(STEPS.UPDATE_DONE_STATUS.id);
+    logger.startStep(STEPS.UPDATE_DONE_STATUS.id, logGroup);
     await transactionUpdateRequestsRepo.updateDocument(transactionUpdateRequest.id, {
       status: ProcessStatus.DONE,
     }, logger)
@@ -46,7 +47,7 @@ export async function transactionUpdateRequestOnCreateHandler<DocumentModel exte
         errorData = ERRORS.TRANSACTION_NOT_FOUND;
       }
       if (errorData) {
-        logger.startStep(STEPS.UPDATE_INVALID_UPDATE_FAILED_STATUS.id);
+        logger.startStep(STEPS.UPDATE_INVALID_UPDATE_FAILED_STATUS.id, logGroup);
         await transactionUpdateRequestsRepo.updateDocument(transactionUpdateRequest.id, {
           status: ProcessStatus.FAILED,
           error: errorData,
@@ -55,7 +56,7 @@ export async function transactionUpdateRequestOnCreateHandler<DocumentModel exte
         return;
       }
     }
-    logger.startStep(STEPS.UPDATE_UNKNOWN_ERROR_FAILED_STATUS.id);
+    logger.startStep(STEPS.UPDATE_UNKNOWN_ERROR_FAILED_STATUS.id, logGroup);
     await transactionUpdateRequestsRepo.updateDocument(transactionUpdateRequest.id, {
       status: ProcessStatus.FAILED,
       error: printError(error),

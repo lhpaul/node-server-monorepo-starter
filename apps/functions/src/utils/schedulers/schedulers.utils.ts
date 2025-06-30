@@ -1,7 +1,7 @@
 import { onSchedule, ScheduleOptions, ScheduleFunction } from 'firebase-functions/v2/scheduler';
 
 import { FunctionLogger } from '../logging/function-logger.class';
-import { LOGS, SCHEDULE_DEFAULT_OPTIONS, STEPS } from './schedulers.utils.constants';
+import { LOG_GROUP, LOGS, SCHEDULE_DEFAULT_OPTIONS, STEPS } from './schedulers.utils.constants';
 import { SchedulerHandlerFunction } from './schedulers.utils.interfaces';
 
 /**
@@ -12,18 +12,19 @@ import { SchedulerHandlerFunction } from './schedulers.utils.interfaces';
  */
 export function onScheduleWrapper(handlerName: string, schedule: string, handler: SchedulerHandlerFunction, options?: ScheduleOptions): ScheduleFunction {
   const logger = new FunctionLogger();
+  const logGroup = `${LOG_GROUP}.${onScheduleWrapper.name}`;
   logger.info({
     logId: LOGS.SCHEDULER_STARTED.logId,
     schedule,
     handler: handlerName,
   }, LOGS.SCHEDULER_STARTED.logMessage);
-  logger.startStep(STEPS.SCHEDULER_STARTED.label);
+  logger.startStep(STEPS.SCHEDULER_STARTED.label, logGroup);
   return onSchedule({
     ...SCHEDULE_DEFAULT_OPTIONS,
     ...options,
     schedule,
   }, (event) => {
-    logger.startStep(STEPS.SCHEDULER_STARTED.label);
+    logger.startStep(STEPS.SCHEDULER_STARTED.label, logGroup);
     return handler(logger, event)
       .finally(() => logger.endStep(STEPS.SCHEDULER_STARTED.label));
   });

@@ -79,6 +79,7 @@ export class FirestoreCollectionRepository<DocumentModel, CreateDocumentInput, U
    * @throws {RepositoryError} with code RepositoryErrorCode.RELATED_DOCUMENT_NOT_FOUND if the parent document does not exist.
    */
   public async createDocument(data: CreateDocumentInput, logger: ExecutionLogger, config?: CreateDocumentConfig): Promise<string> {
+    const logGroup = `${this.constructor.name}.${this.createDocument.name}`;
     const { documentRef, documentData } = this._prepareCreate(data, config);
     if (this.parentIdLabels.length) {
       // check if parent document exists
@@ -88,11 +89,10 @@ export class FirestoreCollectionRepository<DocumentModel, CreateDocumentInput, U
         throw new RepositoryError({ code: RepositoryErrorCode.RELATED_DOCUMENT_NOT_FOUND, message: REPOSITORY_ERROR_MESSAGES.RELATED_DOCUMENT_NOT_FOUND(parentDocumentRef.path) });
       }
     }
-    logger.startStep(STEPS.CREATE_DOCUMENT.id);
+    logger.startStep(STEPS.CREATE_DOCUMENT.id, logGroup);
     await runRetriableAction(() => {
       return documentRef.create(documentData)
     }, logger).finally(() => logger.endStep(STEPS.CREATE_DOCUMENT.id));
-    logger.endStep(STEPS.CREATE_DOCUMENT.id);
     return this._buildCompoundId(documentRef);
   }
 
@@ -146,8 +146,9 @@ export class FirestoreCollectionRepository<DocumentModel, CreateDocumentInput, U
    * @returns Promise<void>
    */
   public async deleteDocument(id: string, logger: ExecutionLogger): Promise<void> {
+    const logGroup = `${this.constructor.name}.${this.deleteDocument.name}`;
     const { documentRef } = this._prepareDelete(id);
-    logger.startStep(STEPS.DELETE_DOCUMENT.id);
+    logger.startStep(STEPS.DELETE_DOCUMENT.id, logGroup);
     await runRetriableAction(() => documentRef.delete(), logger).finally(() => logger.endStep(STEPS.DELETE_DOCUMENT.id));
   }
 
@@ -183,10 +184,11 @@ export class FirestoreCollectionRepository<DocumentModel, CreateDocumentInput, U
   public async getDocument(id: string, _logger: ExecutionLogger, config?: {
     transaction?: FirebaseFirestore.Transaction;
   }): Promise<DocumentModel | null> {
+    const logGroup = `${this.constructor.name}.${this.getDocument.name}`;
     const { documentId, parentIds } = this._decodeCompoundId(id);
     const path = this._getPath(parentIds);
     const documentRef = this._db.collection(path).doc(documentId);
-    _logger.startStep(STEPS.GET_DOCUMENT.id);
+    _logger.startStep(STEPS.GET_DOCUMENT.id, logGroup);
     const documentSnapshot = config?.transaction ?
       await config.transaction.get(documentRef).finally(() => _logger.endStep(STEPS.GET_DOCUMENT.id)) :
       await documentRef.get().finally(() => _logger.endStep(STEPS.GET_DOCUMENT.id));
@@ -216,6 +218,7 @@ export class FirestoreCollectionRepository<DocumentModel, CreateDocumentInput, U
     parentIds?: ParentIds;
     transaction?: FirebaseFirestore.Transaction;
   }): Promise<DocumentModel[]> {
+    const logGroup = `${this.constructor.name}.${this.getDocumentsList.name}`;
     let queryRef: FirebaseFirestore.Query;
     const modifiedQuery = { ...query };
     const parentIds = { ...config?.parentIds };
@@ -252,7 +255,7 @@ export class FirestoreCollectionRepository<DocumentModel, CreateDocumentInput, U
     if (config?.limit) {
       queryRef = queryRef.limit(config?.limit);
     }
-    _logger.startStep(STEPS.GET_DOCUMENTS.id);
+    _logger.startStep(STEPS.GET_DOCUMENTS.id, logGroup);
     const documentQuerySnapshot = config?.transaction ?
       await config.transaction.get(queryRef).finally(() => _logger.endStep(STEPS.GET_DOCUMENTS.id)) :
       await queryRef.get().finally(() => _logger.endStep(STEPS.GET_DOCUMENTS.id));
@@ -274,8 +277,9 @@ export class FirestoreCollectionRepository<DocumentModel, CreateDocumentInput, U
    * @throws {RepositoryError} with code RepositoryErrorCode.DOCUMENT_NOT_FOUND if the document is not found
    */
   public async updateDocument(id: string, updateData: UpdateDocumentInput, logger: ExecutionLogger, config?: UpdateDocumentConfig): Promise<void> {
+    const logGroup = `${this.constructor.name}.${this.updateDocument.name}`;
     const { documentRef, documentData } = this._prepareUpdate(id, updateData, config);
-    logger.startStep(STEPS.UPDATE_DOCUMENT.id);
+    logger.startStep(STEPS.UPDATE_DOCUMENT.id, logGroup);
     await runRetriableAction(() => documentRef.update(documentData), logger)
     .finally(() => logger.endStep(STEPS.UPDATE_DOCUMENT.id))
     .catch((error) => {

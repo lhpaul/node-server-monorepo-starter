@@ -19,7 +19,7 @@ import {
 import { isEqual } from 'lodash';
 
 import { FunctionLogger } from '../logging/function-logger.class';
-import { DEFAULT_ON_UPDATE_RETRY_TIMEOUT_IN_MS, EVENT_LABELS, LOGS, PREFIXES, STEPS } from './firestore.utils.constants';
+import { DEFAULT_ON_UPDATE_RETRY_TIMEOUT_IN_MS, EVENT_LABELS, LOG_GROUP, LOGS, PREFIXES, STEPS } from './firestore.utils.constants';
 import {
   CollectionEventContext,
   OnCreateHandlerConfig,
@@ -81,6 +81,7 @@ async function _onCreate<DocumentModel>(newDocumentSnap: FirebaseFirestore.Docum
   const compoundDocumentId = _getCompoundId(newDocumentSnap);
   const documentData = newDocumentSnap.data();
   const logger = new FunctionLogger();
+  const logGroup = `${LOG_GROUP}.${_onCreate.name}`;
   logger.info({
     id: LOGS.ON_CREATE.id,
     context,
@@ -89,7 +90,7 @@ async function _onCreate<DocumentModel>(newDocumentSnap: FirebaseFirestore.Docum
   }, LOGS.ON_CREATE.message(documentLabel, compoundDocumentId));
   if (handlerConfig) {
     try {
-      logger.startStep(STEPS.INITIAL_TRANSACTION.id);
+      logger.startStep(STEPS.INITIAL_TRANSACTION.id, logGroup);
       const db = newDocumentSnap.ref.firestore;
       const result = await checkIfEventHasBeenProcessed(db, newDocumentSnap.ref, PREFIXES.ON_CREATE, context.eventId, logger, { maxRetries: handlerConfig.options?.maxRetries });
       if (result.hasBeenProcessed) {

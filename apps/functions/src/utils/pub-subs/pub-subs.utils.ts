@@ -5,7 +5,7 @@ import { MessagePublishedData, onMessagePublished } from 'firebase-functions/v2/
 
 import { FunctionLogger } from '../logging/function-logger.class';
 import { HandlerFunction, PubSubOptions } from './pub-subs.utils.interfaces';
-import { LOGS, STEPS } from './pub-subs.utils.constants';
+import { LOG_GROUP, LOGS, STEPS } from './pub-subs.utils.constants';
 
 /**
  * Handle a message being published to a Pub/Sub topic.
@@ -15,6 +15,7 @@ import { LOGS, STEPS } from './pub-subs.utils.constants';
  * @typeParam T - Type representing `Message.data`'s JSON format
  */
 export function onMessagePublishedWrapper<T extends object>(classType: new (value: any) => T, topic: string, handler: HandlerFunction<T>, options?: PubSubOptions): CloudFunction<CloudEvent<MessagePublishedData<T>>> {
+  const logGroup = `${LOG_GROUP}.${onMessagePublishedWrapper.name}`;
   return onMessagePublished(
     topic,
     async (event) => {
@@ -25,7 +26,7 @@ export function onMessagePublishedWrapper<T extends object>(classType: new (valu
           logId: LOGS.MESSAGE_RECEIVED.logId,
           message: options?.maskMessageFields ? maskFields(message, options.maskMessageFields) : message,
         }, LOGS.MESSAGE_RECEIVED.logMessage);
-        logger.startStep(STEPS.VALIDATE_MESSAGE.label);
+        logger.startStep(STEPS.VALIDATE_MESSAGE.label, logGroup);
         const errors = await validate(message as object)
           .finally(() => logger.endStep(STEPS.VALIDATE_MESSAGE.label));
         if (errors.length > 0) {

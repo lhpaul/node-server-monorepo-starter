@@ -3,7 +3,7 @@ import { validate } from 'class-validator';
 import { PubSubsService } from '../../services';
 import { ExecutionLogger } from '../../definitions';
 import { printError } from '../errors/errors.utils';
-import { LOGS, STEPS } from './pub-subs.utils.constants';
+import { LOG_GROUP, LOGS, STEPS } from './pub-subs.utils.constants';
 
 /**
  * Publish a message to a Pub/Sub topic.
@@ -14,9 +14,10 @@ import { LOGS, STEPS } from './pub-subs.utils.constants';
  * @param customAttributes - Custom attributes to add to the message.
  */
 export async function publishMessage<T>(classType: new (value: any) => T, topic: string, message: T, logger: ExecutionLogger, customAttributes?: Record<string, string>): Promise<void> {
+  const logGroup = `${LOG_GROUP}.${publishMessage.name}`;
   try {
     const parsedMessage = new classType(message);
-    logger.startStep(STEPS.VALIDATE_MESSAGE.label);
+    logger.startStep(STEPS.VALIDATE_MESSAGE.label, logGroup);
     const errors = await validate(parsedMessage as object)
       .finally(() => logger.endStep(STEPS.VALIDATE_MESSAGE.label));
     if (errors.length > 0) {

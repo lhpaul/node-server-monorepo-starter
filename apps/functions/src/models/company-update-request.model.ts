@@ -1,4 +1,4 @@
-import { RequestModel } from '../utils/models/request-model.classes';
+import { RequestModel } from '../utils/models/request-model.class';
 
 export class CompanyUpdateRequest extends RequestModel {
   public readonly name: string;

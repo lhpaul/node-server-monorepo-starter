@@ -18,6 +18,7 @@ describe(transactionCreateRequestOnCreateHandler.name, () => {
   const documentId = 'doc-id';
   const companyId = 'company-id';
   const transactionId = 'txn-id';
+  const logGroup = transactionCreateRequestOnCreateHandler.name;
   const mockLogger = {
     startStep: jest.fn(),
     endStep: jest.fn(),
@@ -71,7 +72,7 @@ describe(transactionCreateRequestOnCreateHandler.name, () => {
       documentData: mockTransactionCreateRequest,
       logger: mockLogger as any,
     });
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_TRANSACTION.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_TRANSACTION.id, logGroup);
     expect(mockTransactionsService.createResource).toHaveBeenCalledWith({
       amount: mockTransactionCreateRequest.amount,
       companyId: mockContext.params.companyId,
@@ -79,7 +80,7 @@ describe(transactionCreateRequestOnCreateHandler.name, () => {
       type: mockTransactionCreateRequest.type,
     }, mockLogger);
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.CREATE_TRANSACTION.id);
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_DONE_STATUS.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_DONE_STATUS.id, logGroup);
     expect(mockTransactionCreateRequestsRepository.updateDocument).toHaveBeenCalledWith(mockTransactionCreateRequest.id, { 
       status: ProcessStatus.DONE,
       transactionId,
@@ -97,7 +98,7 @@ describe(transactionCreateRequestOnCreateHandler.name, () => {
       documentData: mockTransactionCreateRequest,
       logger: mockLogger as any,
     });
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_INVALID_CREATE_FAILED_STATUS.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_INVALID_CREATE_FAILED_STATUS.id, logGroup);
     expect(mockTransactionCreateRequestsRepository.updateDocument).toHaveBeenCalledWith(mockTransactionCreateRequest.id, {
       status: ProcessStatus.FAILED,
       error: {
@@ -124,7 +125,7 @@ describe(transactionCreateRequestOnCreateHandler.name, () => {
     } catch (error) {
       expect(error).toBe(error);
     }
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_UNKNOWN_ERROR_FAILED_STATUS.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_UNKNOWN_ERROR_FAILED_STATUS.id, logGroup);
     expect(printError).toHaveBeenCalledWith(error);
     expect(mockTransactionCreateRequestsRepository.updateDocument).toHaveBeenCalledWith(mockTransactionCreateRequest.id, {
       status: ProcessStatus.FAILED,

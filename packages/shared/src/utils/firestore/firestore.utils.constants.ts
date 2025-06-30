@@ -1,3 +1,4 @@
+export const LOG_GROUP = 'FirestoreUtils';
 export const LOGS = {
   ERROR_IN_RETRIABLE_ACTION: {
     id: 'error-in-retriable-action',

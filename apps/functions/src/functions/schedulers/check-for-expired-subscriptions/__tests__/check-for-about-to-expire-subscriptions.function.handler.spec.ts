@@ -13,6 +13,7 @@ jest.mock('@repo/shared/utils');
 describe(checkForAboutToExpireSubscriptionsHandler.name, () => {
   let mockLogger: jest.Mocked<FunctionLogger>;
   let mockSubscriptionsService: jest.Mocked<SubscriptionsService>;
+  const logGroup = checkForAboutToExpireSubscriptionsHandler.name;
 
   beforeEach(() => {
     // Reset all mocks
@@ -76,7 +77,7 @@ describe(checkForAboutToExpireSubscriptionsHandler.name, () => {
     });
 
     // Verify logger calls
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTIONS);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTIONS, logGroup);
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTIONS);
 
     // Verify info logging for each interval
@@ -148,7 +149,7 @@ describe(checkForAboutToExpireSubscriptionsHandler.name, () => {
     await expect(checkForAboutToExpireSubscriptionsHandler(mockLogger)).rejects.toThrow(error);
 
     // Verify logger was still called
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTIONS);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTIONS, logGroup);
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTIONS);
   });
 }); 

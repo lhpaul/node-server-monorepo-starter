@@ -2,7 +2,7 @@ import { validate } from 'class-validator';
 
 import { ExecutionLogger } from '../../../definitions';
 import { publishMessage } from '../pub-subs.utils';
-import { LOGS, STEPS } from '../pub-subs.utils.constants';
+import { LOG_GROUP, LOGS, STEPS } from '../pub-subs.utils.constants';
 import { printError } from '../../errors/errors.utils';
 import { PubSubsService } from '../../../services';
 
@@ -34,6 +34,7 @@ const mockPrintedError = 'printed error';
 
 
 describe(publishMessage.name, () => {
+  const logGroup = `${LOG_GROUP}.${publishMessage.name}`;
   class DummyClass {
     value: string;
     constructor(values: Required<DummyClass>) {
@@ -68,7 +69,7 @@ describe(publishMessage.name, () => {
     (validate as jest.Mock).mockResolvedValueOnce([]);
     const message = { value: 'bar' };
     await publishMessage(DummyClass, mockTopic, message, mockLogger);
-    expect(mockStartStep).toHaveBeenCalledWith(STEPS.VALIDATE_MESSAGE.label);
+    expect(mockStartStep).toHaveBeenCalledWith(STEPS.VALIDATE_MESSAGE.label, logGroup);
     expect(mockEndStep).toHaveBeenCalledWith(STEPS.VALIDATE_MESSAGE.label);
     expect(mockWarn).not.toHaveBeenCalled();
     expect(mockPublishToTopic).toHaveBeenCalledWith(mockTopic, mockLogger, expect.any(DummyClass), undefined);

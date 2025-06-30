@@ -144,6 +144,7 @@ describe(FirestoreCollectionRepository.name, () => {
   });
 
   describe(FirestoreCollectionRepository.prototype.createDocument.name, () => {
+    const logGroup = `${FirestoreCollectionRepository.name}.${FirestoreCollectionRepository.prototype.createDocument.name}`;
     describe('when the collection is not a sub-collection', () => {
       beforeEach(() => {
         repository = new FirestoreCollectionRepository({
@@ -158,7 +159,7 @@ describe(FirestoreCollectionRepository.name, () => {
   
         const result = await repository.createDocument(data, mockLogger);
   
-        expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_DOCUMENT.id);
+        expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_DOCUMENT.id, logGroup);
         expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.CREATE_DOCUMENT.id);
         expect(mainDocumentRefMock.create).toHaveBeenCalledWith({
           ...data,
@@ -221,7 +222,7 @@ describe(FirestoreCollectionRepository.name, () => {
   
         const result = await repository.createDocument(createData, mockLogger);
   
-        expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_DOCUMENT.id);
+        expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_DOCUMENT.id, logGroup);
         expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.CREATE_DOCUMENT.id);
         expect(mainDocumentRefMock.create).toHaveBeenCalledWith({
           name: createData.name,
@@ -248,6 +249,7 @@ describe(FirestoreCollectionRepository.name, () => {
   });
 
   describe(FirestoreCollectionRepository.prototype.createDocumentSync.name, () => {
+    const logGroup = `${FirestoreCollectionRepository.name}.${FirestoreCollectionRepository.prototype.createDocumentSync.name}`;
     describe('when the collection is not a sub-collection', () => {
       beforeEach(() => {
         repository = new FirestoreCollectionRepository({
@@ -311,6 +313,7 @@ describe(FirestoreCollectionRepository.name, () => {
   });
 
   describe(FirestoreCollectionRepository.prototype.deleteDocument.name, () => {
+    const logGroup = `${FirestoreCollectionRepository.name}.${FirestoreCollectionRepository.prototype.deleteDocument.name}`;
     describe('when the collection is not a sub-collection', () => {
       beforeEach(() => {
         repository = new FirestoreCollectionRepository({
@@ -322,7 +325,7 @@ describe(FirestoreCollectionRepository.name, () => {
 
         await repository.deleteDocument('test-id', mockLogger);
 
-        expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DELETE_DOCUMENT.id);
+        expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DELETE_DOCUMENT.id, logGroup);
         expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.DELETE_DOCUMENT.id);
         expect(mainDocumentRefMock.delete).toHaveBeenCalled();
       });
@@ -338,7 +341,7 @@ describe(FirestoreCollectionRepository.name, () => {
 
         await repository.deleteDocument('test-id', mockLogger);
 
-        expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DELETE_DOCUMENT.id);
+        expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DELETE_DOCUMENT.id, logGroup);
         expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.DELETE_DOCUMENT.id);
         expect(subCollectionDocumentRefMock.delete).toHaveBeenCalled();
       });
@@ -395,6 +398,7 @@ describe(FirestoreCollectionRepository.name, () => {
   });
 
   describe(FirestoreCollectionRepository.prototype.getDocument.name, () => {
+    const logGroup = `${FirestoreCollectionRepository.name}.${FirestoreCollectionRepository.prototype.getDocument.name}`;
     describe('when the collection is not a sub-collection', () => {
       beforeEach(() => {
         repository = new FirestoreCollectionRepository({
@@ -412,7 +416,7 @@ describe(FirestoreCollectionRepository.name, () => {
   
         const result = await repository.getDocument('test-id', mockLogger);
   
-        expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_DOCUMENT.id);
+        expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_DOCUMENT.id, logGroup);
         expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_DOCUMENT.id);
         expect(result).toEqual({
           id: mainDocumentRefMock.id,
@@ -466,7 +470,7 @@ describe(FirestoreCollectionRepository.name, () => {
   
         const result = await repository.getDocument('test-id', mockLogger);
   
-        expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_DOCUMENT.id);
+        expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_DOCUMENT.id, logGroup);
         expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_DOCUMENT.id);
         expect(result).toEqual({
           id: `${mainDocumentRefMock.id}-${subCollectionDocumentRefMock.id}`,
@@ -498,6 +502,7 @@ describe(FirestoreCollectionRepository.name, () => {
   });
 
   describe(FirestoreCollectionRepository.prototype.getDocumentsList.name, () => {
+    const logGroup = `${FirestoreCollectionRepository.name}.${FirestoreCollectionRepository.prototype.getDocumentsList.name}`;
     describe('when the collection is not a sub-collection', () => {
       beforeEach(() => {
         repository = new FirestoreCollectionRepository({
@@ -524,7 +529,7 @@ describe(FirestoreCollectionRepository.name, () => {
   
         const result = await repository.getDocumentsList(query, mockLogger);
   
-        expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_DOCUMENTS.id);
+        expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_DOCUMENTS.id, logGroup);
         expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_DOCUMENTS.id);
         expect(result).toHaveLength(2);
         expect(result[0]).toEqual(expect.objectContaining({
@@ -614,7 +619,7 @@ describe(FirestoreCollectionRepository.name, () => {
 
         const result = await repository.getDocumentsList(query, mockLogger);
 
-        expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_DOCUMENTS.id);
+        expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_DOCUMENTS.id, logGroup);
         expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_DOCUMENTS.id);
         expect(subCollectionRefMock.where).toHaveBeenCalledTimes(3);
         expect(subCollectionRefMock.where).toHaveBeenCalledWith('name', '==', query.name);
@@ -721,6 +726,7 @@ describe(FirestoreCollectionRepository.name, () => {
   });
 
   describe(FirestoreCollectionRepository.prototype.updateDocument.name, () => {
+    const logGroup = `${FirestoreCollectionRepository.name}.${FirestoreCollectionRepository.prototype.updateDocument.name}`;
     describe('when the collection is not a sub-collection', () => {
       beforeEach(() => {
         repository = new FirestoreCollectionRepository({
@@ -733,7 +739,7 @@ describe(FirestoreCollectionRepository.name, () => {
   
         await repository.updateDocument('test-id', updateData, mockLogger);
   
-        expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_DOCUMENT.id);
+        expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_DOCUMENT.id, logGroup);
         expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_DOCUMENT.id);
         expect(mainDocumentRefMock.update).toHaveBeenCalledWith({
           ...updateData,
@@ -777,7 +783,7 @@ describe(FirestoreCollectionRepository.name, () => {
   
         await repository.updateDocument('test-id', updateData, mockLogger);
 
-        expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_DOCUMENT.id);
+        expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_DOCUMENT.id, logGroup);
         expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_DOCUMENT.id);
         expect(subCollectionDocumentRefMock.update).toHaveBeenCalledWith({
           ...updateData,
