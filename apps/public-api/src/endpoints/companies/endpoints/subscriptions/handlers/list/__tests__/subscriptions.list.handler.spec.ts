@@ -33,6 +33,7 @@ describe(listSubscriptionsHandler.name, () => {
   } & Partial<FastifyBaseLogger>;
   let mockService: Partial<SubscriptionsService>;
 
+  const logGroup = listSubscriptionsHandler.name;
   const mockParams = { companyId: 'company123' };
   const mockQuery = { startsAt: '2024-03-20', endsAt: '2024-03-20' };
   const mockMappedQuery = { startsAt: new Date(mockQuery.startsAt), endsAt: new Date(mockQuery.endsAt) };
@@ -110,7 +111,7 @@ describe(listSubscriptionsHandler.name, () => {
     );
 
     expect(hasCompanySubscriptionsReadPermission).toHaveBeenCalledWith(mockParams.companyId, mockUser);
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.LIST_SUBSCRIPTIONS.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.LIST_SUBSCRIPTIONS.id, logGroup);
     expect(mapDateQueryParams).toHaveBeenCalledWith(mockQuery, ['startsAt', 'endsAt']);
     expect(transformQueryParams).toHaveBeenCalledWith({ companyId: mockParams.companyId, ...mockMappedQuery });
     expect(mockService.getResourcesList).toHaveBeenCalledWith(
@@ -134,7 +135,7 @@ describe(listSubscriptionsHandler.name, () => {
     ).rejects.toThrow(error);
 
     expect(hasCompanySubscriptionsReadPermission).toHaveBeenCalledWith(mockParams.companyId, mockUser);
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.LIST_SUBSCRIPTIONS.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.LIST_SUBSCRIPTIONS.id, logGroup);
     expect(mapDateQueryParams).toHaveBeenCalledWith(mockQuery, ['startsAt', 'endsAt']);
     expect(transformQueryParams).toHaveBeenCalledWith({ companyId: mockParams.companyId, ...mockMappedQuery });
     expect(mockService.getResourcesList).toHaveBeenCalledWith(

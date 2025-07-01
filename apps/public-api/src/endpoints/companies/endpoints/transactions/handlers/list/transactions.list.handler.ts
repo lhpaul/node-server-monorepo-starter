@@ -12,6 +12,7 @@ export const listTransactionsHandler = async (
   reply: FastifyReply,
 ) => {
   const logger = request.log.child({ handler: listTransactionsHandler.name });
+  const logGroup = listTransactionsHandler.name;
   const service = TransactionsService.getInstance();
   const { companyId } = request.params as GetTransactionsParams;
   const user = request.user as AuthUser;
@@ -22,7 +23,7 @@ export const listTransactionsHandler = async (
     });
   }
   const query = request.query as GetTransactionsQueryParams;
-  logger.startStep(STEPS.GET_TRANSACTIONS.id);
+  logger.startStep(STEPS.GET_TRANSACTIONS.id, logGroup);
   const transactions = await service
     .getResourcesList(transformQueryParams({
       companyId,

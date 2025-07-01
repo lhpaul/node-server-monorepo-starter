@@ -34,6 +34,7 @@ describe(getCompanyHandler.name, () => {
   } & Partial<FastifyBaseLogger>;
   let mockService: Partial<CompaniesService>;
 
+  const logGroup = getCompanyHandler.name;
   const mockParams = { id: '123' };
   const mockUser: AuthUser = {
     companies: { 'company-1': ['read'] },
@@ -88,7 +89,7 @@ describe(getCompanyHandler.name, () => {
     );
 
     expect(hasCompanyReadPermission).toHaveBeenCalledWith(mockParams.id, mockUser);
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANY.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANY.id, logGroup);
     expect(mockService.getResource).toHaveBeenCalledWith(mockParams.id, mockLogger);
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANY.id);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
@@ -123,7 +124,7 @@ describe(getCompanyHandler.name, () => {
     ).rejects.toThrow(COMPANY_NOT_FOUND_ERROR(mockParams.id));
 
     expect(hasCompanyReadPermission).toHaveBeenCalledWith(mockParams.id, mockUser);
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANY.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANY.id, logGroup);
     expect(mockService.getResource).toHaveBeenCalledWith(mockParams.id, mockLogger);
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANY.id);
     expect(mockReply.code).not.toHaveBeenCalled();
@@ -142,7 +143,7 @@ describe(getCompanyHandler.name, () => {
     ).rejects.toThrow(error);
 
     expect(hasCompanyReadPermission).toHaveBeenCalledWith(mockParams.id, mockUser);
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANY.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANY.id, logGroup);
     expect(mockService.getResource).toHaveBeenCalledWith(mockParams.id, mockLogger);
     expect(mockReply.code).not.toHaveBeenCalled();
     expect(mockReply.send).not.toHaveBeenCalled();

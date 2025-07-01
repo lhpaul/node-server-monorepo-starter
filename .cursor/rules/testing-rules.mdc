@@ -1,5 +1,5 @@
 ---
-description: This rules should be used when making code for unit tests
+description: When making code for unit tests
 globs: 
 alwaysApply: false
 ---

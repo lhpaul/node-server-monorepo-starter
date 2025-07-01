@@ -19,6 +19,7 @@ describe(updateSubscriptionHandler.name, () => {
     startsAt: '2024-03-20',
     endsAt: '2024-04-20',
   };
+  const logGroup = updateSubscriptionHandler.name;
 
   beforeEach(() => {
     mockLogger = {
@@ -58,7 +59,7 @@ describe(updateSubscriptionHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_SUBSCRIPTION.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_SUBSCRIPTION.id, logGroup);
     expect(mockService.updateResource).toHaveBeenCalledWith(
       mockParams.id,
       {
@@ -88,7 +89,7 @@ describe(updateSubscriptionHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_SUBSCRIPTION.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_SUBSCRIPTION.id, logGroup);
     expect(mockService.updateResource).toHaveBeenCalledWith(
       mockParams.id,
       {
@@ -123,7 +124,7 @@ describe(updateSubscriptionHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_SUBSCRIPTION.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_SUBSCRIPTION.id, logGroup);
     expect(mockService.updateResource).toHaveBeenCalledWith(
       mockParams.id,
       {
@@ -153,7 +154,7 @@ describe(updateSubscriptionHandler.name, () => {
       ),
     ).rejects.toThrow(unexpectedError);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_SUBSCRIPTION.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_SUBSCRIPTION.id, logGroup);
     expect(mockService.updateResource).toHaveBeenCalledWith(
       mockParams.id,
       {

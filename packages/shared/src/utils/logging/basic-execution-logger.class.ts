@@ -4,8 +4,8 @@ import { LOGS } from './basic-execution-logger.class.constants';
 
 export class BasicExecutionLogger implements ExecutionLogger {
   public initTime: number;
-  protected _activeSteps: { [labe: string]: { initTime: number } } = {};
-  protected _lastStep: ExecutionStep = { id: '' };
+  protected _activeSteps: { [label: string]: { initTime: number; group: string } } = {};
+  protected _lastStep: ExecutionStep = { id: '', group: '' };
   protected _parent?: ExecutionLogger;
   protected _stepsCounter = 0;
   constructor(options?: { parent?: ExecutionLogger }) {
@@ -41,20 +41,22 @@ export class BasicExecutionLogger implements ExecutionLogger {
   }
   startStep(
     label: string,
+    group: string,
     config?: { silent?: boolean },
   ): void {
     const now = new Date().getTime();
-    this._activeSteps[label] = { initTime: now };
+    this._activeSteps[label] = { initTime: now, group };
     if (!config?.silent) {
       this.info({
         logId: LOGS.STEP_START.logId,
         step: label,
+        group,
         totalElapsedTime: now - this.initTime,
-      }, LOGS.STEP_START.logMessage(label));
+      }, LOGS.STEP_START.logMessage(label, group));
     }
-    this._lastStep = { id: label };
+    this._lastStep = { id: label, group };
     if (this._parent) {
-      this._parent.startStep(label, { silent: true });
+      this._parent.startStep(label, group, { silent: true });
     }
     this._stepsCounter++;
   }
@@ -69,9 +71,10 @@ export class BasicExecutionLogger implements ExecutionLogger {
       this.info({
         logId: LOGS.STEP_END.logId,
         step: label,
+        group: step.group,
         elapsedTimeFromPreviousStep,
         totalElapsedTime: now - this.initTime,
-      }, LOGS.STEP_END.logMessage(label));
+      }, LOGS.STEP_END.logMessage(label, elapsedTimeFromPreviousStep, step.group));
     }
     delete this._activeSteps[label];
     if (this._parent) {

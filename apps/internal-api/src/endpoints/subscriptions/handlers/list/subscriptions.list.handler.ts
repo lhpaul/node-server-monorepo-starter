@@ -10,9 +10,10 @@ export const listSubscriptionsHandler = async (
   reply: FastifyReply,
 ) => {
   const logger = request.log.child({ handler: listSubscriptionsHandler.name });
+  const logGroup = listSubscriptionsHandler.name;
   const service = SubscriptionsService.getInstance();
   const query = request.query as GetSubscriptionsQueryParams;
-  logger.startStep(STEPS.GET_SUBSCRIPTIONS.id);
+  logger.startStep(STEPS.GET_SUBSCRIPTIONS.id, logGroup);
   const subscriptions = await service
     .getResourcesList(transformQueryParams(query), logger)
     .finally(() => logger.endStep(STEPS.GET_SUBSCRIPTIONS.id));

@@ -11,9 +11,10 @@ export const getCompanyHandler = async (
   reply: FastifyReply,
 ) => {
   const logger = request.log.child({ handler: getCompanyHandler.name });
+  const logGroup = getCompanyHandler.name;
   const service = CompaniesService.getInstance();
   const { id } = request.params as GetCompanyParams;
-  logger.startStep(STEPS.GET_COMPANY.id);
+  logger.startStep(STEPS.GET_COMPANY.id, logGroup);
   const company = await service
     .getResource(id, logger)
     .finally(() => logger.endStep(STEPS.GET_COMPANY.id));

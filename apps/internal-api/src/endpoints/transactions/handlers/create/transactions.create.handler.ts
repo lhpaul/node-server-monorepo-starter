@@ -12,10 +12,11 @@ export const createTransactionHandler = async (
   reply: FastifyReply,
 ) => {
   const logger = request.log.child({ handler: createTransactionHandler.name });
+  const logGroup = createTransactionHandler.name;
   const service = TransactionsService.getInstance();
   const body = request.body as CreateTransactionBody;
   try {
-    logger.startStep(STEPS.CREATE_TRANSACTION.id);
+    logger.startStep(STEPS.CREATE_TRANSACTION.id, logGroup);
     const id = await service
       .createResource(body, logger)
       .finally(() => logger.endStep(STEPS.CREATE_TRANSACTION.id));

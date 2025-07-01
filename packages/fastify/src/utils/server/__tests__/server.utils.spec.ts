@@ -125,7 +125,7 @@ describe(setServerErrorHandlers.name, () => {
   });
   it('should handle internal errors correctly with step', () => {
     setServerErrorHandlers(mockServer);
-    const step = { id: 'some-step-id' };
+    const step = { id: 'some-step-id', group: 'some-group' };
     mockRequest.log.lastStep = step;
     mockRequest.log.stepsCounter = 1;
     

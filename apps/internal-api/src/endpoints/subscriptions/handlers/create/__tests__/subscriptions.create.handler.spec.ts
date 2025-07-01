@@ -17,7 +17,7 @@ describe(createSubscriptionHandler.name, () => {
     endStep: jest.Mock;
   } & Partial<FastifyBaseLogger>;
   let mockService: Partial<SubscriptionsService>;
-
+  const logGroup = createSubscriptionHandler.name;
   const mockBody = {
     companyId: '123',
     startsAt: '2024-01-01T00:00:00.000Z',
@@ -59,7 +59,7 @@ describe(createSubscriptionHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_SUBSCRIPTION.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_SUBSCRIPTION.id, logGroup);
     expect(mockService.createResource).toHaveBeenCalledWith(
       {
         ...mockBody,
@@ -88,7 +88,7 @@ describe(createSubscriptionHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_SUBSCRIPTION.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_SUBSCRIPTION.id, logGroup);
     expect(mockService.createResource).toHaveBeenCalledWith(
       {
         ...mockBody,
@@ -121,7 +121,7 @@ describe(createSubscriptionHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_SUBSCRIPTION.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_SUBSCRIPTION.id, logGroup);
     expect(mockService.createResource).toHaveBeenCalledWith(
       {
         ...mockBody,
@@ -150,7 +150,7 @@ describe(createSubscriptionHandler.name, () => {
       ),
     ).rejects.toThrow(error);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_SUBSCRIPTION.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_SUBSCRIPTION.id, logGroup);
     expect(mockService.createResource).toHaveBeenCalledWith(
       {
         ...mockBody,

@@ -24,6 +24,7 @@ describe(deleteCompanyHandler.name, () => {
   let mockService: Partial<CompaniesService>;
 
   const mockParams = { id: '123' };
+  const logGroup = deleteCompanyHandler.name;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -60,7 +61,7 @@ describe(deleteCompanyHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DELETE_COMPANY.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DELETE_COMPANY.id, logGroup);
     expect(mockService.deleteResource).toHaveBeenCalledWith(mockParams.id, mockLogger);
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.DELETE_COMPANY.id);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.NO_CONTENT);
@@ -80,7 +81,7 @@ describe(deleteCompanyHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DELETE_COMPANY.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DELETE_COMPANY.id, logGroup);
     expect(mockService.deleteResource).toHaveBeenCalledWith(mockParams.id, mockLogger);
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.DELETE_COMPANY.id);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.NOT_FOUND);
@@ -101,7 +102,7 @@ describe(deleteCompanyHandler.name, () => {
       expect(false).toBe(true);
     } catch (error) {
       expect(error).toBe(error);
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DELETE_COMPANY.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DELETE_COMPANY.id, logGroup);
       expect(mockService.deleteResource).toHaveBeenCalledWith(mockParams.id, mockLogger);
       expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.DELETE_COMPANY.id);
       expect(mockReply.code).not.toHaveBeenCalled();

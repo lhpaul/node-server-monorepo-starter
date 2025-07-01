@@ -1,17 +1,11 @@
 ---
-description: This rules are usefull when making code for an endpoint
+description: When making code for an endpoint
 globs: 
 alwaysApply: false
 ---
-# Endpoints Conventions
+Make sure the generated code adheres to the following guidelines:
 
-This document outlines the endpoints conventions used in this repository. Adhering to these guidelines ensures consistency and maintainability.
-
-## Best Practices and Naming Conventions
-
-When defining a new endpoint, take in consideration the [API Best Practices and Naming Conventions](https://github.com/saifaustcse/api-best-practices/blob/main/README.md)
-
-## Error responses
+# Error responses
 
 When responding to an error, the payload must follow this structure:
 
@@ -23,18 +17,18 @@ When responding to an error, the payload must follow this structure:
 }
 ```
 
-### Required Fields
+## Required Fields
 
 - `code`: A unique identifier for the error type (e.g., "INVALID_INPUT", "RESOURCE_NOT_FOUND")
 - `message`: A clear, user-friendly description of what went wrong
 
-### Optional Fields
+## Optional Fields
 
 - `data`: Additional error information (only for 4XX errors)
   - Contains specific validation errors, missing fields, or other relevant details
   - Should be a JSON object with structured information
 
-### Error Status Codes
+## Error Status Codes
 
 - **4XX Errors (Client Errors)**
 
@@ -65,4 +59,4 @@ When responding to an error, the payload must follow this structure:
     }
     ```
 
-Note: 5XX and 404 errors are handled globally in the [server file](../src/server.ts) and don't need to be handled in individual endpoints.
+Note: 5XX and 404 errors are handled globally in the (normally in src/server.ts) and don't need to be handled in individual endpoints.

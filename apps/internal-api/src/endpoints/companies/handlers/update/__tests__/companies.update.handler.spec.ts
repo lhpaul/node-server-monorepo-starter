@@ -22,7 +22,7 @@ describe(updateCompanyHandler.name, () => {
     endStep: jest.Mock;
   } & Partial<FastifyBaseLogger>;
   let mockService: Partial<CompaniesService>;
-
+  const logGroup = updateCompanyHandler.name;
   const mockParams = { id: '123' };
   const mockBody = {
     name: 'Updated Company',
@@ -63,7 +63,7 @@ describe(updateCompanyHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_COMPANY.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_COMPANY.id, logGroup);
     expect(mockService.updateResource).toHaveBeenCalledWith(
       mockParams.id,
       mockBody,
@@ -87,7 +87,7 @@ describe(updateCompanyHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_COMPANY.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_COMPANY.id, logGroup);
     expect(mockService.updateResource).toHaveBeenCalledWith(
       mockParams.id,
       mockBody,
@@ -111,7 +111,7 @@ describe(updateCompanyHandler.name, () => {
       ),
     ).rejects.toThrow(error);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_COMPANY.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_COMPANY.id, logGroup);
     expect(mockService.updateResource).toHaveBeenCalledWith(
       mockParams.id,
       mockBody,

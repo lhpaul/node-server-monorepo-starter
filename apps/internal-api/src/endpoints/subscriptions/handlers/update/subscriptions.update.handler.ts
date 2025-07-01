@@ -12,11 +12,12 @@ export const updateSubscriptionHandler = async (
   reply: FastifyReply,
 ) => {
   const logger = request.log.child({ handler: updateSubscriptionHandler.name });
+  const logGroup = updateSubscriptionHandler.name;
   const service = SubscriptionsService.getInstance();
   const { id } = request.params as UpdateSubscriptionParams;
   const body = request.body as UpdateSubscriptionBody;
   try {
-    logger.startStep(STEPS.UPDATE_SUBSCRIPTION.id);
+    logger.startStep(STEPS.UPDATE_SUBSCRIPTION.id, logGroup);
     await service.updateResource(id, mapDateQueryParams(body as Record<string, string>, ['startsAt', 'endsAt']), logger)
     .finally(() => logger.endStep(STEPS.UPDATE_SUBSCRIPTION.id));
     return reply.code(STATUS_CODES.NO_CONTENT).send();

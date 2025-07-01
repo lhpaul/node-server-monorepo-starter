@@ -12,10 +12,11 @@ export const createSubscriptionHandler = async (
   reply: FastifyReply,
 ) => {
   const logger = request.log.child({ handler: createSubscriptionHandler.name });
+  const logGroup = createSubscriptionHandler.name;
   const service = SubscriptionsService.getInstance();
   const body = request.body as CreateSubscriptionBody;
   try {
-    logger.startStep(STEPS.CREATE_SUBSCRIPTION.id);
+    logger.startStep(STEPS.CREATE_SUBSCRIPTION.id, logGroup);
     const id = await service
       .createResource({
         ...body,

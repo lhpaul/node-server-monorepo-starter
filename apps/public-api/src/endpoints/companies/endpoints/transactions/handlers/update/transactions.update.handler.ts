@@ -17,6 +17,7 @@ export const updateTransactionHandler = async (
   reply: FastifyReply,
 ) => {
   const logger = request.log.child({ handler: updateTransactionHandler.name });
+  const logGroup = updateTransactionHandler.name;
   const service = TransactionsService.getInstance();
   const { companyId, id } = request.params as UpdateTransactionParams;
   const body = request.body as UpdateTransactionBody;
@@ -28,7 +29,7 @@ export const updateTransactionHandler = async (
     });
   }
   try {
-    logger.startStep(STEPS.UPDATE_TRANSACTION.id);
+    logger.startStep(STEPS.UPDATE_TRANSACTION.id, logGroup);
     await service.updateResource(id, body, logger)
     .finally(() => logger.endStep(STEPS.UPDATE_TRANSACTION.id));
     return reply.code(STATUS_CODES.NO_CONTENT).send();

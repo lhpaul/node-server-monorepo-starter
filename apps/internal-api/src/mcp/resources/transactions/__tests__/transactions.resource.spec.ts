@@ -19,7 +19,8 @@ describe(transactionsResourceBuilder.name, () => {
   let mockServerLogger: jest.Mocked<FastifyBaseLogger>;
   let mockRequestLogger: jest.Mocked<RequestLogger>;
   let mockService: Partial<TransactionsService>;
-
+  const logGroup = transactionsResourceBuilder.name;
+  
   beforeEach(() => {
     mockServerLogger = {
       child: jest.fn(),
@@ -81,7 +82,7 @@ describe(transactionsResourceBuilder.name, () => {
 
     const result = await resource.handler(uri, variables, extra);
 
-    expect(mockRequestLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id);
+    expect(mockRequestLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id, logGroup);
     expect(mockService.getResourcesList).toHaveBeenCalledWith(
       {
         companyId: [{ value: variables.companyId, operator: '==' }],

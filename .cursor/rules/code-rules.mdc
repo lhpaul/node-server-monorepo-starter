@@ -1,17 +1,15 @@
 ---
-description: 
+description: When writing typescript code
 globs: 
-alwaysApply: true
+alwaysApply: false
 ---
-# Code Conventions
+Make sure the generated code adheres to the following guidelines:
 
-This document outlines the coding conventions used in this repository. Adhering to these guidelines ensures consistency and maintainability.
-
-## String Literals
+# String Literals
 
 This project uses single quotes for string literals to maintain consistency across the codebase. Double quotes should only be used when required, such as for JSON properties or when escaping single quotes within a string.
 
-## Fields Declaration Order
+# Fields Declaration Order
 
 Fields must be declared in alphabetical order within interfaces, types, and classes. This convention improves code readability and makes it easier to locate specific fields.
 
@@ -39,17 +37,11 @@ interface Person {
 }
 ```
 
-## Constants Over Hard Coded Values
+# Constants Over Hard Coded Values
 
 To ensure maintainability and consistency, always use constants instead of hard-coded values in the codebase. This approach improves readability, reduces duplication, and makes it easier to update values when needed.
 
-### Benefits of Using Constants
-
-- **Centralized Management**: Constants are defined in a single location, making updates straightforward.
-- **Improved Readability**: Named constants provide context, making the code easier to understand.
-- **Reduced Errors**: Avoids accidental inconsistencies caused by duplicating hard-coded values.
-
-### Guidelines
+## Guidelines
 
 1. Define constants in the `src/constants/` directory if they apply globally or inside a folder when constants only apply to specific context (e.g. `users.service.constants.ts` in the same folder as `users.service.ts`).
 2. Use descriptive and meaningful names for constants.
@@ -75,9 +67,7 @@ const fetchUsers = async (page: number) => {
 };
 ```
 
-By following these practices, the codebase remains clean, consistent, and easier to maintain.
-
-## Module Import Order
+# Module Import Order
 
 Maintain a consistent import order within each file:
 
@@ -104,3 +94,64 @@ import { User } from "../entities/user.entity";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { hashPassword } from "./utils/security.utils";
 ```
+
+# Logging
+
+## Required Fields
+
+Logs should always define a `logId` field with a unique string identifier (unique in an execution) to correlate logs across different executions.
+
+**Example:**
+
+```typescript
+/*
+lets assume that the values are defined a constant like this:
+export const RESOURCE_NOT_FOUND_ERROR = {
+    logId: 'resource-not-found',
+    logMessage: 'The requested resource was not found',
+}
+*/
+request.log.warn(
+  {
+    logId: RESOURCE_NOT_FOUND_ERROR.logId,
+    requestId: request.id,
+    url: request.url,
+  },
+  RESOURCE_NOT_FOUND_ERROR.logMessage,
+);
+```
+
+## Monitoring Performance
+
+To effectively monitor performance, wrap asynchronous calls with the `startStep` and `endStep` functions provided by the logger object. These functions generate logs that measure the total time elapsed during execution, making it easier to identify and troubleshoot slow operations.
+
+**Example:**
+
+```typescript
+/*
+lets assume that the STEPS constant is defined like this:
+export const STEPS = {
+  UPDATE_USER: { id: 'proxy-request' },
+  NOTIFY_USER: { id: 'notify-user' }
+};
+*/
+try {
+  logger.startStep(STEPS.UPDATE_USER.id);
+  await usersService
+    .updateUser()
+    .finally(() => logger.endStep(STEPS.UPDATE_USER.id));
+  logger.endStep(STEPS.UPDATE_USER.id);
+  logger.startStep(STEPS.NOTIFY_USER.id);
+  await usersService
+    .notifyUser()
+    .finally(() => logger.endStep(STEPS.NOTIFY_USER.id));
+  // Continue with further logic...
+} catch (error) {
+  // Handle the error...
+}
+```
+
+### Best Practices
+
+1. Use meaningful step names to clearly indicate the operation being monitored (e.g., `'update-user'`, `'fetch-data'`).
+2. Always ensure `endStep` is called, even in error scenarios, to maintain accurate performance logs.

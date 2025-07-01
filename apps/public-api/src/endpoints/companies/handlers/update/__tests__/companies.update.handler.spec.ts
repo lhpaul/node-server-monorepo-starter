@@ -50,7 +50,7 @@ describe(updateCompanyHandler.name, () => {
       '123': ['company:update'],
     },
   } as unknown as AuthUser;
-
+  const logGroup = updateCompanyHandler.name;
   beforeEach(() => {
     mockLogger = {
       child: jest.fn().mockReturnThis(),
@@ -94,7 +94,7 @@ describe(updateCompanyHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_COMPANY.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_COMPANY.id, logGroup);
     expect(mockService.updateResource).toHaveBeenCalledWith(
       mockParams.id,
       mockBody,
@@ -123,7 +123,7 @@ describe(updateCompanyHandler.name, () => {
       expect(error.message).toBe(COMPANY_NOT_FOUND_ERROR(mockParams.id));
     }
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_COMPANY.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_COMPANY.id, logGroup);
     expect(mockService.updateResource).toHaveBeenCalledWith(
       mockParams.id,
       mockBody,
@@ -143,7 +143,7 @@ describe(updateCompanyHandler.name, () => {
       ),
     ).rejects.toThrow(error);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_COMPANY.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_COMPANY.id, logGroup);
     expect(mockService.updateResource).toHaveBeenCalledWith(
       mockParams.id,
       mockBody,

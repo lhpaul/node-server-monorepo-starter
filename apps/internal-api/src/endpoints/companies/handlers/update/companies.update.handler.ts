@@ -15,16 +15,16 @@ export const updateCompanyHandler = async (
   reply: FastifyReply,
 ) => {
   const logger = request.log.child({ handler: updateCompanyHandler.name });
+  const logGroup = updateCompanyHandler.name;
   const service = CompaniesService.getInstance();
   const { id } = request.params as UpdateCompanyParams;
   const body = request.body as UpdateCompanyBody;
   try {
-    logger.startStep(STEPS.UPDATE_COMPANY.id);
-    await service.updateResource(id, body, logger);
-    logger.endStep(STEPS.UPDATE_COMPANY.id);
+    logger.startStep(STEPS.UPDATE_COMPANY.id, logGroup);
+    await service.updateResource(id, body, logger)
+      .finally(() => logger.endStep(STEPS.UPDATE_COMPANY.id));
     return reply.code(STATUS_CODES.NO_CONTENT).send();
   } catch (error) {
-    logger.endStep(STEPS.UPDATE_COMPANY.id);
     if (
       error instanceof DomainModelServiceError &&
       error.code === DomainModelServiceErrorCode.RESOURCE_NOT_FOUND

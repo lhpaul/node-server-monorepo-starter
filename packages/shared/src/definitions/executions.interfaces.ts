@@ -1,12 +1,13 @@
 export interface ExecutionStep {
   id: string;
+  group: string;
 }
 
 export interface ExecutionLogger {
   lastStep: ExecutionStep;
   stepsCounter: number;
   initTime: number;
-  startStep: (label: string, config?: { silent?: boolean }) => void;
+  startStep: (label: string, group: string, config?: { silent?: boolean }) => void;
   endStep: (label: string, config?: { silent?: boolean }) => void;
   getStepElapsedTime: (label: string) => number;
   getTotalElapsedTime: () => number;

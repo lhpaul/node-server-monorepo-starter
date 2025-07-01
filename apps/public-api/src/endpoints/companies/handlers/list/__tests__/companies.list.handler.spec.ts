@@ -20,7 +20,7 @@ describe(listCompaniesHandler.name, () => {
   let mockLogger: Partial<FastifyBaseLogger>;
   let mockService: Partial<CompaniesService>;
   let mockUser: AuthUser;
-
+  const logGroup = listCompaniesHandler.name;
   beforeEach(() => {
     mockLogger = {
       child: jest.fn().mockReturnThis(),
@@ -68,7 +68,7 @@ describe(listCompaniesHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id, logGroup);
     expect(mockService.getResource).toHaveBeenCalledTimes(3);
     expect(mockService.getResource).toHaveBeenCalledWith('company-1', mockLogger);
     expect(mockService.getResource).toHaveBeenCalledWith('company-2', mockLogger);
@@ -101,7 +101,7 @@ describe(listCompaniesHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id, logGroup);
     expect(mockService.getResource).not.toHaveBeenCalled();
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
@@ -124,7 +124,7 @@ describe(listCompaniesHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id, logGroup);
     expect(mockService.getResource).toHaveBeenCalledTimes(3);
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
@@ -142,7 +142,7 @@ describe(listCompaniesHandler.name, () => {
       ),
     ).rejects.toThrow(error);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id, logGroup);
     expect(mockService.getResource).toHaveBeenCalled();
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
     expect(mockReply.code).not.toHaveBeenCalled();

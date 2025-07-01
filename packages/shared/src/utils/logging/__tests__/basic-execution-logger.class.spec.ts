@@ -15,7 +15,7 @@ describe(BasicExecutionLogger.name, () => {
   describe('initialization', () => {
     it('should initialize with default values', () => {
       expect(logger.initTime).toBeDefined();
-      expect(logger.lastStep).toEqual({ id: '' });
+      expect(logger.lastStep).toEqual({ id: '', group: '' });
       expect(logger.stepsCounter).toBe(0);
     });
   });
@@ -56,6 +56,8 @@ describe(BasicExecutionLogger.name, () => {
   });
 
   describe('time tracking', () => {
+    const stepLabel = 'test-step';
+    const stepGroup = 'test-group';
     beforeEach(() => {
       jest.useFakeTimers();
     });
@@ -73,11 +75,10 @@ describe(BasicExecutionLogger.name, () => {
     });
 
     it('should get step elapsed time', () => {
-      const stepLabel = 'test-step';
       const initialTime = new Date().getTime();
       jest.setSystemTime(initialTime);
       
-      logger.startStep(stepLabel);
+      logger.startStep(stepLabel, stepGroup);
       jest.setSystemTime(initialTime + 500);
       
       expect(logger.getStepElapsedTime(stepLabel)).toBe(500);
@@ -99,10 +100,11 @@ describe(BasicExecutionLogger.name, () => {
       jest.useRealTimers();
     });
     const stepLabel = 'test-step';
+    const stepGroup = 'test-group';
 
     it('should start a step', () => {
-      logger.startStep(stepLabel);
-      expect(logger.lastStep).toEqual({ id: stepLabel });
+      logger.startStep(stepLabel, stepGroup);
+      expect(logger.lastStep).toEqual({ id: stepLabel, group: stepGroup });
       expect(logger.stepsCounter).toBe(1);
       expect(consoleSpy).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -114,14 +116,14 @@ describe(BasicExecutionLogger.name, () => {
     });
 
     it('should start a step silently', () => {
-      logger.startStep(stepLabel, { silent: true });
-      expect(logger.lastStep).toEqual({ id: stepLabel });
+      logger.startStep(stepLabel, stepGroup, { silent: true });
+      expect(logger.lastStep).toEqual({ id: stepLabel, group: stepGroup });
       expect(logger.stepsCounter).toBe(1);
       expect(consoleSpy).not.toHaveBeenCalled();
     });
 
     it('should end a step', () => {
-      logger.startStep(stepLabel);
+      logger.startStep(stepLabel, stepGroup);
       jest.advanceTimersByTime(1000);
       consoleSpy.mockClear(); // Clear previous calls
       logger.endStep(stepLabel);
@@ -130,15 +132,16 @@ describe(BasicExecutionLogger.name, () => {
         {
           logId: LOGS.STEP_END.logId,
           step: stepLabel,
+          group: stepGroup,
           elapsedTimeFromPreviousStep: 1000,
           totalElapsedTime: 1000,
         },
-        LOGS.STEP_END.logMessage(stepLabel)
+        LOGS.STEP_END.logMessage(stepLabel, 1000, stepGroup)
       );
     });
 
     it('should end a step silently', () => {
-      logger.startStep(stepLabel);
+      logger.startStep(stepLabel, stepGroup);
       jest.advanceTimersByTime(1000);
       consoleSpy.mockClear(); // Clear previous calls
       logger.endStep(stepLabel, { silent: true });
@@ -153,8 +156,8 @@ describe(BasicExecutionLogger.name, () => {
       const parentSpy = jest.spyOn(parentLogger, 'startStep');
       const parentEndSpy = jest.spyOn(parentLogger, 'endStep');
       
-      childLogger.startStep(stepLabel);
-      expect(parentSpy).toHaveBeenCalledWith(stepLabel, { silent: true });
+      childLogger.startStep(stepLabel, stepGroup);
+      expect(parentSpy).toHaveBeenCalledWith(stepLabel, stepGroup, { silent: true });
       
       childLogger.endStep(stepLabel);
       expect(parentEndSpy).toHaveBeenCalledWith(stepLabel, { silent: true });
