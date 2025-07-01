@@ -12,9 +12,10 @@ export const deleteSubscriptionHandler = async (
   reply: FastifyReply,
 ) => {
   const logger = request.log.child({ handler: deleteSubscriptionHandler.name });
+  const logGroup = deleteSubscriptionHandler.name;
   const service = SubscriptionsService.getInstance();
   const { id } = request.params as DeleteSubscriptionParams;
-  logger.startStep(STEPS.DELETE_SUBSCRIPTION.id);
+  logger.startStep(STEPS.DELETE_SUBSCRIPTION.id, logGroup);
   try {
     await service
       .deleteResource(id, logger)

@@ -15,6 +15,7 @@ describe(createTransactionHandler.name, () => {
   let mockReply: Partial<FastifyReply>;
   let mockLogger: Partial<FastifyBaseLogger>;
   let mockService: Partial<TransactionsService>;
+  const logGroup = createTransactionHandler.name;
 
   beforeEach(() => {
     mockLogger = {
@@ -62,7 +63,7 @@ describe(createTransactionHandler.name, () => {
     expect(mockLogger.child).toHaveBeenCalledWith({
       handler: createTransactionHandler.name,
     });
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_TRANSACTION.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_TRANSACTION.id, logGroup);
     expect(mockService.createResource).toHaveBeenCalledWith(
       mockRequest.body,
       mockLogger,
@@ -113,7 +114,7 @@ describe(createTransactionHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_TRANSACTION.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_TRANSACTION.id, logGroup);
     expect(mockService.createResource).toHaveBeenCalledWith(
       mockRequest.body,
       mockLogger,
@@ -140,7 +141,7 @@ describe(createTransactionHandler.name, () => {
       ),
     ).rejects.toThrow(mockError);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_TRANSACTION.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_TRANSACTION.id, logGroup);
     expect(mockLogger.endStep).toHaveBeenCalledWith(
       STEPS.CREATE_TRANSACTION.id,
     );

@@ -68,6 +68,7 @@ describe(AuthService.name, () => {
       email: 'test@example.com',
       currentPasswordHash: 'hashed-password',
     } as UserDocument;
+    const logGroup = `${AuthService.name}.${AuthService.prototype.validateCredentials.name}`;
 
     beforeEach(() => {
       (mockUsersRepository.getDocumentsList as jest.Mock).mockResolvedValue([mockUser]);
@@ -80,7 +81,7 @@ describe(AuthService.name, () => {
         mockLogger
       );
       expect(result).toBeNull();
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.FIND_USER.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.FIND_USER.id, logGroup);
       expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.FIND_USER.id);
     });
 
@@ -91,7 +92,7 @@ describe(AuthService.name, () => {
         mockLogger
       );
       expect(result).toBeNull();
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CHECK_PASSWORD.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CHECK_PASSWORD.id, logGroup);
       expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.CHECK_PASSWORD.id);
     });
 
@@ -102,9 +103,9 @@ describe(AuthService.name, () => {
         mockLogger
       );
       expect(result).toEqual(mockUser);
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.FIND_USER.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.FIND_USER.id, logGroup);
       expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.FIND_USER.id);
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CHECK_PASSWORD.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CHECK_PASSWORD.id, logGroup);
       expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.CHECK_PASSWORD.id);
     });
   });
@@ -141,6 +142,7 @@ describe(AuthService.name, () => {
       },
     ];
     const now = new Date();
+    const logGroup = `${AuthService.name}.${AuthService.prototype.getUserPermissions.name}`;
     beforeAll(() => {
       jest.useFakeTimers().setSystemTime(now);
     });
@@ -156,9 +158,9 @@ describe(AuthService.name, () => {
       (mockSubscriptionsRepository.getDocumentsList as jest.Mock).mockResolvedValueOnce([mockSubscriptions[1]]);
       (mockSubscriptionsRepository.getDocumentsList as jest.Mock).mockResolvedValueOnce([]);
       const result = await authService.getUserPermissions(userId, mockLogger);
-      expect(mockLogger.startStep).toHaveBeenNthCalledWith(1, STEPS.GET_USER_COMPANY_RELATIONS.id);
+      expect(mockLogger.startStep).toHaveBeenNthCalledWith(1, STEPS.GET_USER_COMPANY_RELATIONS.id, logGroup);
       expect(mockLogger.endStep).toHaveBeenNthCalledWith(1, STEPS.GET_USER_COMPANY_RELATIONS.id);
-      expect(mockLogger.startStep).toHaveBeenNthCalledWith(2, STEPS.GET_SUBSCRIPTIONS.id);
+      expect(mockLogger.startStep).toHaveBeenNthCalledWith(2, STEPS.GET_SUBSCRIPTIONS.id, logGroup);
       expect(mockLogger.endStep).toHaveBeenNthCalledWith(2, STEPS.GET_SUBSCRIPTIONS.id);
       expect(mockUserCompanyRelationsRepository.getDocumentsList).toHaveBeenCalledWith({
         userId: [{ operator: '==', value: userId }],
@@ -185,7 +187,7 @@ describe(AuthService.name, () => {
           'company-3': PERMISSIONS_BY_ROLE[UserCompanyRole.MEMBER],
         },
       });
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_USER_COMPANY_RELATIONS.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_USER_COMPANY_RELATIONS.id, logGroup);
       expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_USER_COMPANY_RELATIONS.id);
     });
 
@@ -203,9 +205,9 @@ describe(AuthService.name, () => {
       (mockSubscriptionsRepository.getDocumentsList as jest.Mock).mockResolvedValueOnce([]);
       (mockSubscriptionsRepository.getDocumentsList as jest.Mock).mockResolvedValueOnce([]);
       const result = await authService.getUserPermissions(userId, mockLogger);
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_USER_COMPANY_RELATIONS.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_USER_COMPANY_RELATIONS.id, logGroup);
       expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_USER_COMPANY_RELATIONS.id);
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTIONS.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTIONS.id, logGroup);
       expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTIONS.id);
       expect(mockUserCompanyRelationsRepository.getDocumentsList).toHaveBeenCalledWith({
         userId: [{ operator: '==', value: userId }],

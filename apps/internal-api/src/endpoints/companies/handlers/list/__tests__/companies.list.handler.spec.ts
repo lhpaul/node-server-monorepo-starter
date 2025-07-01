@@ -17,7 +17,7 @@ describe(listCompaniesHandler.name, () => {
     { id: '2', name: 'Company 2', createdAt: new Date(), updatedAt: new Date() },
     { id: '3', name: 'Company 3', createdAt: new Date(), updatedAt: new Date() },
   ];
-
+  const logGroup = listCompaniesHandler.name;
   beforeEach(() => {
     mockLogger = {
       child: jest.fn().mockReturnThis(),
@@ -56,7 +56,7 @@ describe(listCompaniesHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id, logGroup);
     expect(mockService.getResourcesList).toHaveBeenCalledWith(
       {},
       mockLogger,
@@ -79,7 +79,7 @@ describe(listCompaniesHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id, logGroup);
     expect(mockService.getResourcesList).toHaveBeenCalledWith(
       {
         name: [{ operator: '==', value: 'Company 1' }],
@@ -99,7 +99,7 @@ describe(listCompaniesHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id, logGroup);
     expect(mockService.getResourcesList).toHaveBeenCalledWith(
       {},
       mockLogger,
@@ -120,7 +120,7 @@ describe(listCompaniesHandler.name, () => {
       ),
     ).rejects.toThrow(error);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id, logGroup);
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
     expect(mockReply.code).not.toHaveBeenCalled();
     expect(mockReply.send).not.toHaveBeenCalled();

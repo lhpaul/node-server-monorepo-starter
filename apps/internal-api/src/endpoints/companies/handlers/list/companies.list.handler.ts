@@ -10,9 +10,10 @@ export const listCompaniesHandler = async (
   reply: FastifyReply,
 ) => {
   const logger = request.log.child({ handler: listCompaniesHandler.name });
+  const logGroup = listCompaniesHandler.name;
   const service = CompaniesService.getInstance();
   const query = request.query as GetCompaniesQueryParams;
-  logger.startStep(STEPS.GET_COMPANIES.id);
+  logger.startStep(STEPS.GET_COMPANIES.id, logGroup);
   const companies = await service
     .getResourcesList(transformQueryParams(query), logger)
     .finally(() => logger.endStep(STEPS.GET_COMPANIES.id));

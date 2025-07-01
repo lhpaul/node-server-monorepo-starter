@@ -15,6 +15,7 @@ describe(updateTransactionHandler.name, () => {
   let mockService: Partial<TransactionsService>;
   let mockLogger: Partial<FastifyBaseLogger>;
   let id = '123';
+  const logGroup = updateTransactionHandler.name;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -55,7 +56,7 @@ describe(updateTransactionHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION.id, logGroup);
     expect(mockService.updateResource).toHaveBeenCalledWith(
       id,
       mockRequest.body,
@@ -81,7 +82,7 @@ describe(updateTransactionHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION.id, logGroup);
     expect(mockService.updateResource).toHaveBeenCalledWith(
       id,
       mockRequest.body,
@@ -117,7 +118,7 @@ describe(updateTransactionHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION.id, logGroup);
     expect(mockService.updateResource).toHaveBeenCalledWith(
       id,
       mockRequest.body,
@@ -145,7 +146,7 @@ describe(updateTransactionHandler.name, () => {
       ),
     ).rejects.toThrow(unexpectedError);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION.id, logGroup);
     expect(mockService.updateResource).toHaveBeenCalledWith(
       id,
       mockRequest.body,

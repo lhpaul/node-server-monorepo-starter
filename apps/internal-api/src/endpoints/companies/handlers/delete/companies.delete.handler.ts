@@ -13,9 +13,10 @@ export const deleteCompanyHandler = async (
   reply: FastifyReply,
 ) => {
   const logger = request.log.child({ handler: deleteCompanyHandler.name });
+  const logGroup = deleteCompanyHandler.name;
   const service = CompaniesService.getInstance();
   const { id } = request.params as DeleteCompanyParams;
-  logger.startStep(STEPS.DELETE_COMPANY.id);
+  logger.startStep(STEPS.DELETE_COMPANY.id, logGroup);
   try {
     await service
       .deleteResource(id, logger)

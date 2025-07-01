@@ -13,6 +13,7 @@ export const getCompanyHandler = async (
   reply: FastifyReply,
 ) => {
   const logger = request.log.child({ handler: getCompanyHandler.name });
+  const logGroup = getCompanyHandler.name;
   const { id } = request.params as GetCompanyParams;
   const user = request.user as AuthUser;
   if (!hasCompanyReadPermission(id, user)) {
@@ -21,7 +22,7 @@ export const getCompanyHandler = async (
       message: FORBIDDEN_ERROR.responseMessage,
     });
   }
-  logger.startStep(STEPS.GET_COMPANY.id);
+  logger.startStep(STEPS.GET_COMPANY.id, logGroup);
   const company = await CompaniesService.getInstance()
     .getResource(id, logger)
     .finally(() => logger.endStep(STEPS.GET_COMPANY.id));

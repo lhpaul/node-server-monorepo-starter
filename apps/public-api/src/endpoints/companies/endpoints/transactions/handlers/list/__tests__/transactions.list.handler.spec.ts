@@ -35,7 +35,7 @@ describe(listTransactionsHandler.name, () => {
     child: jest.Mock;
   } & Partial<FastifyBaseLogger>;
   let mockService: Partial<TransactionsService>;
-
+  const logGroup = listTransactionsHandler.name;
   const mockParams = { companyId: 'company123' };
   const mockQuery = { amount: { eq: 100 } };
   const mockUser: AuthUser = {
@@ -103,7 +103,7 @@ describe(listTransactionsHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id, logGroup);
     expect(transformQueryParams).toHaveBeenCalledWith(transformedQuery);
     expect(mockService.getResourcesList).toHaveBeenCalledWith(
       transformedQuery,
@@ -126,7 +126,7 @@ describe(listTransactionsHandler.name, () => {
       ),
     ).rejects.toThrow(error);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id, logGroup);
     expect(mockService.getResourcesList).toHaveBeenCalledWith(
       transformedQuery,
       mockLogger,

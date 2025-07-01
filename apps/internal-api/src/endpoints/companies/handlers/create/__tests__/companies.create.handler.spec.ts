@@ -13,6 +13,7 @@ describe(createCompanyHandler.name, () => {
   let mockReply: Partial<FastifyReply>;
   let mockLogger: any;
   let mockService: Partial<CompaniesService>;
+  const logGroup = createCompanyHandler.name;
 
   beforeEach(() => {
     mockLogger = {
@@ -58,7 +59,7 @@ describe(createCompanyHandler.name, () => {
     expect(mockLogger.child).toHaveBeenCalledWith({
       handler: createCompanyHandler.name,
     });
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_COMPANY.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_COMPANY.id, logGroup);
     expect(mockService.createResource).toHaveBeenCalledWith(
       mockRequest.body,
       mockLogger,
@@ -79,7 +80,7 @@ describe(createCompanyHandler.name, () => {
       ),
     ).rejects.toThrow(mockError);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_COMPANY.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_COMPANY.id, logGroup);
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.CREATE_COMPANY.id);
     expect(mockReply.code).not.toHaveBeenCalled();
     expect(mockReply.send).not.toHaveBeenCalled();

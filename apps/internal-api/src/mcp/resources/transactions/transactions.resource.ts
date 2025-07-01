@@ -1,6 +1,6 @@
 import { ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { RequestLogger } from '@repo/fastify';
-import { QueryItem } from '@repo/shared/definitions';
+import { FilterItem } from '@repo/shared/definitions';
 import { TransactionsService } from '@repo/shared/services';
 import { FastifyBaseLogger } from 'fastify';
 
@@ -15,14 +15,15 @@ export function transactionsResourceBuilder(serverLogger: FastifyBaseLogger): Mc
     }),
     handler: async (uri, variables, extra) => {
       const { companyId, dateFrom, dateTo } = variables;
+      const logGroup = transactionsResourceBuilder.name;
 
       // TODO: validate variables format
 
       const requestLogger = new RequestLogger({ logger: serverLogger })
       .child({ requestId: extra.requestId, resource: RESOURCE_NAME, uri, variables });
 
-      requestLogger.startStep(STEPS.GET_TRANSACTIONS.id);
-      const dateFilters: QueryItem<string>[] = [];
+      requestLogger.startStep(STEPS.GET_TRANSACTIONS.id, logGroup);
+      const dateFilters: FilterItem<string>[] = [];
       if (dateFrom) {
         dateFilters.push({ value: dateFrom as string, operator: '>=' });
       }

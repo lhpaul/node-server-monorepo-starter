@@ -23,7 +23,7 @@ describe(listSubscriptionsHandler.name, () => {
     child: jest.Mock;
   } & Partial<FastifyBaseLogger>;
   let mockService: Partial<SubscriptionsService>;
-
+  const logGroup = listSubscriptionsHandler.name;
   const mockQuery = { companyId: 'company123' };
 
   beforeEach(() => {
@@ -71,7 +71,7 @@ describe(listSubscriptionsHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTIONS.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTIONS.id, logGroup);
     expect(transformQueryParams).toHaveBeenCalledWith(mockQuery);
     expect(mockService.getResourcesList).toHaveBeenCalledWith(
       { companyId: mockQuery.companyId },
@@ -90,7 +90,7 @@ describe(listSubscriptionsHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTIONS.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTIONS.id, logGroup);
     expect(transformQueryParams).toHaveBeenCalledWith(mockQuery);
     expect(mockService.getResourcesList).toHaveBeenCalledWith(
       { companyId: mockQuery.companyId },

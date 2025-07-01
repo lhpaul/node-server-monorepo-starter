@@ -21,7 +21,7 @@ describe(deleteSubscriptionHandler.name, () => {
   let mockLogger: Partial<FastifyBaseLogger>;
 
   const mockParams = { id: 'test-id' };
-
+  const logGroup = deleteSubscriptionHandler.name;
   beforeEach(() => {
     mockLogger = {
       child: jest.fn().mockReturnThis(),
@@ -60,7 +60,7 @@ describe(deleteSubscriptionHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DELETE_SUBSCRIPTION.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DELETE_SUBSCRIPTION.id, logGroup);
     expect(mockService.deleteResource).toHaveBeenCalledWith(
       mockParams.id,
       mockLogger,
@@ -85,7 +85,7 @@ describe(deleteSubscriptionHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DELETE_SUBSCRIPTION.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DELETE_SUBSCRIPTION.id, logGroup);
     expect(mockService.deleteResource).toHaveBeenCalledWith(
       mockParams.id,
       mockLogger,
@@ -110,7 +110,7 @@ describe(deleteSubscriptionHandler.name, () => {
       ),
     ).rejects.toThrow(error);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DELETE_SUBSCRIPTION.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DELETE_SUBSCRIPTION.id, logGroup);
     expect(mockService.deleteResource).toHaveBeenCalledWith(
       mockParams.id,
       mockLogger,

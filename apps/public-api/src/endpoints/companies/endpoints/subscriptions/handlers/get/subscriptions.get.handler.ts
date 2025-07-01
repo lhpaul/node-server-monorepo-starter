@@ -12,9 +12,10 @@ export const getSubscriptionHandler = async (
   reply: FastifyReply,
 ) => {
   const logger = request.log.child({ handler: getSubscriptionHandler.name });
+  const logGroup = getSubscriptionHandler.name;
   const { companyId, id } = request.params as GetSubscriptionParams;
   const user = request.user as AuthUser;
-  
+
   if (!hasCompanySubscriptionsReadPermission(companyId, user)) {
     return reply.code(STATUS_CODES.FORBIDDEN).send({
       code: FORBIDDEN_ERROR.responseCode,
@@ -22,7 +23,7 @@ export const getSubscriptionHandler = async (
     });
   }
 
-  logger.startStep(STEPS.GET_SUBSCRIPTION.id);
+  logger.startStep(STEPS.GET_SUBSCRIPTION.id, logGroup);
   const service = SubscriptionsService.getInstance();
   const subscription = await service
     .getResource(id, logger)

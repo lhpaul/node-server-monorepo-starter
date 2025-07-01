@@ -10,9 +10,10 @@ export const createCompanyHandler = async (
   reply: FastifyReply,
 ) => {
   const logger = request.log.child({ handler: createCompanyHandler.name });
+  const logGroup = createCompanyHandler.name;
   const service = CompaniesService.getInstance();
   const body = request.body as CreateCompanyBody;
-  logger.startStep(STEPS.CREATE_COMPANY.id);
+  logger.startStep(STEPS.CREATE_COMPANY.id, logGroup);
   const id = await service
     .createResource(body, logger)
     .finally(() => logger.endStep(STEPS.CREATE_COMPANY.id));

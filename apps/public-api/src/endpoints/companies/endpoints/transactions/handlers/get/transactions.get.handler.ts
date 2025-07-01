@@ -11,6 +11,7 @@ export const getTransactionHandler = async (
   reply: FastifyReply,
 ) => {
   const logger = request.log.child({ handler: getTransactionHandler.name });
+  const logGroup = getTransactionHandler.name;
   const service = TransactionsService.getInstance();
   const { companyId, id } = request.params as GetTransactionParams;
   const user = request.user as AuthUser;
@@ -20,7 +21,7 @@ export const getTransactionHandler = async (
       message: FORBIDDEN_ERROR.responseMessage,
     });
   }
-  logger.startStep(STEPS.GET_TRANSACTION.id);
+  logger.startStep(STEPS.GET_TRANSACTION.id, logGroup);
   const transaction = await service
     .getResource(id, logger)
     .finally(() => logger.endStep(STEPS.GET_TRANSACTION.id));

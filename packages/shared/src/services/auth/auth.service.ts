@@ -19,7 +19,8 @@ export class AuthService {
     input: ValidateCredentialsInput,
     logger: ExecutionLogger,
   ): Promise<User | null> {
-    logger.startStep(STEPS.FIND_USER.id);
+    const logGroup = `${this.constructor.name}.${this.validateCredentials.name}`;
+    logger.startStep(STEPS.FIND_USER.id, logGroup);
     const [user, ..._users] = await UsersRepository.getInstance().getDocumentsList({
       email: [{ operator: '==', value: input.email }],
     }, logger);
@@ -27,7 +28,7 @@ export class AuthService {
     if (!user) {
       return null;
     }
-    logger.startStep(STEPS.CHECK_PASSWORD.id);
+    logger.startStep(STEPS.CHECK_PASSWORD.id, logGroup);
     const isPasswordValid = await compare(input.password, user.currentPasswordHash);
     logger.endStep(STEPS.CHECK_PASSWORD.id);
     // normally here we would do something to avoid brute force attacks
@@ -38,14 +39,15 @@ export class AuthService {
   }
 
   public async getUserPermissions(userId: string, logger: ExecutionLogger): Promise<UserPermissions> {
-    logger.startStep(STEPS.GET_USER_COMPANY_RELATIONS.id);
+    const logGroup = `${this.constructor.name}.${this.getUserPermissions.name}`;
+    logger.startStep(STEPS.GET_USER_COMPANY_RELATIONS.id, logGroup);
     const userCompanyRelations = await UserCompanyRelationsRepository.getInstance().getDocumentsList({
       userId: [{ operator: '==', value: userId }],
     }, logger).finally(() => logger.endStep(STEPS.GET_USER_COMPANY_RELATIONS.id));
     const response: UserPermissions = { companies: {} };
     // get subscriptions of this companies
     const now = new Date();
-    logger.startStep(STEPS.GET_SUBSCRIPTIONS.id);
+    logger.startStep(STEPS.GET_SUBSCRIPTIONS.id, logGroup);
     const companySubscriptions = await Promise.all(userCompanyRelations.map(async (relation) => {
       const subscriptions = await SubscriptionsRepository.getInstance().getDocumentsList({
         companyId: [{ operator: '==', value: relation.companyId }],

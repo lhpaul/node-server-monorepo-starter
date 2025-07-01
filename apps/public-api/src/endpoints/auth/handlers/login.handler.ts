@@ -11,16 +11,17 @@ export const loginHandler = async (
   reply: FastifyReply,
 ) => {
   const logger = request.log.child({ handler: loginHandler.name });
+  const logGroup = `${loginHandler.name}`;
   const body = request.body as LoginBody;
   const { email, password } = body;
-  logger.startStep(STEPS.VALIDATE_CREDENTIALS.id);
-  const user = await AuthService.getInstance().validateCredentials({ email, password }, logger);
-  logger.endStep(STEPS.VALIDATE_CREDENTIALS.id);
+  logger.startStep(STEPS.VALIDATE_CREDENTIALS.id, logGroup);
+  const user = await AuthService.getInstance().validateCredentials({ email, password }, logger)
+    .finally(() => logger.endStep(STEPS.VALIDATE_CREDENTIALS.id));
   if (!user) {
     return reply.status(STATUS_CODES.UNAUTHORIZED).send(ERROR_RESPONSES.INVALID_CREDENTIALS);
   }
   const permissions = await AuthService.getInstance().getUserPermissions(user.id, logger);
-  logger.startStep(STEPS.GET_PERMISSIONS.id);
+  logger.startStep(STEPS.GET_PERMISSIONS.id, logGroup);
   const token = await request.server.jwt.sign({
     userId: user.id,
     ...permissions,

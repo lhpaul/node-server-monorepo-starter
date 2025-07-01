@@ -92,4 +92,4 @@ When responding to an error, the payload must follow this structure:
     }
     ```
 
-Note: 5XX and 404 errors are handled globally in the [server file](../src/server.ts) and don't need to be handled in individual endpoints.
+Note: 5XX and 404 errors are handled globally in the server file (normally in src/server.ts) and don't need to be handled in individual endpoints.

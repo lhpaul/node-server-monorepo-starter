@@ -13,10 +13,11 @@ export const listSubscriptionsHandler = async (
   reply: FastifyReply,
 ) => {
   const logger = request.log.child({ handler: listSubscriptionsHandler.name });
+  const logGroup = listSubscriptionsHandler.name;
   const service = SubscriptionsService.getInstance();
   const { companyId } = request.params as ListSubscriptionsParams;
   const user = request.user as AuthUser;
-  
+
   if (!hasCompanySubscriptionsReadPermission(companyId, user)) {
     return reply.code(STATUS_CODES.FORBIDDEN).send({
       code: FORBIDDEN_ERROR.responseCode,
@@ -24,7 +25,7 @@ export const listSubscriptionsHandler = async (
     });
   }
 
-  logger.startStep(STEPS.LIST_SUBSCRIPTIONS.id);
+  logger.startStep(STEPS.LIST_SUBSCRIPTIONS.id, logGroup);
   const query = request.query as GetSubscriptionsQueryParams;
   const subscriptions = await service
     .getResourcesList(transformQueryParams({

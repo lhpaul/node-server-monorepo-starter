@@ -12,6 +12,7 @@ describe(loginHandler.name, () => {
   let mockReply: Partial<FastifyReply>;
   let mockAuthService: Partial<AuthService>;
   let mockLogger: any;
+  const logGroup = loginHandler.name;
 
   beforeEach(() => {
     mockLogger = {
@@ -84,11 +85,11 @@ describe(loginHandler.name, () => {
       password: 'password123',
     }, mockLogger);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.VALIDATE_CREDENTIALS.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.VALIDATE_CREDENTIALS.id, logGroup);
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.VALIDATE_CREDENTIALS.id);
 
     expect(mockAuthService.getUserPermissions).toHaveBeenCalledWith('user-123', mockLogger);
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_PERMISSIONS.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_PERMISSIONS.id, logGroup);
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_PERMISSIONS.id);
 
     expect(mockRequest.server?.jwt.sign).toHaveBeenCalledWith({
@@ -110,7 +111,7 @@ describe(loginHandler.name, () => {
       password: 'password123',
     }, mockLogger);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.VALIDATE_CREDENTIALS.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.VALIDATE_CREDENTIALS.id, logGroup);
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.VALIDATE_CREDENTIALS.id);
 
     expect(mockAuthService.getUserPermissions).not.toHaveBeenCalled();

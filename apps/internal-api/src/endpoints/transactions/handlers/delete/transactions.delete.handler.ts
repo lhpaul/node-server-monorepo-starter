@@ -12,9 +12,10 @@ export const deleteTransactionHandler = async (
   reply: FastifyReply,
 ) => {
   const logger = request.log.child({ handler: deleteTransactionHandler.name });
+  const logGroup = deleteTransactionHandler.name;
   const service = TransactionsService.getInstance();
   const { id } = request.params as DeleteTransactionParams;
-  logger.startStep(STEPS.DELETE_TRANSACTION.id);
+  logger.startStep(STEPS.DELETE_TRANSACTION.id, logGroup);
   try {
     await service
       .deleteResource(id, logger)

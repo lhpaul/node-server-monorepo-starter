@@ -53,7 +53,7 @@ describe(deleteTransactionHandler.name, () => {
     createdAt: new Date(),
     updatedAt: new Date(),
   };
-
+  const logGroup = deleteTransactionHandler.name;
   beforeEach(() => {
     mockLogger = {
       child: jest.fn().mockReturnThis(),
@@ -112,7 +112,7 @@ describe(deleteTransactionHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION.id, logGroup);
     expect(mockService.getResource).toHaveBeenCalledWith(
       mockParams.id,
       mockLogger,
@@ -136,7 +136,7 @@ describe(deleteTransactionHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION.id, logGroup);
     expect(mockService.getResource).toHaveBeenCalledWith(
       mockParams.id,
       mockLogger,
@@ -154,7 +154,7 @@ describe(deleteTransactionHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DELETE_TRANSACTION.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DELETE_TRANSACTION.id, logGroup);
     expect(mockService.deleteResource).toHaveBeenCalledWith(
       mockParams.id,
       mockLogger,

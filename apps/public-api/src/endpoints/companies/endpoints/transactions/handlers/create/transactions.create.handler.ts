@@ -13,6 +13,7 @@ export const createTransactionHandler = async (
   reply: FastifyReply,
 ) => {
   const logger = request.log.child({ handler: createTransactionHandler.name });
+  const logGroup = createTransactionHandler.name;
   const { companyId } = request.params as CreateCompanyTransactionParams;
   const user = request.user as AuthUser;
   if (!hasCompanyTransactionsCreatePermission(companyId, user)) {
@@ -24,7 +25,7 @@ export const createTransactionHandler = async (
   const service = TransactionsService.getInstance();
   const body = request.body as CreateCompanyTransactionBody;
   try {
-    logger.startStep(STEPS.CREATE_TRANSACTION.id);
+    logger.startStep(STEPS.CREATE_TRANSACTION.id, logGroup);
     const id = await service
       .createResource({
         ...body,

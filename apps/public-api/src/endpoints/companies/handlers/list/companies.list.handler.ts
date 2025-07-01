@@ -10,6 +10,7 @@ export const listCompaniesHandler = async (
   reply: FastifyReply,
 ) => {
   const logger = request.log.child({ handler: listCompaniesHandler.name });
+  const logGroup = listCompaniesHandler.name;
   const service = CompaniesService.getInstance();
   const user = request.user as AuthUser;
 
@@ -17,7 +18,7 @@ export const listCompaniesHandler = async (
   const companyIds = Object.keys(user.companies);
   
   // Get company information for each ID in parallel
-  logger.startStep(STEPS.GET_COMPANIES.id);
+  logger.startStep(STEPS.GET_COMPANIES.id, logGroup);
   const companies = await Promise.all(
     companyIds.map((id) => service.getResource(id, logger)),
   ).finally(() => logger.endStep(STEPS.GET_COMPANIES.id));

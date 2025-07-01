@@ -12,6 +12,7 @@ export const deleteTransactionHandler = async (
   reply: FastifyReply,
 ) => {
   const logger = request.log.child({ handler: deleteTransactionHandler.name });
+  const logGroup = deleteTransactionHandler.name;
   const service = TransactionsService.getInstance();
   const { companyId, id } = request.params as DeleteTransactionParams;
   const user = request.user as AuthUser;
@@ -21,7 +22,7 @@ export const deleteTransactionHandler = async (
       message: FORBIDDEN_ERROR.responseMessage,
     });
   }
-  logger.startStep(STEPS.GET_TRANSACTION.id);
+  logger.startStep(STEPS.GET_TRANSACTION.id, logGroup);
   const transaction = await service
     .getResource(id, logger)
     .finally(() => logger.endStep(STEPS.GET_TRANSACTION.id));
@@ -31,7 +32,7 @@ export const deleteTransactionHandler = async (
       message: RESOURCE_NOT_FOUND_ERROR.responseMessage,
     });
   }
-  logger.startStep(STEPS.DELETE_TRANSACTION.id);
+  logger.startStep(STEPS.DELETE_TRANSACTION.id, logGroup);
   await service
     .deleteResource(id, logger)
     .finally(() => logger.endStep(STEPS.DELETE_TRANSACTION.id));
