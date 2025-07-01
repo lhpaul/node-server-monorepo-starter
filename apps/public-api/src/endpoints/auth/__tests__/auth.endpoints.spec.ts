@@ -1,7 +1,7 @@
 import { createEndpoint, HTTP_METHODS_MAP } from '@repo/fastify';
 import { FastifyInstance } from 'fastify';
 import { URL_LOGIN, LOGIN_BODY_JSON_SCHEMA } from '../auth.endpoints.constants';
-import { loginHandler } from '../handlers/login.handler';
+import { loginHandler } from '../handlers/login/login.handler';
 import { authEndpointsBuilder } from '../auth.endpoints';
 
 jest.mock('@repo/fastify', () => ({

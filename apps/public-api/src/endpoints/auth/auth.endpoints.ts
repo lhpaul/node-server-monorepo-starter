@@ -3,7 +3,7 @@ import { FastifyInstance, RouteOptions } from 'fastify';
 
 import { URL_LOGIN } from './auth.endpoints.constants';
 import { LOGIN_BODY_JSON_SCHEMA } from './auth.endpoints.constants';
-import { loginHandler } from './handlers/login.handler';
+import { loginHandler } from './handlers/login/login.handler';
 export function authEndpointsBuilder(server: FastifyInstance): RouteOptions[] {
   return [
     createEndpoint(server, {
