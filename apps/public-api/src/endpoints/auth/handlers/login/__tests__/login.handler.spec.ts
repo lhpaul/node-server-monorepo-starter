@@ -12,7 +12,7 @@ jest.mock('@repo/shared/services', () => ({
   },
   UsersService: {
     getInstance: jest.fn(),
-  },
+  }
 }));
 
 describe(loginHandler.name, () => {
@@ -26,6 +26,7 @@ describe(loginHandler.name, () => {
   const mockUserId = 'user-123';
   const mockEmailToken = 'valid-email-token';
   const mockUserToken = 'valid-user-token';
+  const mockLogGroup = 'loginHandler';
 
   beforeEach(() => {
     mockLogger = {
@@ -78,11 +79,11 @@ describe(loginHandler.name, () => {
     await loginHandler(mockRequest as FastifyRequest, mockReply as FastifyReply);
 
     // Assert
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DECODE_EMAIL_TOKEN.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DECODE_EMAIL_TOKEN.id, mockLogGroup);
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.DECODE_EMAIL_TOKEN.id);
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.FIND_USER.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.FIND_USER.id, mockLogGroup);
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.FIND_USER.id);
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GENERATE_USER_TOKEN.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GENERATE_USER_TOKEN.id, mockLogGroup);
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GENERATE_USER_TOKEN.id);
     expect(mockReply.status).toHaveBeenCalledWith(STATUS_CODES.OK);
     expect(mockReply.send).toHaveBeenCalledWith({ token: mockUserToken });

@@ -1,6 +1,6 @@
 import { STATUS_CODES } from '@repo/fastify';
 import { User } from '@repo/shared/domain';
-import { AuthService, UsersService } from '@repo/shared/services';
+import { AuthService, DecodeEmailTokenError, DecodeEmailTokenErrorCode, UsersService } from '@repo/shared/services';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { ERROR_RESPONSES, STEPS } from '../update-claims.handler.constants';
@@ -21,6 +21,7 @@ describe(updateClaimsHandler.name, () => {
   let mockLogger: any;
   let mockAuthService: Partial<AuthService>;
   let mockUsersService: Partial<UsersService>;
+  const logGroup = updateClaimsHandler.name;
 
   beforeEach(() => {
     mockLogger = {
@@ -69,16 +70,17 @@ describe(updateClaimsHandler.name, () => {
     });
 
     it('should update claims and return 204', async () => {
+      (mockAuthService.updatePermissionsToUser as jest.Mock).mockResolvedValueOnce(undefined);
       await updateClaimsHandler(mockRequest, mockReply);
-
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_CLAIMS.id, logGroup);
+      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_CLAIMS.id);
       expect(mockAuthService.updatePermissionsToUser).toHaveBeenCalledWith({
         userId: 'test-user-id',
         uid: 'test-uid',
       }, mockLogger);
       expect(mockReply.status).toHaveBeenCalledWith(STATUS_CODES.NO_CONTENT);
       expect(mockReply.send).toHaveBeenCalled();
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_CLAIMS.id);
-      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_CLAIMS.id);
+      
     });
   });
 
@@ -95,6 +97,7 @@ describe(updateClaimsHandler.name, () => {
       it('should return 403 with invalid token error', async () => {
         await updateClaimsHandler(mockRequest, mockReply);
 
+        expect(mockLogger.startStep).not.toHaveBeenCalledWith(STEPS.FIND_USER.id, logGroup);
         expect(mockReply.status).toHaveBeenCalledWith(STATUS_CODES.FORBIDDEN);
         expect(mockReply.send).toHaveBeenCalledWith({
           code: ERROR_RESPONSES.INVALID_TOKEN.code,
@@ -119,13 +122,14 @@ describe(updateClaimsHandler.name, () => {
 
         await updateClaimsHandler(mockRequest, mockReply);
 
-        expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.FIND_USER.id);
+        expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.FIND_USER.id, logGroup);
         expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.FIND_USER.id);
         expect(mockReply.status).toHaveBeenCalledWith(STATUS_CODES.FORBIDDEN);
         expect(mockReply.send).toHaveBeenCalledWith({
           code: ERROR_RESPONSES.NO_USER_FOUND.code,
           message: ERROR_RESPONSES.NO_USER_FOUND.message(testEmail),
         });
+        expect(mockLogger.startStep).not.toHaveBeenCalledWith(STEPS.UPDATE_CLAIMS.id, logGroup);
       });
 
       it('should update claims when user is found', async () => {
@@ -136,11 +140,14 @@ describe(updateClaimsHandler.name, () => {
           updatedAt: new Date(),
         });
         (mockUsersService.getResourcesList as jest.Mock).mockResolvedValueOnce([mockUser]);
+        (mockAuthService.updatePermissionsToUser as jest.Mock).mockResolvedValueOnce(undefined);
 
         await updateClaimsHandler(mockRequest, mockReply);
 
-        expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.FIND_USER.id);
+        expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.FIND_USER.id, logGroup);
         expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.FIND_USER.id);
+        expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_CLAIMS.id, logGroup);
+        expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_CLAIMS.id);
         expect(mockAuthService.updatePermissionsToUser).toHaveBeenCalledWith({
           userId: mockUser.id,
           uid: 'test-uid',
