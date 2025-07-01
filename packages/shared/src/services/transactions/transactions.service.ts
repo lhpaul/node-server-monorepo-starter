@@ -14,7 +14,7 @@ import {
   UpdateTransactionInput,
   FilterTransactionsInput,
 } from './transactions.service.interfaces';
-import { ERRORS_MESSAGES } from './transactions.service.constants';
+import { DATE_FORMAT, ERRORS_MESSAGES } from './transactions.service.constants';
 
 export class TransactionsService extends DomainModelService<Transaction, TransactionDocument, CreateTransactionInput, CreateTransactionDocumentInput, UpdateTransactionInput, UpdateTransactionDocumentInput, FilterTransactionsInput, QueryTransactionsInput> {
   private static instance: TransactionsService;
@@ -47,6 +47,6 @@ export class TransactionsService extends DomainModelService<Transaction, Transac
   }
 
   private _isDateValid(date: string): boolean {
-    return moment(date, 'YYYY-MM-DD', true).isValid();
+    return moment(date, DATE_FORMAT, true).isValid();
   }
 } 
