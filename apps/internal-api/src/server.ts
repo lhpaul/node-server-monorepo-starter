@@ -49,7 +49,7 @@ export const init = async function (): Promise<FastifyInstance> {
     databaseURL: process.env.FIREBASE_DATABASE_URL,
   });
 
-  // Add decorator to authenticate requests. To avoid authentication in an route, you can pass the `skipAuth` option when building the route.
+  // Add decorator to authenticate requests. To avoid authentication in an route, you set the `authenticate` option to `false` when building the route.
   server.decorate(AUTHENTICATE_DECORATOR_NAME, async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       await authenticateApiKey(request, reply);
