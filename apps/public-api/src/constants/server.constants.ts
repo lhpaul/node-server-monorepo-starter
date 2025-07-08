@@ -4,9 +4,10 @@ export const COR_CONFIG = {
 
 export const FASTIFY_ENV_SCHEMA = {
   type: 'object',
-  required: ['JWT_SECRET'],
+  required: ['FIREBASE_PROJECT_ID', 'FIREBASE_DATABASE_URL'],
   properties: {
-    JWT_SECRET: { type: 'string' },
+    FIREBASE_PROJECT_ID: { type: 'string' },
+    FIREBASE_DATABASE_URL: { type: 'string' },
   },
 } as const;
 export const FASTIFY_ENV_CONFIG = {
