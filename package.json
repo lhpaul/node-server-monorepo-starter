@@ -8,7 +8,9 @@
     "deploy:firestore": "firebase deploy --only firestore",
     "deploy:firestore:indexes": "firebase deploy --only firestore:indexes",
     "deploy:firestore:rules": "firebase deploy --only firestore:rules",
-    "deploy:functions": "turbo run build --parallel && firebase deploy --only functions",
+    "deploy:functions": "turbo run build --filter=functions --filter=@repo/shared && firebase deploy --only functions",
+    "deploy:internal-api": "turbo run build --filter=internal-api --filter=@repo/fastify --filter=@repo/shared && npm run deploy --prefix apps/internal-api",
+    "deploy:public-api": "turbo run build --filter=public-api --filter=@repo/fastify --filter=@repo/shared && npm run deploy --prefix apps/public-api",
     "dev:internal-api": "turbo watch dev --filter=internal-api --filter=@repo/fastify --filter=@repo/shared",
     "dev:public-api": "turbo watch dev --filter=public-api --filter=@repo/fastify --filter=@repo/shared",
     "firestore:get-indexes": "firebase firestore:indexes > apps/firestore/firestore.indexes.json",
@@ -17,13 +19,15 @@
     "lint:staged": "lint-staged",
     "test": "turbo test"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "devDependencies": {
     "firebase-functions": "^6.3.2",
-    "firebase-tools": "^14.7.0",
+    "firebase-tools": "^14.9.0",
     "isolate-package": "^1.23.0",
-    "lint-staged": "^16.0.0",
-    "prettier": "^3.5.3",
+    "lint-staged": "^16.1.2",
+    "prettier": "^3.6.2",
     "turbo": "^2.5.4",
     "typescript": "5.8.2"
   },
