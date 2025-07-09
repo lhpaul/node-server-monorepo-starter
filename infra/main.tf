@@ -6,6 +6,7 @@ locals {
 resource "google_project" "default" {
   name = var.project_id
   project_id = var.project_id
+  org_id = var.organization_id
   billing_account = var.billing_account_id
   labels = {
     "firebase" = "enabled"
@@ -21,6 +22,7 @@ resource "google_project_service" "default" {
     "iam.googleapis.com", # Used to manage IAM roles
     "secretmanager.googleapis.com", # Used to store secrets
     "serviceusage.googleapis.com", # Enabling the ServiceUsage API allows the project to be quota checked.
+    "storage.googleapis.com", # Used to terraform state files
   ])
   service = each.key
   # Don't disable the service if the resource block is removed by accident.
@@ -28,6 +30,11 @@ resource "google_project_service" "default" {
   depends_on = [
     google_project.default
   ]
+}
+
+module "terraform_backend" {
+  source = "./services/terraform-backend"
+  project_id = var.project_id
 }
 
 module "firebase" {
@@ -87,6 +94,7 @@ resource "google_artifact_registry_repository" "cloud_run_deployment_sources_rep
 }
 
 module "public-api" {
+  count = var.first_run ? 0 : 1
   source = "./services/public-api"
   project_id = var.project_id
   region = var.region
@@ -98,6 +106,7 @@ module "public-api" {
 }
 
 module "internal-api" {
+  count = var.first_run ? 0 : 1
   source = "./services/internal-api"
   project_id = var.project_id
   region = var.region

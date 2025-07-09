@@ -88,3 +88,4 @@ gcloud config unset auth/impersonate_service_account
 - [Schedule Functions](https://firebase.google.com/docs/functions/schedule-functions?gen=2nd)
 - [Firebase CLI Reference](https://firebase.google.com/docs/cli)
 - [Google Cloud CLI Reference](https://cloud.google.com/sdk/gcloud)
+- [Cloud Functions local debugging](https://www.youtube.com/watch?v=v6ll4UxS0Os)

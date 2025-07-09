@@ -1,6 +1,18 @@
+variable "first_run" {
+  type = bool
+  description = "Whether this is the first run of the project"
+  default = false
+}
+
 variable "env" {
   type = string
   description = "The application environment of the project"
+}
+
+variable "organization_id" {
+  type = string
+  description = "The ID of the organization"
+  default = "663153561274"
 }
 
 variable "project_id" {

@@ -19,6 +19,10 @@ resource "google_cloud_run_v2_service" "default" {
   name     = var.service_name
   location = var.region
   ingress = var.allow_public_access ? "INGRESS_TRAFFIC_ALL" : "INGRESS_TRAFFIC_INTERNAL_ONLY"
+
+  # This attributes are added when deploying the service using the gcloud CLI. Had to add them in order to avoid constant terraform state updates.
+  # client = "gcloud"
+  # client_version = "527.0.0"
   
   traffic {
     type = "TRAFFIC_TARGET_ALLOCATION_TYPE_LATEST"
@@ -62,6 +66,10 @@ resource "google_cloud_run_v2_service" "default" {
   }
   build_config {
     service_account = "projects/${var.project_id}/serviceAccounts/${var.build_service_account_email}"
+    # base_image = "gcr.io/buildpacks/google-22/run"
+    # image_uri = "${var.region}-docker.pkg.dev/${var.project_id}/${var.artifact_registry_repository_name}/${var.service_name}"
+    # name = "projects/357801570334/locations/us-central1/builds/f9b2265e-0831-4673-9cb0-4251b0945216"
+    # source_location =  "gs://run-sources-node-starter-project-dev-us-central1/services/public-api/1751994741.954452-9e6084f41f744ad99d9737a3e69f7b7c.zip#1751994743430511"
   }
   depends_on = [
     google_project_service.default
@@ -70,6 +78,7 @@ resource "google_cloud_run_v2_service" "default" {
 
 resource "google_cloud_run_service_iam_member" "public_access" {
   count = var.allow_public_access ? 1 : 0
+  project = var.project_id
   service  = google_cloud_run_v2_service.default.name
   location = google_cloud_run_v2_service.default.location
   role     = "roles/run.invoker"

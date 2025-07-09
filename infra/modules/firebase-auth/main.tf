@@ -21,11 +21,19 @@ resource "google_identity_platform_config" "default" {
   # Auto-deletes anonymous users
   autodelete_anonymous_users = true
 
+  # This configuration is needed to enable Workload Identity Federation used for authenticating Github Actions. TODO: move to a separate module.
+  multi_tenant {
+    allow_tenants = true
+  }
+
   # Configures local sign-in methods, like anonymous, email/password, and phone authentication.
   sign_in {
     email {
       enabled = true
       password_required = false
+    }
+    phone_number {
+      enabled = false
     }
   }
 

@@ -238,6 +238,7 @@ For application-specific troubleshooting, refer to:
    - [Configuration Options](https://turborepo.com/docs/reference/configuration)
    - [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
 - [Firebase](https://firebase.google.com/)
+- [Google Cloud Pricing Calculator](https://cloud.google.com/products/calculator)
 
 ## Contributing
 
