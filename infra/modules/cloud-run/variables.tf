@@ -41,10 +41,10 @@ variable "environment_variables" {
   type = list(object({
     name = string
     value = optional(string)
-    value_from = optional(
+    value_source = optional(
       object({
-        name = string
-        key = string
+        secret = string
+        version = string
       })
     )
   }))
