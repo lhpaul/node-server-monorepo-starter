@@ -22,7 +22,7 @@ on:
 
 jobs:
   run-for-develop:
-    if: (github.event_name == 'push' && github.ref == 'refs/heads/extensions/google-cloud') || (github.event_name == 'pull_request' && github.base_ref == 'refs/heads/extensions/google-cloud')
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/extensions/google-cloud') || (github.event_name == 'pull_request' && github.base_ref == 'extensions/google-cloud')
     uses: ./.github/workflows/infra-run.yml
     with:
       environment_directory: infra/environments/develop
@@ -40,7 +40,7 @@ jobs:
       gcp_service_account_email: ${{ vars.GCP_SA_EMAIL_STG }}
       should_apply: true
   run-for-production:
-    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'pull_request' && github.base_ref == 'refs/heads/main')
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'pull_request' && github.base_ref == 'main')
     uses: ./.github/workflows/infra-run.yml
     with:
       environment_directory: infra/environments/production
