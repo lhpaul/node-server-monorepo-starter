@@ -24,6 +24,8 @@ jobs:
   run-for-develop:
     if: (github.event_name == 'push' && github.ref == 'refs/heads/extensions/google-cloud') || (github.event_name == 'pull_request' && github.base_ref == 'extensions/google-cloud')
     uses: ./.github/workflows/infra-run.yml
+    permissions:
+      id-token: 'write'
     with:
       environment_directory: infra/environments/develop
       gcp_project_id: ${{ vars.GCP_PROJECT_ID_DEV }}
@@ -33,6 +35,8 @@ jobs:
   run-for-staging:
     if: github.event_name == 'release'
     uses: ./.github/workflows/infra-run.yml
+    permissions:
+      id-token: 'write'
     with:
       environment_directory: infra/environments/staging
       gcp_project_id: ${{ vars.GCP_PROJECT_ID_STG }}
@@ -42,6 +46,8 @@ jobs:
   run-for-production:
     if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'pull_request' && github.base_ref == 'main')
     uses: ./.github/workflows/infra-run.yml
+    permissions:
+      id-token: 'write'
     with:
       environment_directory: infra/environments/production
       gcp_project_id: ${{ vars.GCP_PROJECT_ID_PROD }}
