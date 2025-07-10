@@ -40,7 +40,7 @@ jobs:
       id-token: 'write'
     defaults:
       run:
-        working-directory: ${{ github.event.inputs.environment_directory }}
+        working-directory: ${{ inputs.environment_directory }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -48,9 +48,9 @@ jobs:
     - name: Authenticate with Google Cloud
       uses: google-github-actions/auth@v2
       with:
-        project_id: ${{ github.event.inputs.gcp_project_id }}
-        workload_identity_provider: ${{ github.event.inputs.gcp_wif }}
-        service_account: ${{ github.event.inputs.gcp_service_account_email }}
+        project_id: ${{ inputs.gcp_project_id }}
+        workload_identity_provider: ${{ inputs.gcp_wif }}
+        service_account: ${{ inputs.gcp_service_account_email }}
 
     - name: Set up Terraform
       uses: hashicorp/setup-terraform@v3
@@ -70,9 +70,9 @@ jobs:
       run: terraform plan -out=tfplan
 
     - name: Terraform Apply
-      if: ${{ github.event.inputs.should_apply && !github.event.inputs.approve_required }}
+      if: ${{ inputs.should_apply && !inputs.approve_required }}
       run: terraform apply tfplan
 
     - name: Terraform Apply with Approval
-      if: ${{ github.event.inputs.should_apply && github.event.inputs.approve_required }}
+      if: ${{ inputs.should_apply && inputs.approve_required }}
       run: terraform apply -auto-approve tfplan

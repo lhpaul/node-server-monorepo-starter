@@ -29,7 +29,7 @@ jobs:
       gcp_project_id: ${{ vars.GCP_PROJECT_ID_DEV }}
       gcp_wif: ${{ vars.GCP_WIF_DEV }}
       gcp_service_account_email: ${{ vars.GCP_SA_EMAIL_DEV }}
-      should_apply: (github.event_name == 'push')
+      should_apply: ${{ github.event_name == 'push' }}
   run-for-staging:
     if: github.event_name == 'release'
     uses: ./.github/workflows/infra-run.yml
@@ -47,4 +47,4 @@ jobs:
       gcp_project_id: ${{ vars.GCP_PROJECT_ID_PROD }}
       gcp_wif: ${{ vars.GCP_WIF_PROD }}
       gcp_service_account_email: ${{ vars.GCP_SA_EMAIL_PROD }}
-      should_apply: (github.event_name == 'push')
+      should_apply: ${{ github.event_name == 'push' }}
