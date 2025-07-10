@@ -67,7 +67,7 @@ jobs:
 
     - name: Terraform Apply
       if: ${{ inputs.should_apply && !inputs.approve_required }}
-      run: terraform apply tfplan -auto-approve
+      run: terraform apply -auto-approve tfplan
 
     - name: Terraform Apply with Approval
       if: ${{ inputs.should_apply && inputs.approve_required }}
