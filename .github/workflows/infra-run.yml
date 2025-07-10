@@ -17,6 +17,11 @@ on:
         type: string
         required: true
         default: "node-starter-project-dev"
+      gcp_service_account_email:
+        description: "GCP Service Account Email"
+        type: string
+        required: true
+        default: "node-starter-project-dev"
       should_apply:
         description: "If it should apply the changes"
         type: boolean
@@ -30,17 +35,22 @@ on:
 jobs:
   plan:
     runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
     defaults:
       run:
         working-directory: ${{ github.event.inputs.environment_directory }}
     steps:
-    - uses: google-github-actions/auth@v2
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Authenticate with Google Cloud
+      uses: google-github-actions/auth@v2
       with:
         project_id: ${{ github.event.inputs.gcp_project_id }}
         workload_identity_provider: ${{ github.event.inputs.gcp_wif }}
-
-    - name: Checkout code
-      uses: actions/checkout@v3
+        service_account: ${{ github.event.inputs.gcp_service_account_email }}
 
     - name: Set up Terraform
       uses: hashicorp/setup-terraform@v3
