@@ -1,7 +1,7 @@
-name: Unit Tests
+name: Lint & Tests
  
 on:
-  push:
+  push: # TODO: check if this is needed
     branches: ["extensions/google-cloud"]
   pull_request:
     types: [opened, synchronize]

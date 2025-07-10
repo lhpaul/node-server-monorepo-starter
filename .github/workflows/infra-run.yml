@@ -1,0 +1,68 @@
+name: Infrastructure Plan and Apply
+on:
+  workflow_call:
+    inputs:
+      environment_directory:
+        description: "The directory of the environment"
+        type: string
+        required: true
+        default: "infra/environments/develop"
+      gcp_project_id:
+        description: "GCP Project ID"
+        type: string
+        required: true
+        default: "node-starter-project-dev"
+      gcp_wif:
+        description: "GCP Workload Identity Provider"
+        type: string
+        required: true
+        default: "node-starter-project-dev"
+      should_apply:
+        description: "If it should apply the changes"
+        type: boolean
+        required: false
+        default: false
+      approve_required:
+        description: "If it should require approval"
+        type: boolean
+        required: false
+        default: false
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ github.event.inputs.environment_directory }}
+    steps:
+    - uses: google-github-actions/auth@v2
+      with:
+        project_id: ${{ github.event.inputs.gcp_project_id }}
+        workload_identity_provider: ${{ github.event.inputs.gcp_wif }}
+
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: 1.6.6
+
+    - name: Terraform Init
+      run: terraform init
+
+    - name: Terraform Format
+      run: terraform fmt -check
+
+    - name: Terraform Validate
+      run: terraform validate
+
+    - name: Terraform Plan
+      run: terraform plan -out=tfplan
+
+    - name: Terraform Apply
+      if: ${{ github.event.inputs.should_apply && !github.event.inputs.approve_required }}
+      run: terraform apply tfplan
+
+    - name: Terraform Apply with Approval
+      if: ${{ github.event.inputs.should_apply && github.event.inputs.approve_required }}
+      run: terraform apply -auto-approve tfplan

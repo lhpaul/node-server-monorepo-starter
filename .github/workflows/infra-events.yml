@@ -1,0 +1,47 @@
+# This workflow is used to validate and apply infrastructure changes.
+# In case of a pull request to the develop branch, it will go to the development environment directory make sure the plan is valid.
+# In case of a pull request to the main branch, it will go to the production environment directory make sure the plan is valid.
+# In case of a release, it will go to the staging environment directory make sure the plan is valid and apply the changes.
+# In case of a push to the develop branch, it will go to the development environment directory make sure the plan is valid and apply the changes.
+# In case of a push to the main branch, it will go to the production environment directory make sure the plan is valid and apply the changes.
+
+name: Infrastructure Checks
+
+on:
+  pull_request:
+    branches: [extensions/google-cloud, main]
+    types: [opened, synchronize]
+    paths:
+      - 'infra/**'
+  push:
+    branches: [extensions/google-cloud, main]
+    paths:
+      - 'infra/**'
+  release:
+    types: [created]
+
+jobs:
+  run-for-develop:
+    if: github.ref == 'refs/heads/extensions/google-cloud'
+    uses: ./.github/workflows/infra-run.yml
+    with:
+      environment_directory: infra/environments/develop
+      gcp_project_id: ${{ vars.GCP_PROJECT_ID_DEV }}
+      gcp_wif: ${{ vars.GCP_WIF_DEV }}
+      should_apply: (github.event_name == 'push')
+  run-for-staging:
+    if: github.event_name == 'release'
+    uses: ./.github/workflows/infra-run.yml
+    with:
+      environment_directory: infra/environments/staging
+      gcp_project_id: ${{ vars.GCP_PROJECT_ID_STG }}
+      gcp_wif: ${{ vars.GCP_WIF_STG }}
+      should_apply: true
+  run-for-production:
+    if: github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/infra-run.yml
+    with:
+      environment_directory: infra/environments/production
+      gcp_project_id: ${{ vars.GCP_PROJECT_ID_PROD }}
+      gcp_wif: ${{ vars.GCP_WIF_PROD }}
+      should_apply: (github.event_name == 'push')
