@@ -13,12 +13,12 @@ on:
     types: [opened, synchronize]
     paths:
       - 'infra/**'
-  # push:
-  #   branches: [extensions/google-cloud, main]
-  #   paths:
-  #     - 'infra/**'
-  # release:
-  #   types: [created]
+  push:
+    branches: [extensions/google-cloud, main]
+    paths:
+      - 'infra/**'
+  release:
+    types: [created]
 
 jobs:
   run-for-develop:
@@ -31,7 +31,8 @@ jobs:
       gcp_project_id: ${{ vars.GCP_PROJECT_ID_DEV }}
       gcp_wif: ${{ vars.GCP_WIF_DEV }}
       gcp_service_account_email: ${{ vars.GCP_INFRA_SA_EMAIL_DEV }}
-      should_apply: ${{ github.event_name == 'push' }}
+      # should_apply: ${{ github.event_name == 'push' }}
+      should_apply: true
   run-for-staging:
     if: github.event_name == 'release'
     uses: ./.github/workflows/infra-run.yml
