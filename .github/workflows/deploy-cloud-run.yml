@@ -44,6 +44,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Echo service
+        run: echo "${{ inputs.service }}"
+
       - name: Build
         run: pnpm run pre-deploy:${{ inputs.service }}
 
