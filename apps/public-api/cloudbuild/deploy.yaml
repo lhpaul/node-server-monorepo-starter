@@ -7,7 +7,7 @@ steps:
     name: 'node'
     dir: '$_PATH_FROM_ROOT'
     entrypoint: 'npm'
-    args: ['ci']
+    args: ['install']
   - id: 'build'
     name: 'node'
     dir: '$_PATH_FROM_ROOT'
