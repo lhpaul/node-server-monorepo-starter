@@ -42,6 +42,7 @@ steps:
 
 substitutions:
   _SERVICE_NAME: 'public-api'
+  _DOCKER_REPO_NAME: 'cloud-run-source-deploy' # Make sure is the same name set in the infra for the cloud_run_deployment_sources_repository in infra/main.tf
   # _REGION: this variable is set by the Cloud Build trigger.
 
 images:
