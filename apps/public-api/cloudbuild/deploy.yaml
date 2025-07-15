@@ -33,8 +33,7 @@ steps:
         # 'managed',
         # '--allow-unauthenticated',
         '--set-env-vars',
-        'FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}',
-        '--set-env-vars',
+        'APP_ENV=${_ENV}',
         'FIREBASE_DATABASE_URL=${FIREBASE_DATABASE_URL}',
         # '--update-secrets',
         # 'SOME_SECRET=some-secret:latest'
@@ -43,6 +42,7 @@ steps:
 substitutions:
   _SERVICE_NAME: 'public-api'
   _DOCKER_REPO_NAME: 'cloud-run-source-deploy' # Make sure is the same name set in the infra for the cloud_run_deployment_sources_repository in infra/main.tf
+  # _ENV: this variable is set by the Cloud Build trigger.
   # _REGION: this variable is set by the Cloud Build trigger.
 
 images:

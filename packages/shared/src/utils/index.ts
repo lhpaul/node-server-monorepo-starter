@@ -1,5 +1,6 @@
 // Utils that are exposed to applications
 export * from './api-requests/index.js';
+export * from './env-variables/index.js';
 export * from './errors/index.js';
 export * from './firestore/index.js';
 export * from './logging/index.js';
