@@ -44,15 +44,15 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Build
+        run: pnpm run pre-deploy:${{ inputs.service }}
+
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
           project_id: ${{ inputs.gcp_project_id }}
           workload_identity_provider: ${{ inputs.gcp_wif }}
           service_account: ${{ inputs.gcp_service_account_email }}
-
-      - name: Build
-        run: pnpm run pre-deploy:${{ inputs.service }}
 
       - name: Deploy
         run: pnpm run deploy:${{ inputs.service }} -- --set-env-vars APP_ENV=${{ inputs.env }}

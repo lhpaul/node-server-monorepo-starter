@@ -27,7 +27,7 @@ jobs:
     permissions:
       id-token: 'write'
     with:
-      service: $SERVICE
+      service: '$SERVICE'
       env: TEST
       gcp_project_id: ${{ vars.GCP_PROJECT_ID_DEV }}
       gcp_wif: ${{ vars.GCP_WIF_DEV }}
@@ -38,7 +38,7 @@ jobs:
     permissions:
       id-token: 'write'
     with:
-      service: $SERVICE
+      service: '$SERVICE'
       env: DEV
       gcp_project_id: ${{ vars.GCP_PROJECT_ID_DEV }}
       gcp_wif: ${{ vars.GCP_WIF_DEV }}
@@ -49,7 +49,7 @@ jobs:
     permissions:
       id-token: 'write'
     with:
-      service: $SERVICE
+      service: '$SERVICE'
       env: STG
       gcp_project_id: ${{ vars.GCP_PROJECT_ID_STG }}
       gcp_wif: ${{ vars.GCP_WIF_STG }}
@@ -60,7 +60,7 @@ jobs:
     permissions:
       id-token: 'write'
     with:
-      service: $SERVICE
+      service: '$SERVICE'
       env: PROD
       gcp_project_id: ${{ vars.GCP_PROJECT_ID_PROD }}
       gcp_wif: ${{ vars.GCP_WIF_PROD }}
