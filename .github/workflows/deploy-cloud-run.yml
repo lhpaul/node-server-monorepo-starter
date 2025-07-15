@@ -1,4 +1,4 @@
-name: 'Deploy to Cloud Run'
+name: Deploy to Cloud Run
 
 on:
   workflow_call:
@@ -33,33 +33,33 @@ jobs:
       id-token: 'write'
 
     steps:
-      - name: 'Checkout'
-        uses: 'actions/checkout@v4' # actions/checkout@v4
+      - name: Check out code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
-      # Configure Workload Identity Federation and generate an access token.
-      #
-      # See https://github.com/google-github-actions/auth for more options,
-      # including authenticating via a JSON credentials file.
-      - id: 'auth'
-        name: 'Authenticate to Google Cloud'
-        uses: 'google-github-actions/auth@v2' # google-github-actions/auth@v2
+      - uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
         with:
           project_id: ${{ inputs.gcp_project_id }}
           workload_identity_provider: ${{ inputs.gcp_wif }}
           service_account: ${{ inputs.gcp_service_account_email }}
-      
-      - name: 'Install PNPM'
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
 
-      - name: 'Install dependencies'
-        run: pnpm install
-
-      - name: 'Build'
+      - name: Build
         run: pnpm run pre-deploy:${{ inputs.service }}
 
-      - name: 'Deploy'
+      - name: Deploy
         run: pnpm run deploy:${{ inputs.service }} -- --set-env-vars APP_ENV=${{ inputs.env }}
 
       # - name: 'Deploy to Cloud Run'

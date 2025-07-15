@@ -3,7 +3,7 @@
 # It is used to deploy the public API to the staging environment when a release is created.
 # It is used to deploy the public API to the production environment when a push is made to the main branch.
 
-name: 'Public API Deployment'
+name: Public API Deployment
 
 on:
   push:
