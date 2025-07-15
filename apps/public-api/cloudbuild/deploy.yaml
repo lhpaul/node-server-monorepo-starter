@@ -3,16 +3,16 @@ substitutions:
 options:
   logging: CLOUD_LOGGING_ONLY
 steps:
-  - id: 'install'
-    name: 'node'
-    dir: '$_PATH_FROM_ROOT'
-    entrypoint: 'npm'
-    args: ['install']
-  - id: 'build'
-    name: 'node'
-    dir: '$_PATH_FROM_ROOT'
-    entrypoint: 'npm'
-    args: ['run', 'build']
+  # - id: 'install'
+  #   name: 'node'
+  #   dir: '$_PATH_FROM_ROOT'
+  #   entrypoint: 'npm'
+  #   args: ['install']
+  # - id: 'build'
+  #   name: 'node'
+  #   dir: '$_PATH_FROM_ROOT'
+  #   entrypoint: 'npm'
+  #   args: ['run', 'build']
   - id: 'isolate'
     name: 'node'
     dir: '$_PATH_FROM_ROOT'
@@ -27,8 +27,8 @@ steps:
         'run',
         'deploy',
         'public-api',
-        '--region',
-        '$_REGION',
+        # '--region',
+        # '$_REGION',
         '--source',
         './isolate',
         '--set-env-vars',
