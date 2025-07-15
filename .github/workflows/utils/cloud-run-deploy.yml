@@ -1,0 +1,78 @@
+name: 'Deploy to Cloud Run'
+
+on:
+  workflow_call:
+    inputs:
+      service:
+        description: 'The service to deploy'
+        type: string
+        required: true
+      env:
+        description: 'The environment to deploy'
+        type: string
+        required: true
+      gcp_project_id:
+        description: 'The Google Cloud project ID'
+        type: string
+        required: true
+      gcp_wif:
+        description: 'The Google Cloud Workload Identity Federation'
+        type: string
+        required: true
+      gcp_service_account_email:
+        description: 'The Google Cloud service account email'
+        type: string
+        required: true
+      
+jobs:
+  deploy:
+    runs-on: 'ubuntu-latest'
+
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+      - name: 'Checkout'
+        uses: 'actions/checkout@v4' # actions/checkout@v4
+
+      # Configure Workload Identity Federation and generate an access token.
+      #
+      # See https://github.com/google-github-actions/auth for more options,
+      # including authenticating via a JSON credentials file.
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        uses: 'google-github-actions/auth@v2' # google-github-actions/auth@v2
+        with:
+          project_id: ${{ inputs.gcp_project_id }}
+          workload_identity_provider: ${{ inputs.gcp_wif }}
+          service_account: ${{ inputs.gcp_service_account_email }}
+      
+      - name: 'Install PNPM'
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: 'Install dependencies'
+        run: pnpm install
+
+      - name: 'Build'
+        run: pnpm run pre-deploy:${{ inputs.service }}
+
+      - name: 'Deploy'
+        run: pnpm run deploy:${{ inputs.service }} -- --set-env-vars APP_ENV=${{ inputs.env }}
+
+      # - name: 'Deploy to Cloud Run'
+      #   uses: 'google-github-actions/deploy-cloudrun@v2'
+      #   with:
+      #     service: '${{ env.SERVICE }}'
+      #     region: '${{ env.REGION }}'
+      #     # NOTE: If using a different source folder, update the image name below:
+      #     source: './isolate'
+      #     env_vars: |-
+      #       APP_ENV=${{ env.APP_ENV }}
+
+      # # If required, use the Cloud Run URL output in later steps
+      # - name: 'Show output'
+      #   run: |-
+      #     echo ${{ steps.deploy.outputs.url }}

@@ -1,0 +1,52 @@
+# This workflow is used to deploy the public API to the development, staging, and production environments.
+# It is used to deploy the public API to the development environment when a push is made to the feature/infra branch.
+# It is used to deploy the public API to the staging environment when a release is created.
+# It is used to deploy the public API to the production environment when a push is made to the main branch.
+
+name: 'Public API Deployment'
+
+on:
+  push:
+    branches: [feature/infra, main]
+    paths:
+      - 'apps/public-api/**'
+      - 'packages/fastify/**'
+      - 'packages/shared/**'
+  release:
+    types: [created]
+env:
+  SERVICE: 'public-api'
+jobs:
+  deploy-dev:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/feature/infra'
+    uses: ./.github/workflows/utils/cloud-run-deploy.yml
+    permissions:
+      id-token: 'write'
+    with:
+      service: $SERVICE
+      env: DEV
+      gcp_project_id: ${{ vars.GCP_PROJECT_ID_DEV }}
+      gcp_wif: ${{ vars.GCP_WIF_DEV }}
+      gcp_service_account_email: ${{ vars.GCP_CLOUD_BUILD_CLOUD_RUN_SA_EMAIL_DEV }}
+  deploy-stg:
+    if: github.event_name == 'release'
+    uses: ./.github/workflows/utils/cloud-run-deploy.yml
+    permissions:
+      id-token: 'write'
+    with:
+      service: $SERVICE
+      env: STG
+      gcp_project_id: ${{ vars.GCP_PROJECT_ID_STG }}
+      gcp_wif: ${{ vars.GCP_WIF_STG }}
+      gcp_service_account_email: ${{ vars.GCP_CLOUD_BUILD_CLOUD_RUN_SA_EMAIL_STG }}
+  deploy-prod:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/utils/cloud-run-deploy.yml
+    permissions:
+      id-token: 'write'
+    with:
+      service: $SERVICE
+      env: PROD
+      gcp_project_id: ${{ vars.GCP_PROJECT_ID_PROD }}
+      gcp_wif: ${{ vars.GCP_WIF_PROD }}
+      gcp_service_account_email: ${{ vars.GCP_CLOUD_BUILD_CLOUD_RUN_SA_EMAIL_PROD }}
