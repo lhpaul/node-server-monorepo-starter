@@ -1,5 +1,4 @@
 name: Deploy to Cloud Run
-
 on:
   workflow_call:
     inputs:
@@ -22,16 +21,12 @@ on:
       gcp_service_account_email:
         description: 'The Google Cloud service account email'
         type: string
-        required: true
-      
+        required: true 
 jobs:
   deploy:
-    runs-on: 'ubuntu-latest'
-
+    runs-on: ubuntu-latest
     permissions:
-      contents: 'read'
       id-token: 'write'
-
     steps:
       - name: Check out code
         uses: actions/checkout@v4

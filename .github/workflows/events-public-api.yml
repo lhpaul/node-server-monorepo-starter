@@ -6,6 +6,9 @@
 name: Public API Deployment
 
 on:
+  pull_request:
+    branches: [extensions/google-cloud, main]
+    types: [opened, synchronize]
   push:
     branches: [feature/infra, main]
     paths:
@@ -14,9 +17,7 @@ on:
       - 'packages/shared/**'
   release:
     types: [created]
-  pull_request:
-    branches: [extensions/google-cloud, main]
-    types: [opened, synchronize]
+
 env:
   SERVICE: 'public-api'
 jobs:
