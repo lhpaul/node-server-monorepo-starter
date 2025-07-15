@@ -48,7 +48,10 @@ jobs:
         run: echo "${{ inputs.service }}"
 
       - name: Build
-        run: pnpm run pre-deploy:${{ inputs.service }}
+        run: pnpm run build:${{ inputs.service }}
+
+      - name: Isolate
+        run: pnpm run isolate:${{ inputs.service }}
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
