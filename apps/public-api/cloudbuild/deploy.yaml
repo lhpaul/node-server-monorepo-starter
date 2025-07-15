@@ -47,3 +47,6 @@ substitutions:
 
 images:
   - '$_REGION-docker.pkg.dev/$PROJECT_ID/$_DOCKER_REPO_NAME/$_SERVICE_NAME:$SHORT_SHA'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
