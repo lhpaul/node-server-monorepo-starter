@@ -23,7 +23,7 @@ on:
 jobs:
   run-for-develop:
     if: (github.event_name == 'push' && github.ref == 'refs/heads/extensions/google-cloud') || (github.event_name == 'pull_request' && github.base_ref == 'extensions/google-cloud')
-    uses: ./.github/workflows/utils/infra-deploy.yml
+    uses: ./.github/workflows/deploy-infra.yml
     permissions:
       id-token: 'write'
     with:
@@ -34,7 +34,7 @@ jobs:
       should_apply: ${{ github.event_name == 'push' }}
   run-for-staging:
     if: github.event_name == 'release'
-    uses: ./.github/workflows/utils/infra-deploy.yml
+    uses: ./.github/workflows/deploy-infra.yml
     permissions:
       id-token: 'write'
     with:
@@ -45,7 +45,7 @@ jobs:
       should_apply: true
   run-for-production:
     if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'pull_request' && github.base_ref == 'main')
-    uses: ./.github/workflows/utils/infra-deploy.yml
+    uses: ./.github/workflows/deploy-infra.yml
     permissions:
       id-token: 'write'
     with:

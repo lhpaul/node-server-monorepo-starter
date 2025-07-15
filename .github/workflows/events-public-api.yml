@@ -22,7 +22,7 @@ env:
 jobs:
   deploy-test:
     if: github.event_name == 'pull_request'
-    uses: ./.github/workflows/utils/cloud-run-deploy.yml
+    uses: ./.github/workflows/deploy-cloud-run.yml
     permissions:
       id-token: 'write'
     with:
@@ -33,7 +33,7 @@ jobs:
       gcp_service_account_email: ${{ vars.GCP_CLOUD_BUILD_CLOUD_RUN_SA_EMAIL_DEV }}
   deploy-dev:
     if: github.event_name == 'push' && github.ref == 'refs/heads/feature/infra'
-    uses: ./.github/workflows/utils/cloud-run-deploy.yml
+    uses: ./.github/workflows/deploy-cloud-run.yml
     permissions:
       id-token: 'write'
     with:
@@ -44,7 +44,7 @@ jobs:
       gcp_service_account_email: ${{ vars.GCP_CLOUD_BUILD_CLOUD_RUN_SA_EMAIL_DEV }}
   deploy-stg:
     if: github.event_name == 'release'
-    uses: ./.github/workflows/utils/cloud-run-deploy.yml
+    uses: ./.github/workflows/deploy-cloud-run.yml
     permissions:
       id-token: 'write'
     with:
@@ -55,7 +55,7 @@ jobs:
       gcp_service_account_email: ${{ vars.GCP_CLOUD_BUILD_CLOUD_RUN_SA_EMAIL_STG }}
   deploy-prod:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    uses: ./.github/workflows/utils/cloud-run-deploy.yml
+    uses: ./.github/workflows/deploy-cloud-run.yml
     permissions:
       id-token: 'write'
     with:
