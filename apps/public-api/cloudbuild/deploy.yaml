@@ -1,22 +1,14 @@
+dir: 'apps/public-api'
 steps:
-  # Build the Docker image
-  - name: 'gcr.io/cloud-builders/docker'
-    args:
-      [
-        'build',
-        '-t',
-        '$_REGION-docker.pkg.dev/$PROJECT_ID/$_DOCKER_REPO_NAME/$_SERVICE_NAME:$SHORT_SHA',
-        '.'
-      ]
-
-  # Push the Docker image to Artifact Registry
-  - name: 'gcr.io/cloud-builders/docker'
-    args:
-      [
-        'push',
-        '$_REGION-docker.pkg.dev/$PROJECT_ID/$_DOCKER_REPO_NAME/$_SERVICE_NAME:$SHORT_SHA'
-      ]
-
+  - name: 'install'
+    entrypoint: 'npm'
+    args: ['ci']
+  - name: 'build'
+    entrypoint: 'npm'
+    args: ['run', 'build']
+  - name: 'isolate'
+    entrypoint: 'npx'
+    args: ['isolate']
   # Deploy to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'gcloud'
@@ -24,28 +16,11 @@ steps:
       [
         'run',
         'deploy',
-        '$_SERVICE_NAME',
-        '--image',
-        '$_REGION-docker.pkg.dev/$PROJECT_ID/$_DOCKER_REPO_NAME/$_SERVICE_NAME:$SHORT_SHA',
-        '--region',
-        '$_REGION',
-        # '--platform',
-        # 'managed',
-        # '--allow-unauthenticated',
+        'public-api',
+        '--source',
+        './isolate',
         '--set-env-vars',
         'APP_ENV=${_ENV}',
         # '--update-secrets',
         # 'SOME_SECRET=some-secret:latest'
       ]
-
-substitutions:
-  _SERVICE_NAME: 'public-api'
-  _DOCKER_REPO_NAME: 'cloud-run-source-deploy' # Make sure is the same name set in the infra for the cloud_run_deployment_sources_repository in infra/main.tf
-  # _ENV: this variable is set by the Cloud Build trigger.
-  # _REGION: this variable is set by the Cloud Build trigger.
-
-images:
-  - '$_REGION-docker.pkg.dev/$PROJECT_ID/$_DOCKER_REPO_NAME/$_SERVICE_NAME:$SHORT_SHA'
-
-options:
-  logging: CLOUD_LOGGING_ONLY
