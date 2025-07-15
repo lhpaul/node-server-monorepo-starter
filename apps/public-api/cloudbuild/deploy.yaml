@@ -5,7 +5,7 @@ steps:
       [
         'build',
         '-t',
-        '$LOCATION-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/$_SERVICE_NAME:$SHORT_SHA',
+        '$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/$_SERVICE_NAME:$SHORT_SHA',
         '.'
       ]
 
@@ -14,7 +14,7 @@ steps:
     args:
       [
         'push',
-        '$LOCATION-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/$_SERVICE_NAME:$SHORT_SHA'
+        '$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/$_SERVICE_NAME:$SHORT_SHA'
       ]
 
   # Deploy to Cloud Run
@@ -26,9 +26,9 @@ steps:
         'deploy',
         '$_SERVICE_NAME',
         '--image',
-        '$LOCATION-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/$_SERVICE_NAME:$SHORT_SHA',
+        '$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/$_SERVICE_NAME:$SHORT_SHA',
         '--region',
-        '$LOCATION',
+        '$_REGION',
         # '--platform',
         # 'managed',
         # '--allow-unauthenticated',
@@ -42,6 +42,7 @@ steps:
 
 substitutions:
   _SERVICE_NAME: 'public-api'
+  # _REGION: this variable is set by the Cloud Build trigger.
 
 images:
-  - '$LOCATION-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/$_SERVICE_NAME:$SHORT_SHA'
+  - '$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/$_SERVICE_NAME:$SHORT_SHA'
