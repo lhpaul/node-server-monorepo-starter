@@ -34,7 +34,6 @@ steps:
         # '--allow-unauthenticated',
         '--set-env-vars',
         'APP_ENV=${_ENV}',
-        'FIREBASE_DATABASE_URL=${FIREBASE_DATABASE_URL}',
         # '--update-secrets',
         # 'SOME_SECRET=some-secret:latest'
       ]
