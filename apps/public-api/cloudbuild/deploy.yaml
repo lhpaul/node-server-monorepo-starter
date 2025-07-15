@@ -1,0 +1,47 @@
+steps:
+  # Build the Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      [
+        'build',
+        '-t',
+        '$LOCATION-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/$_SERVICE_NAME:$SHORT_SHA',
+        '.'
+      ]
+
+  # Push the Docker image to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      [
+        'push',
+        '$LOCATION-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/$_SERVICE_NAME:$SHORT_SHA'
+      ]
+
+  # Deploy to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+      [
+        'run',
+        'deploy',
+        '$_SERVICE_NAME',
+        '--image',
+        '$LOCATION-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/$_SERVICE_NAME:$SHORT_SHA',
+        '--region',
+        '$LOCATION',
+        # '--platform',
+        # 'managed',
+        # '--allow-unauthenticated',
+        '--set-env-vars',
+        'FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}',
+        '--set-env-vars',
+        'FIREBASE_DATABASE_URL=${FIREBASE_DATABASE_URL}',
+        # '--update-secrets',
+        # 'SOME_SECRET=some-secret:latest'
+      ]
+
+substitutions:
+  _SERVICE_NAME: 'public-api'
+
+images:
+  - '$LOCATION-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/$_SERVICE_NAME:$SHORT_SHA'
