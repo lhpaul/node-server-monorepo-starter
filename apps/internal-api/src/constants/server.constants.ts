@@ -6,10 +6,9 @@ export const COR_CONFIG = {
 
 export const FASTIFY_ENV_SCHEMA = {
   type: 'object',
-  required: ['FIREBASE_PROJECT_ID', 'FIREBASE_DATABASE_URL'],
+  required: ['APP_ENV'],
   properties: {
-    FIREBASE_PROJECT_ID: { type: 'string' },
-    FIREBASE_DATABASE_URL: { type: 'string' },
+    APP_ENV: { type: 'string', enum: ['DEV', 'STG', 'PROD'] },
   },
 } as const;
 export const FASTIFY_ENV_CONFIG = {
