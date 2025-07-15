@@ -14,9 +14,23 @@ on:
       - 'packages/shared/**'
   release:
     types: [created]
+  pull_request:
+    branches: [extensions/google-cloud, main]
+    types: [opened, synchronize]
 env:
   SERVICE: 'public-api'
 jobs:
+  deploy-test:
+    if: github.event_name == 'pull_request'
+    uses: ./.github/workflows/utils/cloud-run-deploy.yml
+    permissions:
+      id-token: 'write'
+    with:
+      service: $SERVICE
+      env: TEST
+      gcp_project_id: ${{ vars.GCP_PROJECT_ID_DEV }}
+      gcp_wif: ${{ vars.GCP_WIF_DEV }}
+      gcp_service_account_email: ${{ vars.GCP_CLOUD_BUILD_CLOUD_RUN_SA_EMAIL_DEV }}
   deploy-dev:
     if: github.event_name == 'push' && github.ref == 'refs/heads/feature/infra'
     uses: ./.github/workflows/utils/cloud-run-deploy.yml
