@@ -5,7 +5,7 @@ steps:
       [
         'build',
         '-t',
-        '$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/$_SERVICE_NAME:$SHORT_SHA',
+        '$_REGION-docker.pkg.dev/$PROJECT_ID/$_DOCKER_REPO_NAME/$_SERVICE_NAME:$SHORT_SHA',
         '.'
       ]
 
@@ -14,7 +14,7 @@ steps:
     args:
       [
         'push',
-        '$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/$_SERVICE_NAME:$SHORT_SHA'
+        '$_REGION-docker.pkg.dev/$PROJECT_ID/$_DOCKER_REPO_NAME/$_SERVICE_NAME:$SHORT_SHA'
       ]
 
   # Deploy to Cloud Run
@@ -26,7 +26,7 @@ steps:
         'deploy',
         '$_SERVICE_NAME',
         '--image',
-        '$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/$_SERVICE_NAME:$SHORT_SHA',
+        '$_REGION-docker.pkg.dev/$PROJECT_ID/$_DOCKER_REPO_NAME/$_SERVICE_NAME:$SHORT_SHA',
         '--region',
         '$_REGION',
         # '--platform',
@@ -45,4 +45,4 @@ substitutions:
   # _REGION: this variable is set by the Cloud Build trigger.
 
 images:
-  - '$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/$_SERVICE_NAME:$SHORT_SHA'
+  - '$_REGION-docker.pkg.dev/$PROJECT_ID/$_DOCKER_REPO_NAME/$_SERVICE_NAME:$SHORT_SHA'
