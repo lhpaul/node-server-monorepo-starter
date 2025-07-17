@@ -9,12 +9,12 @@ name: Infrastructure Checks
 
 on:
   pull_request:
-    branches: [extensions/google-cloud, main]
+    branches: [develop, main]
     types: [opened, synchronize]
     paths:
       - 'infra/**'
   push:
-    branches: [extensions/google-cloud, main]
+    branches: [develop, main]
     paths:
       - 'infra/**'
   release:
@@ -22,7 +22,7 @@ on:
 
 jobs:
   run-for-develop:
-    if: (github.event_name == 'push' && github.ref == 'refs/heads/extensions/google-cloud') || (github.event_name == 'pull_request' && github.base_ref == 'extensions/google-cloud')
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/develop') || (github.event_name == 'pull_request' && github.base_ref == 'develop')
     uses: ./.github/workflows/deploy-infra.yml
     permissions:
       id-token: 'write'
