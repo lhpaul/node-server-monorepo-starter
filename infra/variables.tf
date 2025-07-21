@@ -1,9 +1,3 @@
-variable "first_run" {
-  type = bool
-  description = "Whether this is the first run of the project"
-  default = false
-}
-
 variable "env" {
   type = string
   description = "The application environment of the project"
@@ -50,4 +44,9 @@ variable "authorized_domains" {
   default = [
     "localhost"
   ]
+}
+
+variable "github_repository" {
+  type = string
+  description = "The GitHub repository where the code is stored"
 }

@@ -4,7 +4,7 @@ locals {
 
 module "main" {
   source = "../../"
-  env = "stg"
+  env = "STG"
   project_id = local.project_id
   authorized_domains = [
     "localhost",
@@ -14,4 +14,5 @@ module "main" {
   ]
   android_app_package_id = "com.lhpaul.reactNativePlayground.stg"
   apple_app_bundle_id = "com.lhpaul.reactNativePlayground.stg"
+  github_repository = "lhpaul/node-starter-project"
 }

@@ -11,6 +11,9 @@
 # tf lock file
 **/.terraform.lock.hcl
 
+# tfplan files
+environments/**/tfplan
+
 # Crash log files
 crash.log
 

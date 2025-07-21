@@ -1,8 +1,4 @@
-locals {
-  firebase_database_url = "https://${var.project_id}.firebaseio.com"
-}
-
-# Creates a new Google Cloud project.
+// Create a new Google Cloud project.
 resource "google_project" "default" {
   name = var.project_id
   project_id = var.project_id
@@ -13,16 +9,16 @@ resource "google_project" "default" {
   }
 }
 
-// Enabled the basic required services for the project. Other services may be enabled later inside modules or services.
+// Enable the basic required services for the project. Other services may be enabled later inside modules or services.
 resource "google_project_service" "default" {
   provider = google-beta.no_user_project_override
   project  = var.project_id
   for_each = toset([
     "cloudbilling.googleapis.com", # Billing is required for Firebase services.
+    "cloudresourcemanager.googleapis.com", # Used to manage metadata for containers in Cloud Build deployments.
     "iam.googleapis.com", # Used to manage IAM roles
     "secretmanager.googleapis.com", # Used to store secrets
     "serviceusage.googleapis.com", # Enabling the ServiceUsage API allows the project to be quota checked.
-    "storage.googleapis.com", # Used to terraform state files
   ])
   service = each.key
   # Don't disable the service if the resource block is removed by accident.
@@ -33,7 +29,7 @@ resource "google_project_service" "default" {
 }
 
 module "terraform_backend" {
-  source = "./services/terraform-backend"
+  source = "./utils/terraform-backend"
   project_id = var.project_id
 }
 
@@ -57,29 +53,7 @@ module "firestore" {
   project_id = var.project_id
 }
 
-module "cloud_run_cloud_build_service_account" {
-  source  = "terraform-google-modules/service-accounts/google"
-  version = "~> 4.0"
-
-  project_id    = var.project_id
-  names         = ["cloud-run-cloud-build"]
-  project_roles = [
-    "${var.project_id}=>roles/artifactregistry.writer", // Needed to write to the Artifact Registry repository, used to store the Docker images of the Cloud Run services
-    "${var.project_id}=>roles/iam.serviceAccountUser", // Needed to attach the service account to the Cloud Run service
-    "${var.project_id}=>roles/logging.logWriter", // Needed to write logs to Cloud Logging
-    "${var.project_id}=>roles/run.developer", // Needed to deploy the Cloud Run service
-    "${var.project_id}=>roles/storage.admin", // Needed to write to the Cloud Storage bucket, used to store the compiled code of the Cloud Run services
-  ]
-  display_name  = "Cloud Build for Cloud Run"
-  description   = "Service account of Cloud Build for Cloud Run"
-
-  # Waits for the required APIs to be enabled.
-  depends_on = [
-    google_project_service.default
-  ]
-}
-
-// TODO: Check if is still needed after CI/CD is implemented
+// Create a repository for the Cloud Run deployment sources.
 resource "google_artifact_registry_repository" "cloud_run_deployment_sources_repository" {
   project = var.project_id
   repository_id = "cloud-run-source-deploy" # This name is the default name created by GCP when deploying a Cloud Run service thought gcloud deploy command
@@ -93,28 +67,27 @@ resource "google_artifact_registry_repository" "cloud_run_deployment_sources_rep
   ]
 }
 
-module "public-api" {
-  count = var.first_run ? 0 : 1
+module "public_api" {
   source = "./services/public-api"
   project_id = var.project_id
   region = var.region
   artifact_registry_repository_name = google_artifact_registry_repository.cloud_run_deployment_sources_repository.repository_id
-  build_service_account_email = module.cloud_run_cloud_build_service_account.email
-  firebase_project_id = var.project_id
-  firebase_database_url = local.firebase_database_url
-  depends_on = [module.cloud_run_cloud_build_service_account, google_artifact_registry_repository.cloud_run_deployment_sources_repository]
+  env = var.env
+  depends_on = [google_artifact_registry_repository.cloud_run_deployment_sources_repository]
 }
 
-module "internal-api" {
-  count = var.first_run ? 0 : 1
+module "internal_api" {
   source = "./services/internal-api"
   project_id = var.project_id
   region = var.region
   artifact_registry_repository_name = google_artifact_registry_repository.cloud_run_deployment_sources_repository.repository_id
-  build_service_account_email = module.cloud_run_cloud_build_service_account.email
-  firebase_project_id = var.project_id
-  firebase_database_url = local.firebase_database_url
-  depends_on = [module.cloud_run_cloud_build_service_account, google_artifact_registry_repository.cloud_run_deployment_sources_repository]
+  env = var.env
+  depends_on = [google_artifact_registry_repository.cloud_run_deployment_sources_repository]
 }
 
-
+module "github_actions" {
+  source = "./utils/github-actions"
+  project_id = var.project_id
+  project_number = google_project.default.number
+  github_repository = var.github_repository
+}

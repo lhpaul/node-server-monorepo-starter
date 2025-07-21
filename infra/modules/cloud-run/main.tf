@@ -1,3 +1,4 @@
+// Enable the required APIs for the Cloud Run service.
 resource "google_project_service" "default" {
   project  = var.project_id
   for_each = toset([
@@ -14,6 +15,7 @@ resource "google_project_service" "default" {
   disable_on_destroy = false
 }
 
+// Create the Cloud Run service.
 resource "google_cloud_run_v2_service" "default" {
   project = var.project_id
   name     = var.service_name
@@ -63,13 +65,6 @@ resource "google_cloud_run_v2_service" "default" {
       }
     }
     annotations = var.annotations
-  }
-  build_config {
-    service_account = "projects/${var.project_id}/serviceAccounts/${var.build_service_account_email}"
-    # base_image = "gcr.io/buildpacks/google-22/run"
-    # image_uri = "${var.region}-docker.pkg.dev/${var.project_id}/${var.artifact_registry_repository_name}/${var.service_name}"
-    # name = "projects/357801570334/locations/us-central1/builds/f9b2265e-0831-4673-9cb0-4251b0945216"
-    # source_location =  "gs://run-sources-node-starter-project-dev-us-central1/services/public-api/1751994741.954452-9e6084f41f744ad99d9737a3e69f7b7c.zip#1751994743430511"
   }
   depends_on = [
     google_project_service.default
