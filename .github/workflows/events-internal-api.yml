@@ -23,7 +23,7 @@ jobs:
       env: DEV
       gcp_project_id: ${{ vars.GCP_PROJECT_ID_DEV }}
       gcp_wif: ${{ vars.GCP_WIF_DEV }}
-      gcp_service_account_email: ${{ vars.GCP_CLOUD_BUILD_CLOUD_RUN_SA_EMAIL_DEV }}
+      gcp_service_account_email: ${{ vars.GCP_CLOUD_RUN_DEPLOYMENT_SA_EMAIL_DEV }}
   deploy-stg:
     if: github.event_name == 'release'
     uses: ./.github/workflows/deploy-cloud-run.yml
@@ -34,7 +34,7 @@ jobs:
       env: STG
       gcp_project_id: ${{ vars.GCP_PROJECT_ID_STG }}
       gcp_wif: ${{ vars.GCP_WIF_STG }}
-      gcp_service_account_email: ${{ vars.GCP_CLOUD_BUILD_CLOUD_RUN_SA_EMAIL_STG }}
+      gcp_service_account_email: ${{ vars.GCP_CLOUD_RUN_DEPLOYMENT_SA_EMAIL_STG }}
   deploy-prod:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     uses: ./.github/workflows/deploy-cloud-run.yml
@@ -45,4 +45,4 @@ jobs:
       env: PROD
       gcp_project_id: ${{ vars.GCP_PROJECT_ID_PROD }}
       gcp_wif: ${{ vars.GCP_WIF_PROD }}
-      gcp_service_account_email: ${{ vars.GCP_CLOUD_BUILD_CLOUD_RUN_SA_EMAIL_PROD }}
+      gcp_service_account_email: ${{ vars.GCP_CLOUD_RUN_DEPLOYMENT_SA_EMAIL_PROD }}
