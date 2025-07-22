@@ -15,9 +15,6 @@ module "main" {
     currency_code = "CLP"
     units = 5000
   }
-  billing_budget_notification_emails = [
-    "lhpaul1@gmail.com"
-  ]
   authorized_domains = [
     "localhost",
     "${local.project_id}.firebaseapp.com",

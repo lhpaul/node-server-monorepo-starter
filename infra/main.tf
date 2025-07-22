@@ -83,13 +83,27 @@ module "internal_api" {
   depends_on = [google_artifact_registry_repository.cloud_run_deployment_sources_repository]
 }
 
+/*
+  Utils
+*/
+
 module "billing_budget" {
   source = "./utils/billing-budget"
   project_id = var.project_id
   project_number = google_project.default.number
   billing_account_id = var.billing_account_id
-  email_addresses_to_notify = var.billing_budget_notification_emails
   amount = var.billing_budget_amount
+}
+
+module "performance_monitoring" {
+  source = "./utils/performance-monitoring"
+  project_id = var.project_id
+  error_count_threshold = var.error_count_threshold
+  critical_errors_threshold = var.critical_errors_threshold
+  request_count_threshold = var.request_count_threshold
+  requests_latency_threshold = var.requests_latency_threshold
+  cloud_functions_execution_count_threshold = var.cloud_functions_execution_count_threshold
+  firestore_api_request_count_threshold = var.firestore_api_request_count_threshold
 }
 
 module "terraform_backend" {

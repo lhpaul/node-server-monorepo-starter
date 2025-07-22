@@ -61,8 +61,8 @@ module "cloud_run_deployment_service_account" {
     "${var.project_id}=>roles/iam.serviceAccountUser", // Needed to attach the service account to the Cloud Run service
     "${var.project_id}=>roles/logging.logWriter", // Needed to write logs to Cloud Logging
     "${var.project_id}=>roles/run.developer", // Needed to deploy the Cloud Run service
-    "${var.project_id}=>roles/storage.admin", // Needed to write to the Cloud Storage bucket, used to store the compiled code of the Cloud Run services
     "${var.project_id}=>roles/serviceusage.serviceUsageConsumer", // Needed to deploy from GitHub Actions.
+    "${var.project_id}=>roles/storage.admin", // Needed to write to the Cloud Storage bucket, used to store the compiled code of the Cloud Run services
   ]
   display_name  = "Cloud Run Deployment"
   description   = "Service account for deploying from GitHub Actions"

@@ -38,10 +38,88 @@ variable "billing_budget_amount" {
   }
 }
 
-variable "billing_budget_notification_emails" {
-  description = "The emails to notify when if any budget alert is triggered"
-  type        = list(string)
-  default = []
+variable "error_count_threshold" {
+  description = "The threshold for the error count metric"
+  type        = object({
+    threshold = number
+    issue_duration = string
+    alignment_period = string
+  })
+  default     = {
+    threshold = 10
+    issue_duration = "600s"
+    alignment_period = "60s"
+  }
+}
+
+variable "critical_errors_threshold" {
+  description = "The threshold for the critical errors metric"
+  type        = object({
+    threshold = number
+    issue_duration = string
+    alignment_period = string
+  })
+  default     = {
+    threshold = 1
+    issue_duration = "600s"
+    alignment_period = "60s"
+  }
+}
+
+variable "requests_latency_threshold" {
+  description = "The threshold for the requests latency metric"
+  type        = object({
+    threshold = number
+    issue_duration = string
+    alignment_period = string
+  })
+  default     = {
+    threshold = 1000
+    issue_duration = "600s"
+    alignment_period = "60s"
+  }
+}
+
+variable "request_count_threshold" {
+  description = "The threshold for the request count metric"
+  type        = object({
+    threshold = number
+    issue_duration = string
+    alignment_period = string
+  })
+  default     = {
+    threshold = 600 # Average 10 requests per second.
+    issue_duration = "600s"
+    alignment_period = "60s"
+  }
+}
+
+variable "cloud_functions_execution_count_threshold" {
+  description = "The threshold for the cloud functions execution count metric"
+  type        = object({
+    threshold = number
+    issue_duration = string
+    alignment_period = string
+  })
+  default     = {
+    threshold = 300 # Average 5 executions per second.
+    issue_duration = "600s"
+    alignment_period = "60s"
+  }
+}
+
+variable "firestore_api_request_count_threshold" {
+  description = "The threshold for the firestore api request count metric"
+  type        = object({
+    threshold = number
+    issue_duration = string
+    alignment_period = string
+  })
+  default     = {
+    threshold = 600 # Average 10 requests per second.
+    issue_duration = "600s"
+    alignment_period = "60s"
+  }
 }
 
 variable "android_app_package_id" {

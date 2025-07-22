@@ -9,16 +9,6 @@ resource "google_project_service" "default" {
   disable_on_destroy = false
 }
 
-resource "google_monitoring_notification_channel" "default" {
-  project = var.project_id
-  display_name = "Billing budget notification channel"
-  type = "email"
-  labels = {
-    email_address = join(",", var.email_addresses_to_notify)
-  }
-  force_delete = true
-}
-
 resource "google_billing_budget" "default" {
   billing_account = var.billing_account_id
   display_name = var.project_id
@@ -51,11 +41,4 @@ resource "google_billing_budget" "default" {
     threshold_percent = 1
     spend_basis = "FORECASTED_SPEND"
   }
-
-  all_updates_rule {
-    monitoring_notification_channels = [google_monitoring_notification_channel.default.id]
-  }
-  depends_on = [
-    google_monitoring_notification_channel.default
-  ]
 }

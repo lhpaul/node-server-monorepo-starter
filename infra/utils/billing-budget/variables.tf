@@ -20,8 +20,3 @@ variable "amount" {
     units         = number
   })
 }
-
-variable "email_addresses_to_notify" {
-  description = "The email addresses to notify when the budget is exceeded"
-  type        = list(string)
-}

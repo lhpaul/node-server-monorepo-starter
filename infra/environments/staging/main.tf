@@ -7,9 +7,6 @@ module "main" {
   env = "STG"
   project_id = local.project_id
   billing_account_id = "01DD4D-8D2323-4E9DA7"
-  billing_budget_notification_emails = [
-    "lhpaul1@gmail.com"
-  ]
   billing_budget_amount = {
     currency_code = "CLP"
     units = 5000
