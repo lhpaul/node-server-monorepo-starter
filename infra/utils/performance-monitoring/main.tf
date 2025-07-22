@@ -18,18 +18,22 @@ resource "google_logging_metric" "error_count" {
 # Error count alert policy. To monitor that the error count doesn't get too high.
 resource "google_monitoring_alert_policy" "error_count" {
   project = var.project_id
-  display_name = "Error count"
+  display_name = "Error amount"
+  severity = "ERROR"
   combiner = "OR"
   conditions {
     display_name = "Error count"
     condition_threshold {
-      filter = "resource.type=\"metric\" AND metric.type=\"logging.googleapis.com/user/${local.error_count_metric_name}\""
+      filter = "resource.type=\"cloud_composer_environment\" AND metric.type=\"logging.googleapis.com/user/${local.error_count_metric_name}\""
       duration = var.error_count_threshold.issue_duration
+      trigger {
+        count = 1
+      }
       comparison = "COMPARISON_GT"
       threshold_value = var.error_count_threshold.threshold
       aggregations {
         alignment_period = var.error_count_threshold.alignment_period
-        per_series_aligner = "ALIGN_COUNT"
+        per_series_aligner = "ALIGN_SUM"
       }
     }
   }
@@ -51,19 +55,22 @@ resource "google_logging_metric" "critical_errors" {
 # Critical errors alert policy. Critical errors must be taken care of immediately.
 resource "google_monitoring_alert_policy" "critical_errors" {
   project = var.project_id
-  display_name = "Critical errors"
+  display_name = "Critical errors amount"
   severity = "CRITICAL"
   combiner = "OR"
   conditions {
-    display_name = "Critical errors"
+    display_name = "Critical errors count"
     condition_threshold {
-      filter = "resource.type=\"metric\" AND metric.type=\"logging.googleapis.com/user/${local.critical_errors_metric_name}\""
+      filter = "resource.type=\"cloud_run_revision\" AND metric.type=\"logging.googleapis.com/user/${local.critical_errors_metric_name}\""
       duration = var.critical_errors_threshold.issue_duration
+      trigger {
+        count = 1
+      }
       comparison = "COMPARISON_GT"
       threshold_value = var.critical_errors_threshold.threshold
       aggregations {
         alignment_period = var.critical_errors_threshold.alignment_period
-        per_series_aligner = "ALIGN_COUNT"
+        per_series_aligner = "ALIGN_SUM"
       }
     }
   }
@@ -94,7 +101,7 @@ resource "google_monitoring_alert_policy" "requests_latency" {
 # Request count alert policy. To monitor if the request count starts to increase over the expected amount.
 resource "google_monitoring_alert_policy" "request_count" {
   project = var.project_id
-  display_name = "Request count"
+  display_name = "Request amount"
   severity = "WARNING"
   combiner = "OR"
   conditions {
@@ -106,7 +113,7 @@ resource "google_monitoring_alert_policy" "request_count" {
       threshold_value = var.request_count_threshold.threshold
       aggregations {
         alignment_period = var.request_count_threshold.alignment_period
-        per_series_aligner = "ALIGN_COUNT"
+        per_series_aligner = "ALIGN_SUM"
       }
     }
   }
@@ -115,7 +122,7 @@ resource "google_monitoring_alert_policy" "request_count" {
 # Cloud functions execution count alert policy. To monitor if the execution count starts to increase over the expected amount.
 resource "google_monitoring_alert_policy" "cloud_functions_execution_count" {
   project = var.project_id
-  display_name = "Cloud functions execution count"
+  display_name = "Cloud functions execution amount"
   severity = "WARNING"
   combiner = "OR"
   conditions {
@@ -127,7 +134,7 @@ resource "google_monitoring_alert_policy" "cloud_functions_execution_count" {
       threshold_value = var.cloud_functions_execution_count_threshold.threshold
       aggregations {
         alignment_period = var.cloud_functions_execution_count_threshold.alignment_period
-        per_series_aligner = "ALIGN_COUNT"
+        per_series_aligner = "ALIGN_SUM"
       }
     }
   }
@@ -136,7 +143,7 @@ resource "google_monitoring_alert_policy" "cloud_functions_execution_count" {
 # Firestore api request count alert policy. To monitor if the api request count starts to increase over the expected amount.
 resource "google_monitoring_alert_policy" "firestore_api_request_count" {
   project = var.project_id
-  display_name = "Firestore api request count"
+  display_name = "Firestore api request amount"
   severity = "WARNING"
   combiner = "OR"
   conditions {

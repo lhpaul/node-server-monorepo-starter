@@ -42,6 +42,7 @@ module "infra_management_service_account" {
   names         = ["infra-management"]
   project_roles = [
     "${var.project_id}=>roles/editor", // Needed to manage the infrastructure
+    "${var.project_id}=>roles/resourcemanager.projectIamAdmin", // Needed to manage IAM roles
     "${var.project_id}=>roles/serviceusage.serviceUsageConsumer", // Needed to manage billing budgets
   ]
   display_name  = "Infra Management"
