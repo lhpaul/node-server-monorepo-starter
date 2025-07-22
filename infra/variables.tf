@@ -26,6 +26,24 @@ variable "billing_account_id" {
   default = "01DD4D-8D2323-4E9DA7"
 }
 
+variable "billing_budget_amount" {
+  description = "The amount to use for the billing budget"
+  type        = object({
+    currency_code = string
+    units         = number
+  })
+  default = {
+    currency_code = "USD"
+    units         = 1
+  }
+}
+
+variable "billing_budget_notification_emails" {
+  description = "The emails to notify when if any budget alert is triggered"
+  type        = list(string)
+  default = []
+}
+
 variable "android_app_package_id" {
   description = "The package name for the Firebase Android app"
   type        = string

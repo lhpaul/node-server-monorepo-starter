@@ -28,11 +28,6 @@ resource "google_project_service" "default" {
   ]
 }
 
-module "terraform_backend" {
-  source = "./utils/terraform-backend"
-  project_id = var.project_id
-}
-
 module "firebase" {
   source = "./modules/firebase"
   project_id = var.project_id
@@ -44,6 +39,9 @@ module "firebase" {
 
 module "firebase_auth" {
   source = "./modules/firebase-auth"
+  providers = {
+    google-beta.no_user_project_override = google-beta.no_user_project_override
+  }
   project_id = var.project_id
   authorized_domains = var.authorized_domains
 }
@@ -83,6 +81,20 @@ module "internal_api" {
   artifact_registry_repository_name = google_artifact_registry_repository.cloud_run_deployment_sources_repository.repository_id
   env = var.env
   depends_on = [google_artifact_registry_repository.cloud_run_deployment_sources_repository]
+}
+
+module "billing_budget" {
+  source = "./utils/billing-budget"
+  project_id = var.project_id
+  project_number = google_project.default.number
+  billing_account_id = var.billing_account_id
+  email_addresses_to_notify = var.billing_budget_notification_emails
+  amount = var.billing_budget_amount
+}
+
+module "terraform_backend" {
+  source = "./utils/terraform-backend"
+  project_id = var.project_id
 }
 
 module "github_actions" {

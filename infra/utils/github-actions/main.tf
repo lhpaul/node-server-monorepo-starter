@@ -1,16 +1,22 @@
+# resource "google_identity_platform_config" "default" {
+#   project = var.project_id
+#   # This configuration is needed to enable Workload Identity Federation used for authenticating Github Actions.
+#   multi_tenant {
+#     allow_tenants = true
+#   }
+# }
+
 // Create a workload identity pool for the CI/CD.
 resource "google_iam_workload_identity_pool" "default" {
-  provider = google-beta
-  project = var.project_id
   workload_identity_pool_id = "ci-cd"
   display_name = "CI/CD"
   description = "Pool for CI/CD"
   disabled = false
+  # depends_on = [ google_identity_platform_config.default ]
 }
 
 // Create a workload identity pool provider for the GitHub.
 resource "google_iam_workload_identity_pool_provider" "github" {
-  project = var.project_id
   workload_identity_pool_id = google_iam_workload_identity_pool.default.workload_identity_pool_id
   workload_identity_pool_provider_id = "github"
   display_name = "GitHub"
@@ -36,6 +42,7 @@ module "infra_management_service_account" {
   names         = ["infra-management"]
   project_roles = [
     "${var.project_id}=>roles/editor", // Needed to manage the infrastructure
+    "${var.project_id}=>roles/serviceusage.serviceUsageConsumer", // Needed to manage billing budgets
   ]
   display_name  = "Infra Management"
   description   = "Service account for managing the infrastructure from GitHub Actions"

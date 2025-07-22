@@ -21,7 +21,6 @@ module "cloud_run" {
   service_name = "internal-api"
   artifact_registry_repository_name = var.artifact_registry_repository_name
   service_account_email = module.service_account.email
-  # build_service_account_email = var.build_service_account_email
   allow_public_access = false
   environment_variables = [
     {

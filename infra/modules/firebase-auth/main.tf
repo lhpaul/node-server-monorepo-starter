@@ -15,16 +15,10 @@ resource "google_project_service" "default" {
 # Creates an Identity Platform config.
 # Also enables Firebase Authentication with Identity Platform in the project if not.
 resource "google_identity_platform_config" "default" {
-  provider = google-beta
-  project  = var.project_id
+  provider = google-beta.no_user_project_override
   
   # Auto-deletes anonymous users
   autodelete_anonymous_users = true
-
-  # This configuration is needed to enable Workload Identity Federation used for authenticating Github Actions. TODO: move to a separate module.
-  multi_tenant {
-    allow_tenants = true
-  }
 
   # Configures local sign-in methods, like anonymous, email/password, and phone authentication.
   sign_in {
