@@ -1,5 +1,7 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import * as admin from 'firebase-admin';
+import { Bindings } from 'pino';
+
 import {
   AUTHENTICATE_DECORATOR_NAME,
   FORBIDDEN_ERROR,
@@ -14,7 +16,11 @@ import {
   VALIDATION_ERROR_CODE,
 } from '../../constants/server.constants';
 import { RequestLogger } from '../request-logger/request-logger.class';
-import { FIREBASE_DECODE_ID_TOKEN_ERROR_CODES, FIREBASE_DECODE_ID_TOKEN_ERROR_LOG } from './server.utils.constants';
+import {
+  FIREBASE_DECODE_ID_TOKEN_ERROR_CODES,
+  FIREBASE_DECODE_ID_TOKEN_ERROR_LOG,
+  TRACE_CONTEXT_HEADER_NAME,
+} from './server.utils.constants';
 
 export function setServerErrorHandlers(server: FastifyInstance): void {
   // Handle 404 errors
@@ -69,9 +75,12 @@ export function setServerErrorHandlers(server: FastifyInstance): void {
 export function setServerHooks(server: FastifyInstance): void {
   // Wrap request logger
   server.addHook('onRequest', (request, _reply, done) => {
-    request.log = new RequestLogger({
-      logger: request.log,
-    });
+    const traceHeader = request.headers[TRACE_CONTEXT_HEADER_NAME];
+    const bindings: Bindings = {};
+    if (traceHeader) {
+      bindings.traceId = (traceHeader as string).split('/')[0];
+    }
+    request.log = new RequestLogger({ logger: request.log, bindings });
     done();
   });
 
@@ -88,7 +97,6 @@ export function setServerHooks(server: FastifyInstance): void {
     done();
   });
 }
-
 export function setServerProcessErrorHandlers(server: FastifyInstance): void {
   process.on('unhandledRejection', (err: Error) => {
     server.log.error(

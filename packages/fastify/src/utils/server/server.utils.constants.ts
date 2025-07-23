@@ -12,3 +12,4 @@ export const FIREBASE_DECODE_ID_TOKEN_ERROR_CODES = {
     message: 'The token has expired'
   },
 };
+export const TRACE_CONTEXT_HEADER_NAME = 'x-cloud-trace-context';
