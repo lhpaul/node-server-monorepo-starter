@@ -53,6 +53,12 @@ describe(BasicExecutionLogger.name, () => {
       logger.trace(testData, testMessage);
       expect(spy).toHaveBeenCalledWith(testData, testMessage);
     });
+
+    it('should log fatal', () => {
+      const spy = jest.spyOn(console, 'error').mockImplementation();
+      logger.fatal(testData, testMessage);
+      expect(spy).toHaveBeenCalledWith(testData, testMessage);
+    });
   });
 
   describe('time tracking', () => {

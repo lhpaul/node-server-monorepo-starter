@@ -28,7 +28,8 @@ export class BasicExecutionLogger implements ExecutionLogger {
     console.debug(data, message);
   public trace = (data: any, message?: string) =>
     console.trace(data, message);
-
+  public fatal = (data: any, message?: string) =>
+    console.error(data, message);
   getTotalElapsedTime(): number {
     return new Date().getTime() - this.initTime;
   }

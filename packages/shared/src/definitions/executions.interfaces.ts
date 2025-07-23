@@ -16,4 +16,5 @@ export interface ExecutionLogger {
   warn: (data: any, message?: string) => void;
   debug: (data: any, message?: string) => void;
   trace: (data: any, message?: string) => void;
+  fatal: (data: any, message?: string) => void;
 }
