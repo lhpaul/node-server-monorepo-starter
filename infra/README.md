@@ -7,12 +7,21 @@ TODO: add description
 - Install Terraform
 - Install gcloud CLI and authenticate
 
+## First Run
+
+- Change variables
+- Deploy Cloud Runs
+- Init % apply
+  - Apply imports
+- Deploy Cloud Runs
+- Configure Remote Backend
+
 ## Deploy
 
 ```bash
 terraform init
-terraform plan -var-file=”dev.tfvars”
-terraform plan -out=plan
+terraform plan -out=tfplan
+terraform apply -auto-approve tfplan
 ```
 
 ## Imports
@@ -28,6 +37,12 @@ terraform import google_artifact_registry_repository.cloud_run_deployment_source
 ```bash
 terraform plan -destroy
 terraform destroy
+```
+
+## Store Terraform state in a Cloud Storage bucket
+
+```bash
+terraform init -migrate-state
 ```
 
 ## Domain Mapping

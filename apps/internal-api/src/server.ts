@@ -6,7 +6,7 @@ import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/
 import {
   AUTHENTICATE_DECORATOR_NAME,
   AUTHENTICATE_ERROR_CODES,
-  SERVER_LOGGER_CONFIG,
+  getStructuredLoggingConfig,
   setServerErrorHandlers,
   setServerHooks,
   setServerProcessErrorHandlers,
@@ -31,7 +31,8 @@ export let server: FastifyInstance;
 
 export const init = async function (): Promise<FastifyInstance> {
   server = fastify({
-    logger: SERVER_LOGGER_CONFIG,
+    logger: getStructuredLoggingConfig(),
+    disableRequestLogging: true, // Avoid automatic logs from fastify
   });
 
   // Load environment variables so they can be accessed through the server and the request instance

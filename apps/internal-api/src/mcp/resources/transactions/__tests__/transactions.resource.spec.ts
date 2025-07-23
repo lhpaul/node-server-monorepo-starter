@@ -7,6 +7,8 @@ import { FastifyBaseLogger } from 'fastify';
 import { transactionsResourceBuilder } from '../transactions.resource';
 import { RESOURCE_NAME, RESOURCE_PATH, STEPS } from '../transactions.resource.constants';
 
+jest.mock('@repo/fastify');
+
 jest.mock('@repo/shared/services', () => ({
   TransactionsService: {
     getInstance: jest.fn().mockReturnValue({
@@ -38,7 +40,7 @@ describe(transactionsResourceBuilder.name, () => {
       endStep: jest.fn(),
     } as any;
 
-    jest.spyOn(RequestLogger.prototype, 'child').mockReturnValue(mockRequestLogger);
+    (RequestLogger as jest.Mock).mockImplementation(() => mockRequestLogger);
     mockService = TransactionsService.getInstance() as jest.Mocked<TransactionsService>;
   });
 
