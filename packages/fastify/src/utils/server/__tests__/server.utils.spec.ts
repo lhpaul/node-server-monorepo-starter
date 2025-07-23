@@ -12,6 +12,13 @@ import {
 import { RequestLogger } from '../../request-logger/request-logger.class';
 import { setServerErrorHandlers, setServerHooks, setServerProcessErrorHandlers } from '../server.utils';
 
+jest.mock('../../request-logger/request-logger.class', () => ({
+  RequestLogger: jest.fn().mockImplementation(() => ({
+    warn: jest.fn(),
+    error: jest.fn(),
+  })),
+}));
+
 describe(setServerErrorHandlers.name, () => {
   let mockServer: jest.Mocked<FastifyInstance>;
   let mockRequest: jest.Mocked<FastifyRequest>;
@@ -145,12 +152,14 @@ describe(setServerHooks.name, () => {
   let mockRequest: jest.Mocked<FastifyRequest>;
   let mockReply: jest.Mocked<FastifyReply>;
 
+  const mockLogger = {
+    warn: jest.fn(),
+    error: jest.fn(),
+  };
+
   beforeEach(() => {
     mockRequest = {
-      log: {
-        warn: jest.fn(),
-        error: jest.fn(),
-      },
+      log: mockLogger,
     } as any;
 
     mockReply = {
@@ -162,15 +171,38 @@ describe(setServerHooks.name, () => {
     } as any;
   });
 
-  it('should set up onRequest hook correctly', () => {
-    setServerHooks(mockServer);
-    
-    const onRequestHook = mockServer.addHook.mock.calls[0][1] as Function;
-    const done = jest.fn();
-    onRequestHook(mockRequest, mockReply, done);
-
-    expect(mockRequest.log).toBeInstanceOf(RequestLogger);
-    expect(done).toHaveBeenCalled();
+  describe('when there is no trace header', () => {
+    beforeEach(() => {
+      mockRequest.headers = {};
+    });
+    it('should set up onRequest hook correctly', () => {
+      setServerHooks(mockServer);
+      
+      const onRequestHook = mockServer.addHook.mock.calls[0][1] as Function;
+      const done = jest.fn();
+      onRequestHook(mockRequest, mockReply, done);
+  
+      expect(RequestLogger).toHaveBeenCalledWith({ logger: mockLogger, bindings: {} });
+      expect(done).toHaveBeenCalled();
+    });
+  });
+  describe('when there is a trace header', () => {
+    const traceId = '1234567890';
+    beforeEach(() => {
+      mockRequest.headers = {
+        'x-cloud-trace-context': `${traceId}/1234567890;o=1`,
+      };
+    });
+    it('should set up onRequest hook correctly', () => {
+      setServerHooks(mockServer);
+      
+      const onRequestHook = mockServer.addHook.mock.calls[0][1] as Function;
+      const done = jest.fn();
+      onRequestHook(mockRequest, mockReply, done);
+  
+      expect(RequestLogger).toHaveBeenCalledWith({ logger: mockLogger, bindings: { traceId } });
+      expect(done).toHaveBeenCalled();
+    });
   });
 
   it('should set up onTimeout hook correctly', () => {

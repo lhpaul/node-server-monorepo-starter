@@ -1,4 +1,6 @@
 import { FastifyInstance } from 'fastify';
+import { Bindings } from 'pino';
+
 import {
   INTERNAL_ERROR_VALUES,
   RESOURCE_NOT_FOUND_ERROR,
@@ -10,7 +12,7 @@ import {
   VALIDATION_ERROR_CODE,
 } from '../../constants/server.constants';
 import { RequestLogger } from '../request-logger/request-logger.class';
-
+import { TRACE_CONTEXT_HEADER_NAME } from '../request-logger/request-logger.class.constants';
 export function setServerErrorHandlers(server: FastifyInstance): void {
   // Handle 404 errors
   server.setNotFoundHandler((request, reply) => {
@@ -64,9 +66,12 @@ export function setServerErrorHandlers(server: FastifyInstance): void {
 export function setServerHooks(server: FastifyInstance): void {
   // Wrap request logger
   server.addHook('onRequest', (request, _reply, done) => {
-    request.log = new RequestLogger({
-      logger: request.log,
-    });
+    const traceHeader = request.headers[TRACE_CONTEXT_HEADER_NAME];
+    const bindings: Bindings = {};
+    if (traceHeader) {
+      bindings.traceId = (traceHeader as string).split('/')[0];
+    }
+    request.log = new RequestLogger({ logger: request.log, bindings });
     done();
   });
 
@@ -83,7 +88,6 @@ export function setServerHooks(server: FastifyInstance): void {
     done();
   });
 }
-
 export function setServerProcessErrorHandlers(server: FastifyInstance): void {
   process.on('unhandledRejection', (err: Error) => {
     server.log.error(
