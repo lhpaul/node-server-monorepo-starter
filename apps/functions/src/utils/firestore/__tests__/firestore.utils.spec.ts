@@ -1,9 +1,9 @@
 import { maskFields } from '@repo/shared/utils';
 import { onDocumentWrittenWithAuthContext } from 'firebase-functions/v2/firestore';
 
-import { collectionOnWriteFunctionWrapper } from './firestore.utils';
-import { DEFAULT_ON_UPDATE_RETRY_TIMEOUT_IN_MS, LOGS, PREFIXES } from './firestore.utils.constants';
-import { FunctionLogger } from '../logging/function-logger.class';
+import { collectionOnWriteFunctionWrapper } from '../firestore.utils';
+import { DEFAULT_ON_UPDATE_RETRY_TIMEOUT_IN_MS, LOGS, PREFIXES } from '../firestore.utils.constants';
+import { FunctionLogger } from '../../logging/function-logger.class';
 import { checkIfEventHasBeenProcessed, CheckIfEventHasBeenProcessedError, CheckIfEventHasBeenProcessedErrorCode } from '@repo/shared/utils';
 
 jest.mock('@repo/shared/utils', () => ({
@@ -14,7 +14,7 @@ jest.mock('@repo/shared/utils', () => ({
   }),
 }));
 jest.mock('firebase-functions/v2/firestore');
-jest.mock('../logging/function-logger.class');
+jest.mock('../../logging/function-logger.class');
 
 describe(collectionOnWriteFunctionWrapper.name, () => {
   const subCollectionDocumentId = 'id-2';
@@ -36,7 +36,7 @@ describe(collectionOnWriteFunctionWrapper.name, () => {
     params: baseEventValues.params,
     time: baseEventValues.time
   };
-  const mockLogger = { info: jest.fn(), error: jest.fn(), warn: jest.fn(), startStep: jest.fn(), endStep: jest.fn() };
+  const mockLogger = { info: jest.fn(), error: jest.fn(), fatal: jest.fn(), warn: jest.fn(), startStep: jest.fn(), endStep: jest.fn() };
 
   beforeEach(() => {
     (onDocumentWrittenWithAuthContext as jest.Mock).mockImplementation((_path, handler) => handler);
@@ -214,7 +214,7 @@ describe(collectionOnWriteFunctionWrapper.name, () => {
             expect(error).toBeInstanceOf(CheckIfEventHasBeenProcessedError);
             expect(error.code).toBe(CheckIfEventHasBeenProcessedErrorCode.MAX_RETRIES_REACHED);
           }
-          expect(mockLogger.error).toHaveBeenCalledWith({
+          expect(mockLogger.fatal).toHaveBeenCalledWith({
             id: LOGS.ON_CREATE_MAX_RETRIES_REACHED_UPDATE_ERROR.id,
             error: expect.any(String),
           }, expect.any(String));
@@ -485,7 +485,7 @@ describe(collectionOnWriteFunctionWrapper.name, () => {
           time: new Date(now.getTime() - (DEFAULT_ON_UPDATE_RETRY_TIMEOUT_IN_MS + 1000)).toISOString(),
         };
         await fn(modifiedEvent as any);
-        expect(mockLogger.error).toHaveBeenCalledWith({
+        expect(mockLogger.fatal).toHaveBeenCalledWith({
           id: LOGS.ON_UPDATE_RETRY_TIMEOUT.id,
         }, expect.any(String));
         expect(handler).not.toHaveBeenCalled();
@@ -509,7 +509,7 @@ describe(collectionOnWriteFunctionWrapper.name, () => {
           time: new Date(now.getTime() - (retryTimeout + 1000)).toISOString(),
         };
         await fn(modifiedEvent as any);
-        expect(mockLogger.error).toHaveBeenCalledWith({
+        expect(mockLogger.fatal).toHaveBeenCalledWith({
           id: LOGS.ON_UPDATE_RETRY_TIMEOUT.id,
         }, expect.any(String));
         expect(handler).not.toHaveBeenCalled();
