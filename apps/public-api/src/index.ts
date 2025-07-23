@@ -1,4 +1,5 @@
 import { init, start } from './server';
+import { initTelemetry } from './telemetry';
 
 const initServer = async () => {
   try {
@@ -9,6 +10,8 @@ const initServer = async () => {
     process.exit(1);
   }
 };
+
+initTelemetry();
 initServer();
 
 // Little trick to make console.log colorized in development mode in order to facilitate the reading of the logs in the terminal

@@ -5,9 +5,11 @@ module "service_account" {
   project_id    = var.project_id
   names         = ["public-api-cloud-run"]
   project_roles = [
+    "${var.project_id}=>roles/cloudtrace.agent", // Needed for OpenTelemetry tracing. (https://github.com/GoogleCloudPlatform/opentelemetry-operations-js/tree/main/samples/instrumentation-quickstart)
     "${var.project_id}=>roles/firebase.sdkAdminServiceAgent", // Needed to access Firebase Admin SDK
     "${var.project_id}=>roles/iam.serviceAccountTokenCreator", // Needed to create Firebase Auth tokens
     "${var.project_id}=>roles/iam.serviceAccountUser", // Needed to attach the service account to the Cloud Run service
+    "${var.project_id}=>roles/monitoring.metricWriter", // Needed for OpenTelemetry tracing. (https://github.com/GoogleCloudPlatform/opentelemetry-operations-js/tree/main/samples/instrumentation-quickstart)s
     "${var.project_id}=>roles/logging.logWriter", // Needed to write logs to Cloud Logging
   ]
   display_name  = "Public API Cloud Run"
