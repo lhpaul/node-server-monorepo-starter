@@ -15,6 +15,7 @@ export class Transaction implements ResourceModel {
   public readonly companyId: string; // id of the company
   public readonly createdAt: Date; // date of creation
   public readonly date: string; // date of the transaction
+  public readonly description: string; // description of the transaction
   public readonly id: string; // id of the transaction
   public readonly sourceType: TransactionSourceType; // type of the source of the transaction
   public readonly sourceId: string; // id of the source of the transaction
