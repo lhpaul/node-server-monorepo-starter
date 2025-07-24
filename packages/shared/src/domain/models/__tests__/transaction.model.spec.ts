@@ -1,4 +1,4 @@
-import { Transaction, TransactionType } from '../transaction.model';
+import { Transaction, TransactionType, TransactionSourceType } from '../transaction.model';
 
 describe(Transaction.name, () => {
   const initialValues = {
@@ -7,6 +7,9 @@ describe(Transaction.name, () => {
     createdAt: new Date(),
     date: '2024-03-20',
     id: 'txn-123',
+    sourceType: TransactionSourceType.USER,
+    sourceId: 'user-456',
+    sourceTransactionId: 'src-txn-789',
     type: TransactionType.DEBIT,
     updatedAt: new Date(),
   };
@@ -24,9 +27,14 @@ describe(Transaction.name, () => {
     it('should initialize with correct values', () => {
       expect(transaction.amount).toBe(initialValues.amount);
       expect(transaction.companyId).toBe(initialValues.companyId);
+      expect(transaction.createdAt).toBe(initialValues.createdAt);
       expect(transaction.date).toBe(initialValues.date);
       expect(transaction.id).toBe(initialValues.id);
+      expect(transaction.sourceType).toBe(initialValues.sourceType);
+      expect(transaction.sourceId).toBe(initialValues.sourceId);
+      expect(transaction.sourceTransactionId).toBe(initialValues.sourceTransactionId);
       expect(transaction.type).toBe(initialValues.type);
+      expect(transaction.updatedAt).toBe(initialValues.updatedAt);
     });
   });
   describe('TransactionType Enum', () => {
@@ -36,6 +44,14 @@ describe(Transaction.name, () => {
 
     it('should have correct DEBIT value', () => {
       expect(TransactionType.DEBIT).toBe('debit');
+    });
+  });
+  describe('TransactionSourceType Enum', () => {
+    it('should have correct USER value', () => {
+      expect(TransactionSourceType.USER).toBe('user');
+    });
+    it('should have correct FINANCIAL_INSTITUTION value', () => {
+      expect(TransactionSourceType.FINANCIAL_INSTITUTION).toBe('financial-institution');
     });
   });
 });
