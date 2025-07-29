@@ -30,6 +30,8 @@ request.log.warn(
 
 To effectively monitor performance, wrap asynchronous calls with the `startStep` and `endStep` functions provided by the logger object. These functions generate logs that measure the total time elapsed during execution, making it easier to identify and troubleshoot slow operations.
 
+**Important:** When using the `startStep` function, always supply a log group to ensure performance logs are well-organized and easy to trace. The recommended approach is to use the class name combined with the function name (e.g., `${ClassName}.${functionName}`), or at minimum, the function name itself. This practice helps categorize logs by context and improves traceability across the codebase.
+
 **Example:**
 
 ```typescript
@@ -40,19 +42,28 @@ export const STEPS = {
   NOTIFY_USER: { id: 'notify-user' }
 };
 */
-try {
-  logger.startStep(STEPS.UPDATE_USER.id);
-  await usersService
-    .updateUser()
-    .finally(() => logger.endStep(STEPS.UPDATE_USER.id));
-  logger.endStep(STEPS.UPDATE_USER.id);
-  logger.startStep(STEPS.NOTIFY_USER.id);
-  await usersService
-    .notifyUser()
-    .finally(() => logger.endStep(STEPS.NOTIFY_USER.id));
-  // Continue with further logic...
-} catch (error) {
-  // Handle the error...
+
+class SomeClass {
+  // ...
+
+  async function someFunction(..args): Promise<void> {
+
+    const logGroup = `${SomeClass.name}.${this.someFunction.name}`;
+    try {
+      logger.startStep(STEPS.UPDATE_USER.id, logGroup);
+      await usersService
+        .updateUser()
+        .finally(() => logger.endStep(STEPS.UPDATE_USER.id));
+      logger.endStep(STEPS.UPDATE_USER.id);
+      logger.startStep(STEPS.NOTIFY_USER.id, logGroup);
+      await usersService
+        .notifyUser()
+        .finally(() => logger.endStep(STEPS.NOTIFY_USER.id));
+      // Continue with further logic...
+    } catch (error) {
+      // Handle the error...
+    }
+  }
 }
 ```
 
