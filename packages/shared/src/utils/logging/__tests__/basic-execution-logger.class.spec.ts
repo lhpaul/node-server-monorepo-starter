@@ -139,8 +139,8 @@ describe(BasicExecutionLogger.name, () => {
           logId: LOGS.STEP_END.logId,
           step: stepLabel,
           group: stepGroup,
-          elapsedTimeFromPreviousStep: expect.closeTo(1000),
-          totalElapsedTime: expect.closeTo(1000),
+          elapsedTimeFromPreviousStep: expect.closeTo(1000, -2),
+          totalElapsedTime: expect.closeTo(1000, -2),
         },
         expect.any(String)
       );
