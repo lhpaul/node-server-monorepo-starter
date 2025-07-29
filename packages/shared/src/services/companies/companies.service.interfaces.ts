@@ -11,3 +11,12 @@ export interface UpdateCompanyInput {
 export interface FilterCompaniesInput extends FilterInput {
   name?: FilterItem<string>[];
 }
+
+export interface AddFinancialInstitutionInput {
+  financialInstitutionId: string;
+  credentials: any; // should be type JSON
+}
+
+export interface RemoveFinancialInstitutionInput {
+  financialInstitutionId: string;
+}
