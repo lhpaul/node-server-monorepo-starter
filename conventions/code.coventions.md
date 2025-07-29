@@ -111,7 +111,7 @@ Maintain a consistent import order within each file to improve readability and m
 
 3. **Import Statement Formatting:**
    - Components imported from a module should be declared in alphabetical order.
-   - If the number of imported components exceeds 2, declare them in multiple lines for better readability.
+   - If the number of imported components exceeds 3, declare them in multiple lines for better readability.
 
 **Example:**
 
@@ -127,6 +127,7 @@ import {
   DatabaseService,
   DateField,
   FloatField,
+  IntegerField
 } from '../../database/database.service';
 import { User } from '../entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
