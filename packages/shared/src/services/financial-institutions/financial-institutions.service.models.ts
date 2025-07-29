@@ -4,4 +4,4 @@ export interface FinancialInstitutionTransaction {
   createdAt: string;
   description: string;
   updatedAt: string;
-}
+} 

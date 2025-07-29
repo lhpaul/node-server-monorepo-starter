@@ -1,6 +1,7 @@
 import moment from 'moment';
 import { ExecutionLogger } from '../../definitions';
 import { Transaction, TransactionSourceType, TransactionType } from '../../domain';
+import { FinancialInstitutionsService, FinancialInstitutionTransaction } from '../financial-institutions';
 import {
   TransactionsRepository,
   TransactionDocument,
@@ -17,7 +18,6 @@ import {
   UpdateTransactionInput,
 } from './transactions.service.interfaces';
 import { DATE_FORMAT, ERRORS_MESSAGES, SYNC_WITH_FINANCIAL_INSTITUTION_STEPS } from './transactions.service.constants';
-import { FinancialInstitutionsService, FinancialInstitutionTransaction } from '../financial-institution';
 
 export class TransactionsService extends DomainModelService<Transaction, TransactionDocument, CreateTransactionInput, CreateTransactionDocumentInput, UpdateTransactionInput, UpdateTransactionDocumentInput, FilterTransactionsInput, QueryTransactionsInput> {
   private static instance: TransactionsService;

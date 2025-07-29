@@ -3,9 +3,11 @@ import { Transaction, TransactionType, TransactionSourceType } from '../transact
 describe(Transaction.name, () => {
   const initialValues = {
     amount: 100,
+    categoryId: 'category-123',
     companyId: '0',
     createdAt: new Date(),
     date: '2024-03-20',
+    description: 'Transaction description',
     id: 'txn-123',
     sourceType: TransactionSourceType.USER,
     sourceId: 'user-456',
@@ -26,9 +28,11 @@ describe(Transaction.name, () => {
 
     it('should initialize with correct values', () => {
       expect(transaction.amount).toBe(initialValues.amount);
+      expect(transaction.categoryId).toBe(initialValues.categoryId);
       expect(transaction.companyId).toBe(initialValues.companyId);
       expect(transaction.createdAt).toBe(initialValues.createdAt);
       expect(transaction.date).toBe(initialValues.date);
+      expect(transaction.description).toBe(initialValues.description);
       expect(transaction.id).toBe(initialValues.id);
       expect(transaction.sourceType).toBe(initialValues.sourceType);
       expect(transaction.sourceId).toBe(initialValues.sourceId);

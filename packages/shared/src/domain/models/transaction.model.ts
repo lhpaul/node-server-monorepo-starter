@@ -12,6 +12,7 @@ export enum TransactionSourceType {
 
 export class Transaction implements ResourceModel {
   public readonly amount: number; // amount of the transaction
+  public readonly categoryId: string | null; // id of the category of the transaction
   public readonly companyId: string; // id of the company
   public readonly createdAt: Date; // date of creation
   public readonly date: string; // date of the transaction

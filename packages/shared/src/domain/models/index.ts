@@ -1,4 +1,5 @@
 export * from './company.model.js';
+export * from './financial-institution.model.js';
 export * from './oauth-client.model.js';
 export * from './private-key.model.js';
 export * from './subscription.model.js';

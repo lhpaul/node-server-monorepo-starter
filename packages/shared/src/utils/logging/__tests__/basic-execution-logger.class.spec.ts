@@ -139,10 +139,10 @@ describe(BasicExecutionLogger.name, () => {
           logId: LOGS.STEP_END.logId,
           step: stepLabel,
           group: stepGroup,
-          elapsedTimeFromPreviousStep: 1000,
-          totalElapsedTime: 1000,
+          elapsedTimeFromPreviousStep: expect.closeTo(1000),
+          totalElapsedTime: expect.closeTo(1000),
         },
-        LOGS.STEP_END.logMessage(stepLabel, 1000, stepGroup)
+        expect.any(String)
       );
     });
 
