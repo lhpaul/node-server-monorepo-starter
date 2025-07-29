@@ -5,3 +5,5 @@ export const ENV_VARIABLES_UTILS_CONSTANTS: Record<string, Record<string, string
     PROD: 'v1/transactions-prod',
   },
 };
+
+export const APP_ENV_NOT_SET_ERROR_MESSAGE = 'APP_ENV is not set';

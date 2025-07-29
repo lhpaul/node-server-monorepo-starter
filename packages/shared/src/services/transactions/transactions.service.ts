@@ -52,6 +52,7 @@ export class TransactionsService extends DomainModelService<Transaction, Transac
   public async syncWithFinancialInstitution(input: SyncWithFinancialInstitutionInput, logger: ExecutionLogger): Promise<void> {
     const { companyId, financialInstitutionId, fromDate, toDate } = input;
     const logGroup = `${TransactionsService.name}.${this.syncWithFinancialInstitution.name}`;
+
     logger.startStep(SYNC_WITH_FINANCIAL_INSTITUTION_STEPS.GET_TRANSACTIONS, logGroup);
     const financialInstitutionService = FinancialInstitutionsService.getInstance(financialInstitutionId);
     const [ financialInstitutionTransactions, internalTransactions ] = await Promise.all([
@@ -65,6 +66,7 @@ export class TransactionsService extends DomainModelService<Transaction, Transac
         date: [{ value: fromDate, operator: '>' }, { value: toDate, operator: '<=' }],
       }, logger),
     ]).finally(() => logger.endStep(SYNC_WITH_FINANCIAL_INSTITUTION_STEPS.GET_TRANSACTIONS));
+    
     const syncActions = this._getSyncActions(companyId, financialInstitutionId, financialInstitutionTransactions, internalTransactions);
     if (syncActions.createTransactions.length > 0) {
       logger.startStep(SYNC_WITH_FINANCIAL_INSTITUTION_STEPS.CREATE_TRANSACTIONS, logGroup);
