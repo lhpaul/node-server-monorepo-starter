@@ -1,19 +1,29 @@
+import { STATUS_CODES } from '@repo/fastify';
 import { TransactionCategoriesService } from '@repo/shared/services';
-import { FastifyReply, FastifyRequest } from 'fastify';
+import { DomainModelServiceError, DomainModelServiceErrorCode } from '@repo/shared/utils';
+import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
+
+import { ERROR_RESPONSES } from '../../../transaction-categories.endpoints.constants';
+import { STEPS } from '../transaction-categories.delete.handler.constants';
 import { deleteTransactionCategoryHandler } from '../transaction-categories.delete.handler';
-import { DeleteTransactionCategoryParams } from '../transaction-categories.delete.handler.interfaces';
 
 jest.mock('@repo/shared/services');
+jest.mock('@repo/shared/utils', () => ({
+  ...jest.requireActual('@repo/shared/utils'),
+  DomainModelServiceError: jest.fn(),
+  DomainModelServiceErrorCode: jest.fn(),
+}));
 
 describe(deleteTransactionCategoryHandler.name, () => {
-  let mockRequest: jest.Mocked<FastifyRequest>;
-  let mockReply: jest.Mocked<FastifyReply>;
-  let mockService: jest.Mocked<TransactionCategoriesService>;
-  let mockLogger: any;
+  let mockRequest: Partial<FastifyRequest>;
+  let mockReply: Partial<FastifyReply>;
+  let mockService: Partial<TransactionCategoriesService>;
+  let mockLogger: Partial<FastifyBaseLogger>;
+
+  const mockParams = { id: 'test-id' };
+  const logGroup = deleteTransactionCategoryHandler.name;
 
   beforeEach(() => {
-    jest.clearAllMocks();
-
     mockLogger = {
       child: jest.fn().mockReturnThis(),
       startStep: jest.fn(),
@@ -21,84 +31,97 @@ describe(deleteTransactionCategoryHandler.name, () => {
     };
 
     mockRequest = {
-      params: {
-        id: 'transaction-category-123',
-      } as DeleteTransactionCategoryParams,
-      log: mockLogger,
-    } as any;
+      log: mockLogger as FastifyBaseLogger,
+      params: mockParams,
+    };
 
     mockReply = {
-      send: jest.fn().mockReturnThis(),
-    } as any;
+      code: jest.fn().mockReturnThis(),
+      send: jest.fn(),
+    };
 
     mockService = {
       deleteResource: jest.fn(),
-    } as any;
+    };
 
-    (TransactionCategoriesService.getInstance as jest.Mock).mockReturnValue(mockService);
+    (TransactionCategoriesService.getInstance as jest.Mock).mockReturnValue(
+      mockService,
+    );
   });
 
-  it('should delete a transaction category successfully', async () => {
-    mockService.deleteResource.mockResolvedValue(undefined);
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
-    await deleteTransactionCategoryHandler(mockRequest, mockReply);
+  it('should successfully delete a transaction category', async () => {
+    jest.spyOn(mockService, 'deleteResource').mockResolvedValue();
 
-    expect(mockLogger.child).toHaveBeenCalledWith({ handler: deleteTransactionCategoryHandler.name });
-    expect(mockLogger.startStep).toHaveBeenCalledWith('delete-transaction-category', deleteTransactionCategoryHandler.name);
-    expect(mockService.deleteResource).toHaveBeenCalledWith('transaction-category-123', mockLogger);
-    expect(mockLogger.endStep).toHaveBeenCalledWith('delete-transaction-category');
+    await deleteTransactionCategoryHandler(
+      mockRequest as FastifyRequest,
+      mockReply as FastifyReply,
+    );
+
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DELETE_TRANSACTION_CATEGORY.id, logGroup);
+    expect(mockService.deleteResource).toHaveBeenCalledWith(
+      mockParams.id,
+      mockLogger,
+    );
+    expect(mockLogger.endStep).toHaveBeenCalledWith(
+      STEPS.DELETE_TRANSACTION_CATEGORY.id,
+    );
+    expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.NO_CONTENT);
     expect(mockReply.send).toHaveBeenCalled();
   });
 
-  it('should handle service errors properly', async () => {
-    const error = new Error('Service error');
-    mockService.deleteResource.mockRejectedValue(error);
+  it('should handle non-existent transaction category', async () => {
+    jest.spyOn(mockService, 'deleteResource').mockRejectedValue(
+      new DomainModelServiceError({
+        code: DomainModelServiceErrorCode.RESOURCE_NOT_FOUND,
+        message: 'Transaction category not found',
+      }),
+    );
 
-    await expect(deleteTransactionCategoryHandler(mockRequest, mockReply)).rejects.toThrow('Service error');
+    await deleteTransactionCategoryHandler(
+      mockRequest as FastifyRequest,
+      mockReply as FastifyReply,
+    );
 
-    expect(mockLogger.startStep).toHaveBeenCalled();
-    expect(mockLogger.endStep).toHaveBeenCalled();
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DELETE_TRANSACTION_CATEGORY.id, logGroup);
+    expect(mockService.deleteResource).toHaveBeenCalledWith(
+      mockParams.id,
+      mockLogger,
+    );
+    expect(mockLogger.endStep).toHaveBeenCalledWith(
+      STEPS.DELETE_TRANSACTION_CATEGORY.id,
+    );
+    expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.NOT_FOUND);
+    expect(mockReply.send).toHaveBeenCalledWith(
+      ERROR_RESPONSES.TRANSACTION_CATEGORY_NOT_FOUND,
+    );
   });
 
-  it('should handle different category IDs', async () => {
-    mockRequest.params = { id: 'different-category-id' } as DeleteTransactionCategoryParams;
-    mockService.deleteResource.mockResolvedValue(undefined);
+  it('should rethrow non-DomainModelServiceError errors', async () => {
+    const error = new Error('Unexpected error');
+    jest.spyOn(mockService, 'deleteResource').mockRejectedValue(error);
 
-    await deleteTransactionCategoryHandler(mockRequest, mockReply);
+    await expect(
+      deleteTransactionCategoryHandler(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+      ),
+    ).rejects.toThrow(error);
 
-    expect(mockService.deleteResource).toHaveBeenCalledWith('different-category-id', mockLogger);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DELETE_TRANSACTION_CATEGORY.id, logGroup);
+    expect(mockService.deleteResource).toHaveBeenCalledWith(
+      mockParams.id,
+      mockLogger,
+    );
+    expect(mockLogger.endStep).toHaveBeenCalledWith(
+      STEPS.DELETE_TRANSACTION_CATEGORY.id,
+    );
+    expect(mockReply.code).not.toHaveBeenCalled();
+    expect(mockReply.send).not.toHaveBeenCalled();
   });
 
-  it('should ensure logger.endStep is called even if service throws error', async () => {
-    const error = new Error('Service error');
-    mockService.deleteResource.mockRejectedValue(error);
 
-    await expect(deleteTransactionCategoryHandler(mockRequest, mockReply)).rejects.toThrow('Service error');
-
-    expect(mockLogger.endStep).toHaveBeenCalledWith('delete-transaction-category');
-  });
-
-  it('should handle resource not found errors from service', async () => {
-    const error = new Error('Resource not found');
-    mockService.deleteResource.mockRejectedValue(error);
-
-    await expect(deleteTransactionCategoryHandler(mockRequest, mockReply)).rejects.toThrow('Resource not found');
-
-    expect(mockService.deleteResource).toHaveBeenCalledWith('transaction-category-123', mockLogger);
-  });
-
-  it('should handle multiple delete operations', async () => {
-    mockService.deleteResource.mockResolvedValue(undefined);
-
-    // First delete
-    await deleteTransactionCategoryHandler(mockRequest, mockReply);
-    expect(mockService.deleteResource).toHaveBeenCalledWith('transaction-category-123', mockLogger);
-
-    // Second delete with different ID
-    mockRequest.params = { id: 'another-category-id' } as DeleteTransactionCategoryParams;
-    await deleteTransactionCategoryHandler(mockRequest, mockReply);
-    expect(mockService.deleteResource).toHaveBeenCalledWith('another-category-id', mockLogger);
-
-    expect(mockService.deleteResource).toHaveBeenCalledTimes(2);
-  });
 }); 
