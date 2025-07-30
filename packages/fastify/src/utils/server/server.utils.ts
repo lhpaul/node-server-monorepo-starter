@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { Bindings } from 'pino';
 
+import { TRACE_CONTEXT_HEADER_NAME } from '../../constants/requests.constants';
 import {
   INTERNAL_ERROR_VALUES,
   RESOURCE_NOT_FOUND_ERROR,
@@ -12,7 +13,6 @@ import {
   VALIDATION_ERROR_CODE,
 } from '../../constants/server.constants';
 import { RequestLogger } from '../request-logger/request-logger.class';
-import { TRACE_CONTEXT_HEADER_NAME } from '../request-logger/request-logger.class.constants';
 export function setServerErrorHandlers(server: FastifyInstance): void {
   // Handle 404 errors
   server.setNotFoundHandler((request, reply) => {

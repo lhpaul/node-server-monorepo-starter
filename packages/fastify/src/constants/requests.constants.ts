@@ -33,3 +33,5 @@ export const QUERY_PARAMS_OPERATORS_MAP: Record<
   in: 'in',
   'not-in': 'not-in',
 };
+
+export const TRACE_CONTEXT_HEADER_NAME = 'x-cloud-trace-context';

@@ -1,1 +1,0 @@
-export const TRACE_CONTEXT_HEADER_NAME = 'x-trace-context'; 
