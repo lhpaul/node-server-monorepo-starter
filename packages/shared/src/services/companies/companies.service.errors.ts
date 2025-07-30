@@ -1,4 +1,4 @@
-import { KnownError } from '../../utils';
+import { KnownError } from '../../utils/errors/errors.utils.classes';
 
 export enum AddFinancialInstitutionErrorCode {
   INVALID_CREDENTIALS_FORMAT = 'invalid-credentials-format',

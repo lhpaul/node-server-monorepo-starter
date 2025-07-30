@@ -13,8 +13,18 @@ import { DomainModelService } from '../../utils/services';
 import { encryptText } from '../../utils/encryption';
 
 // Local imports (alphabetical)
-import { ADD_FINANCIAL_INSTITUTION_STEPS, ADD_FINANCIAL_INSTITUTION_ERRORS_MESSAGES, REMOVE_FINANCIAL_INSTITUTION_STEPS, REMOVE_FINANCIAL_INSTITUTION_ERRORS_MESSAGES } from './companies.service.constants';
-import { AddFinancialInstitutionError, AddFinancialInstitutionErrorCode, RemoveFinancialInstitutionError, RemoveFinancialInstitutionErrorCode } from './companies.service.errors';
+import {
+  ADD_FINANCIAL_INSTITUTION_STEPS,
+  ADD_FINANCIAL_INSTITUTION_ERRORS_MESSAGES,
+  REMOVE_FINANCIAL_INSTITUTION_STEPS,
+  REMOVE_FINANCIAL_INSTITUTION_ERRORS_MESSAGES,
+} from './companies.service.constants';
+import {
+  AddFinancialInstitutionError,
+  AddFinancialInstitutionErrorCode,
+  RemoveFinancialInstitutionError,
+  RemoveFinancialInstitutionErrorCode,
+} from './companies.service.errors';
 import {
   CreateCompanyInput,
   UpdateCompanyInput,
