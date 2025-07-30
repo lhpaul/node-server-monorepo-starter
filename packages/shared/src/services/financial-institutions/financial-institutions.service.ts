@@ -41,11 +41,9 @@ export class FinancialInstitutionsService extends DomainModelService<FinancialIn
     }
     return this.instances.get(financialInstitutionId) as FinancialInstitutionsService;
   }
-  private readonly _projectSecret: string;
   constructor(private readonly _config: FinancialInstitutionConfig) {
     super(FinancialInstitutionsRepository.getInstance());
     this._config = _config;
-    this._projectSecret = getSecret(MOCK_API_PROJECT_SECRET_KEY);
   }
 
   public async getTransactions(input: GetTransactionsInput, logger: ExecutionLogger): Promise<FinancialInstitutionTransaction[]> {
@@ -53,9 +51,10 @@ export class FinancialInstitutionsService extends DomainModelService<FinancialIn
     logger.startStep(STEPS.GET_TRANSACTIONS.id, logGroup);
 
     const transactionsEndpoint = getEnvironmentVariable(MOCK_TRANSACTIONS_ENDPOINT_ENV_VARIABLE_KEY);
+    const projectSecret = getSecret(MOCK_API_PROJECT_SECRET_KEY);
     const result = await apiRequest<FinancialInstitutionTransaction[]>({
       method: 'GET',
-      url: `${this._projectSecret}.${HOST_BY_INSTITUTION_ID[this._config.financialInstitutionId]}/${transactionsEndpoint}?sortBy=createdAt&order=desc`,
+      url: `${projectSecret}.${HOST_BY_INSTITUTION_ID[this._config.financialInstitutionId]}/${transactionsEndpoint}?sortBy=createdAt&order=desc`,
     }, logger).finally(() => logger.endStep(STEPS.GET_TRANSACTIONS.id));
 
     if (result.error) {

@@ -26,6 +26,9 @@ importers:
       '@fastify/cors':
         specifier: 11.0.1
         version: 11.0.1
+      '@fastify/env':
+        specifier: 5.0.2
+        version: 5.0.2
       '@fastify/helmet':
         specifier: 13.0.1
         version: 13.0.1

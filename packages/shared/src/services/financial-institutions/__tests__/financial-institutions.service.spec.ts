@@ -84,12 +84,6 @@ describe(FinancialInstitutionsService.name, () => {
   });
 
   describe('constructor and configuration', () => {
-    it('should initialize with correct configuration', () => {
-      FinancialInstitutionsService.getInstance('2');
-      
-      expect(getSecret).toHaveBeenCalledWith(MOCK_API_PROJECT_SECRET_KEY);
-    });
-
     it('should use correct host for different institution IDs', async () => {
       const service2 = FinancialInstitutionsService.getInstance('2');
 

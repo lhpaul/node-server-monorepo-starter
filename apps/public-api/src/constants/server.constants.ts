@@ -4,8 +4,10 @@ export const COR_CONFIG = {
 
 export const FASTIFY_ENV_SCHEMA = {
   type: 'object',
-  required: ['JWT_SECRET'],
+  required: ['APP_ENV', 'ENCRYPTION_KEY', 'JWT_SECRET'],
   properties: {
+    APP_ENV: { type: 'string' },
+    ENCRYPTION_KEY: { type: 'string' },
     JWT_SECRET: { type: 'string' },
   },
 } as const;
