@@ -1,5 +1,5 @@
 import { FORBIDDEN_ERROR, RESOURCE_NOT_FOUND_ERROR, STATUS_CODES } from '@repo/fastify';
-import { TransactionType } from '@repo/shared/domain';
+import { Transaction, TransactionSourceType, TransactionType } from '@repo/shared/domain';
 import { TransactionsService, UserPermissions } from '@repo/shared/services';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
@@ -44,10 +44,15 @@ describe(deleteTransactionHandler.name, () => {
       'company123': ['transaction:delete'],
     },
   };
-  const mockTransaction = {
+  const mockTransaction: Transaction = {
     id: mockParams.id,
-    companyId: mockParams.companyId,
     amount: 100,
+    categoryId: '1',
+    companyId: mockParams.companyId,
+    description: 'description1',
+    sourceId: '1',
+    sourceTransactionId: '1',
+    sourceType: TransactionSourceType.FINANCIAL_INSTITUTION,
     date: '2024-03-20',
     type: TransactionType.CREDIT,
     createdAt: new Date(),

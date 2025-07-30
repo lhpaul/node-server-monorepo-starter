@@ -1,6 +1,6 @@
 import { ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { RequestLogger } from '@repo/fastify';
-import { Transaction, TransactionType } from '@repo/shared/domain';
+import { Transaction, TransactionSourceType, TransactionType } from '@repo/shared/domain';
 import { TransactionsService } from '@repo/shared/services';
 import { FastifyBaseLogger } from 'fastify';
 
@@ -59,10 +59,15 @@ describe(transactionsResourceBuilder.name, () => {
     const mockTransactions: Transaction[] = [{
       id: '1',
       amount: 100,
+      categoryId: 'category123',
       companyId: 'company123',
-      date: '2024-01-15',
-      type: TransactionType.CREDIT,
       createdAt: new Date(),
+      date: '2024-01-15',
+      description: 'description123',
+      sourceType: TransactionSourceType.FINANCIAL_INSTITUTION,
+      sourceId: 'sourceId123',
+      sourceTransactionId: 'sourceTransactionId123',
+      type: TransactionType.CREDIT,
       updatedAt: new Date(),
     }];
     jest.spyOn(mockService, 'getResourcesList').mockResolvedValue(mockTransactions);
@@ -106,10 +111,15 @@ describe(transactionsResourceBuilder.name, () => {
     const mockTransactions: Transaction[] = [{
       id: '1',
       amount: 100,
+      categoryId: 'category123',
       companyId: 'company123',
-      date: '2024-01-15',
-      type: TransactionType.CREDIT,
       createdAt: new Date(),
+      date: '2024-01-15',
+      description: 'description123',
+      sourceType: TransactionSourceType.FINANCIAL_INSTITUTION,
+      sourceId: 'sourceId123',
+      sourceTransactionId: 'sourceTransactionId123',
+      type: TransactionType.CREDIT,
       updatedAt: new Date(),
     }];
     jest.spyOn(mockService, 'getResourcesList').mockResolvedValue(mockTransactions);
@@ -141,10 +151,15 @@ describe(transactionsResourceBuilder.name, () => {
     const mockTransactions: Transaction[] = [{
       id: '1',
       amount: 100,
+      categoryId: 'category123',
       companyId: 'company123',
-      date: '2024-01-15',
-      type: TransactionType.CREDIT,
       createdAt: new Date(),
+      date: '2024-01-15',
+      description: 'description123',
+      sourceType: TransactionSourceType.FINANCIAL_INSTITUTION,
+      sourceId: 'sourceId123',
+      sourceTransactionId: 'sourceTransactionId123',
+      type: TransactionType.CREDIT,
       updatedAt: new Date(),
     }];
     jest.spyOn(mockService, 'getResourcesList').mockResolvedValue(mockTransactions);
@@ -178,10 +193,15 @@ describe(transactionsResourceBuilder.name, () => {
     const mockTransactions: Transaction[] = [{
       id: '1',
       amount: 100,
+      categoryId: 'category123',
       companyId: 'company123',
-      date: '2024-01-15',
-      type: TransactionType.CREDIT,
       createdAt: new Date(),
+      date: '2024-01-15',
+      description: 'description123',
+      sourceType: TransactionSourceType.FINANCIAL_INSTITUTION,
+      sourceId: 'sourceId123',
+      sourceTransactionId: 'sourceTransactionId123',
+      type: TransactionType.CREDIT,      
       updatedAt: new Date(),
     }];
     jest.spyOn(mockService, 'getResourcesList').mockResolvedValue(mockTransactions);

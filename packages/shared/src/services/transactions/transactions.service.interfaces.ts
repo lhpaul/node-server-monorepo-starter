@@ -5,7 +5,7 @@ export interface CreateTransactionInput {
   amount: number;
   companyId: string;
   date: string;
-  description: string;
+  description: string | null;
   type: TransactionType;
   sourceType: TransactionSourceType;
   sourceId: string;

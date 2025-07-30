@@ -1,4 +1,4 @@
-import { TransactionType } from '@repo/shared/domain';
+import { TransactionSourceType, TransactionType } from '@repo/shared/domain';
 
 export const URL_V1 = '/v1/transactions';
 export const URL_WITH_ID_V1 = `${URL_V1}/:id`;
@@ -19,10 +19,15 @@ export const CREATE_TRANSACTION_BODY_JSON_SCHEMA = {
   properties: {
     amount: { type: 'number' },
     companyId: { type: 'string' },
-    date: { type: 'string' },
+    description: { type: 'string' },
+    categoryId: { type: 'string' },
+    date: { type: 'string', format: 'date' },
+    sourceId: { type: 'string' },
+    sourceTransactionId: { type: 'string' },
+    sourceType: { enum: Object.values(TransactionSourceType) },
     type: { enum: Object.values(TransactionType) },
   },
-  required: ['amount', 'companyId', 'date', 'type'],
+  required: ['amount', 'companyId', 'date', 'type', 'sourceId', 'sourceTransactionId', 'sourceType'],
 } as const;
 
 export const TRANSACTION_ENDPOINTS_PARAMS_JSON_SCHEMA = {

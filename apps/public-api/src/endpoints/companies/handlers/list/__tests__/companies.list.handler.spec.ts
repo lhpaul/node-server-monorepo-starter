@@ -35,6 +35,7 @@ describe(listCompaniesHandler.name, () => {
     };
 
     mockUser = {
+      userId: 'user123',
       companies: {
         'company-1': ['company:read'],
         'company-2': ['company:write'],

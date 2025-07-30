@@ -18,7 +18,11 @@ export const createTransactionHandler = async (
   try {
     logger.startStep(STEPS.CREATE_TRANSACTION.id, logGroup);
     const id = await service
-      .createResource(body, logger)
+      .createResource({
+        description: null,
+        categoryId: null,
+        ...body,
+      }, logger)
       .finally(() => logger.endStep(STEPS.CREATE_TRANSACTION.id));
     return reply.code(STATUS_CODES.CREATED).send({ id });
   } catch (error) {
