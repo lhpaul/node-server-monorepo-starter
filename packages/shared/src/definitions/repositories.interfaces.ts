@@ -13,7 +13,7 @@ export type QueryItem<T> = {
   operator: QueryOperator;
 };
 export interface QueryInput {
-  [key: string]: QueryItem<any>[] | undefined;
+  [key: string]: QueryItem<any>[] | QueryItem<any> | undefined;
 }
 
 /**

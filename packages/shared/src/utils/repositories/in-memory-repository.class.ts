@@ -93,9 +93,11 @@ export class InMemoryRepository<RepositoryDocumentModel extends DocumentModel, C
     logger.endStep(STEPS.GET_DOCUMENTS.id);
     let filteredItems = [...this._documents];
     for (const key in query) {
-      const queries = query[
-        key as keyof DocumentsQueryInput
-      ] as QueryItem<any>[];
+      const queryItem = query[key];
+      if (!queryItem) {
+        continue;
+      }
+      const queries: QueryItem<any>[] = Array.isArray(queryItem) ? queryItem : [queryItem];
       filteredItems = queries.reduce(
         (acc, query) => filterList(acc, key, query),
         filteredItems,
