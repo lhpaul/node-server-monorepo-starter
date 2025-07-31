@@ -12,3 +12,10 @@ export enum RemoveFinancialInstitutionErrorCode {
 }
 
 export class RemoveFinancialInstitutionError extends KnownError<RemoveFinancialInstitutionErrorCode> {}
+
+export enum UpdateFinancialInstitutionErrorCode {
+  INVALID_CREDENTIALS_FORMAT = 'invalid-credentials-format',
+  RELATION_NOT_FOUND = 'relation-not-found',
+}
+
+export class UpdateFinancialInstitutionError extends KnownError<UpdateFinancialInstitutionErrorCode> {}

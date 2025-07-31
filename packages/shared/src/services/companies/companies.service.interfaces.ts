@@ -17,6 +17,11 @@ export interface RemoveFinancialInstitutionInput {
   financialInstitutionId: string;
 }
 
+export interface UpdateFinancialInstitutionInput {
+  financialInstitutionId: string;
+  credentials: any; // should be type JSON
+}
+
 export interface UpdateCompanyInput {
   name?: string;
 }
