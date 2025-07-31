@@ -94,7 +94,7 @@ export class InMemoryRepository<RepositoryDocumentModel extends DocumentModel, C
     let filteredItems = [...this._documents];
     for (const key in query) {
       const queryItem = query[key];
-      if (!queryItem) {
+      if (!queryItem) { // this can happen when the value is undefined
         continue;
       }
       const queries: QueryItem<any>[] = Array.isArray(queryItem) ? queryItem : [queryItem];

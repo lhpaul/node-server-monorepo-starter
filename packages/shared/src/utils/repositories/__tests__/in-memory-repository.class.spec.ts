@@ -125,6 +125,11 @@ describe(InMemoryRepository.name, () => {
 
   describe(InMemoryRepository.prototype.getDocumentsList.name, () => {
     const logGroup = `${InMemoryRepository.name}.${InMemoryRepository.prototype.getDocumentsList.name}`;
+    
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
     it('should return all documents when no query provided', async () => {
       const documents = await repository.getDocumentsList({}, mockLogger);
 
@@ -144,6 +149,120 @@ describe(InMemoryRepository.name, () => {
       expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_DOCUMENTS.id);
       expect(filterList).toHaveBeenCalledTimes(1);
       expect(filterList).toHaveBeenCalledWith(expect.arrayContaining(initialDocuments) , 'age', { value: 27, operator: '>' });
+    });
+
+    it('should skip falsy query items (undefined)', async () => {
+      const query: TestQueryInput = {
+        name: undefined,
+        age: [{ value: 25, operator: '==' }],
+      };
+      await repository.getDocumentsList(query, mockLogger);
+
+      expect(filterList).toHaveBeenCalledTimes(1);
+      expect(filterList).toHaveBeenCalledWith(expect.arrayContaining(initialDocuments), 'age', { value: 25, operator: '==' });
+    });
+
+    it('should skip falsy query items (null)', async () => {
+      const query: TestQueryInput = {
+        name: null as any,
+        age: [{ value: 25, operator: '==' }],
+      };
+      await repository.getDocumentsList(query, mockLogger);
+
+      expect(filterList).toHaveBeenCalledTimes(1);
+      expect(filterList).toHaveBeenCalledWith(expect.arrayContaining(initialDocuments), 'age', { value: 25, operator: '==' });
+    });
+
+    it('should handle multiple query items for the same field', async () => {
+      const query: TestQueryInput = {
+        age: [
+          { value: 25, operator: '>=' },
+          { value: 35, operator: '<=' },
+        ],
+      };
+      await repository.getDocumentsList(query, mockLogger);
+
+      expect(filterList).toHaveBeenCalledTimes(2);
+      expect(filterList).toHaveBeenNthCalledWith(1, expect.arrayContaining(initialDocuments), 'age', { value: 25, operator: '>=' });
+      expect(filterList).toHaveBeenNthCalledWith(2, expect.arrayContaining(initialDocuments), 'age', { value: 35, operator: '<=' });
+    });
+
+    it('should handle multiple fields in query', async () => {
+      const query: TestQueryInput = {
+        name: [{ value: 'John', operator: '==' }],
+        age: [{ value: 30, operator: '==' }],
+      };
+      await repository.getDocumentsList(query, mockLogger);
+
+      expect(filterList).toHaveBeenCalledTimes(2);
+      expect(filterList).toHaveBeenNthCalledWith(1, expect.arrayContaining(initialDocuments), 'name', { value: 'John', operator: '==' });
+      expect(filterList).toHaveBeenNthCalledWith(2, expect.arrayContaining(initialDocuments), 'age', { value: 30, operator: '==' });
+    });
+
+    it('should handle mixed falsy and valid query items', async () => {
+      const query: TestQueryInput = {
+        name: undefined,
+        age: [{ value: 25, operator: '==' }],
+        nonExistentField: null as any,
+      };
+      await repository.getDocumentsList(query, mockLogger);
+
+      expect(filterList).toHaveBeenCalledTimes(1);
+      expect(filterList).toHaveBeenCalledWith(expect.arrayContaining(initialDocuments), 'age', { value: 25, operator: '==' });
+    });
+
+    it('should handle empty array query items', async () => {
+      const query: TestQueryInput = {
+        name: [],
+        age: [{ value: 25, operator: '==' }],
+      };
+      await repository.getDocumentsList(query, mockLogger);
+
+      expect(filterList).toHaveBeenCalledTimes(1);
+      expect(filterList).toHaveBeenCalledWith(expect.arrayContaining(initialDocuments), 'age', { value: 25, operator: '==' });
+    });
+
+    it('should handle query with only falsy values', async () => {
+      const query: TestQueryInput = {
+        name: undefined,
+        age: null as any,
+      };
+      const documents = await repository.getDocumentsList(query, mockLogger);
+
+      expect(filterList).not.toHaveBeenCalled();
+      expect(documents).toEqual(initialDocuments);
+    });
+
+    it('should handle complex query with multiple conditions', async () => {
+      const query: TestQueryInput = {
+        name: [
+          { value: 'John', operator: '==' },
+          { value: 'Jane', operator: '==' },
+        ],
+        age: [
+          { value: 20, operator: '>=' },
+          { value: 35, operator: '<=' },
+        ],
+      };
+      await repository.getDocumentsList(query, mockLogger);
+
+      expect(filterList).toHaveBeenCalledTimes(4);
+      expect(filterList).toHaveBeenNthCalledWith(1, expect.arrayContaining(initialDocuments), 'name', { value: 'John', operator: '==' });
+      expect(filterList).toHaveBeenNthCalledWith(2, expect.arrayContaining(initialDocuments), 'name', { value: 'Jane', operator: '==' });
+      expect(filterList).toHaveBeenNthCalledWith(3, expect.arrayContaining(initialDocuments), 'age', { value: 20, operator: '>=' });
+      expect(filterList).toHaveBeenNthCalledWith(4, expect.arrayContaining(initialDocuments), 'age', { value: 35, operator: '<=' });
+    });
+
+    it('should handle single query item (not array)', async () => {
+      const query: TestQueryInput = {
+        name: { value: 'John', operator: '==' } as any,
+        age: { value: 30, operator: '==' } as any,
+      };
+      await repository.getDocumentsList(query, mockLogger);
+
+      expect(filterList).toHaveBeenCalledTimes(2);
+      expect(filterList).toHaveBeenNthCalledWith(1, expect.arrayContaining(initialDocuments), 'name', { value: 'John', operator: '==' });
+      expect(filterList).toHaveBeenNthCalledWith(2, expect.arrayContaining(initialDocuments), 'age', { value: 30, operator: '==' });
     });
   });
 
