@@ -11,12 +11,14 @@ import {
   UpdateCompanyDocumentInput,
 } from '../../repositories';
 import { DomainModelService } from '../../utils/services';
-import { encryptText } from '../../utils/encryption';
+import { decryptText, encryptText } from '../../utils/encryption';
 
 // Local imports (alphabetical)
 import {
   ADD_FINANCIAL_INSTITUTION_ERRORS_MESSAGES,
   ADD_FINANCIAL_INSTITUTION_STEPS,
+  GET_FINANCIAL_INSTITUTION_RELATION_ERRORS_MESSAGES,
+  GET_FINANCIAL_INSTITUTION_RELATION_STEPS,
   LIST_FINANCIAL_INSTITUTIONS_STEPS,
   REMOVE_FINANCIAL_INSTITUTION_ERRORS_MESSAGES,
   REMOVE_FINANCIAL_INSTITUTION_STEPS,
@@ -26,6 +28,8 @@ import {
 import {
   AddFinancialInstitutionError,
   AddFinancialInstitutionErrorCode,
+  GetFinancialInstitutionRelationError,
+  GetFinancialInstitutionRelationErrorCode,
   RemoveFinancialInstitutionError,
   RemoveFinancialInstitutionErrorCode,
   UpdateFinancialInstitutionError,
@@ -33,11 +37,13 @@ import {
 } from './companies.service.errors';
 import {
   AddFinancialInstitutionInput,
+  CompanyFinancialInstitutionRelationWithDecryptedCredentials,
   CreateCompanyInput,
   FilterCompaniesInput,
+  GetFinancialInstitutionRelationInput,
   RemoveFinancialInstitutionInput,
   UpdateCompanyInput,
-  UpdateFinancialInstitutionInput,
+  UpdateCompanyFinancialInstitutionInput,
 } from './companies.service.interfaces';
 
 export class CompaniesService extends DomainModelService<Company, CompanyDocument, CreateCompanyInput, CreateCompanyDocumentInput, UpdateCompanyInput, UpdateCompanyDocumentInput, FilterCompaniesInput, QueryCompaniesInput> {
@@ -106,7 +112,7 @@ export class CompaniesService extends DomainModelService<Company, CompanyDocumen
    */
   public async updateFinancialInstitution(
     companyId: string,
-    input: UpdateFinancialInstitutionInput,
+    input: UpdateCompanyFinancialInstitutionInput,
     logger: ExecutionLogger
   ): Promise<void> {
     const logGroup = `${this.constructor.name}.${this.updateFinancialInstitution.name}`;
@@ -209,5 +215,68 @@ export class CompaniesService extends DomainModelService<Company, CompanyDocumen
     }
 
     return financialInstitutions;
+  }
+
+  /**
+   * Gets a company financial institution relation with decrypted credentials
+   * @param companyId - The ID of the company
+   * @param input - The input containing financial institution ID
+   * @param logger - Logger instance for tracking execution
+   * @returns Promise resolving to the company financial institution relation with decrypted credentials
+   */
+  public async getFinancialInstitutionRelation(
+    companyId: string,
+    input: GetFinancialInstitutionRelationInput,
+    logger: ExecutionLogger
+  ): Promise<CompanyFinancialInstitutionRelationWithDecryptedCredentials> {
+    const logGroup = `${this.constructor.name}.${this.getFinancialInstitutionRelation.name}`;
+
+    logger.startStep(GET_FINANCIAL_INSTITUTION_RELATION_STEPS.FIND_RELATION, logGroup);
+    const relations = await CompanyFinancialInstitutionRelationsRepository.getInstance().getDocumentsList({
+      companyId: [{ value: companyId, operator: '==' }],
+      financialInstitutionId: [{ value: input.financialInstitutionId, operator: '==' }],
+    }, logger).finally(() => logger.endStep(GET_FINANCIAL_INSTITUTION_RELATION_STEPS.FIND_RELATION));
+
+    if (relations.length === 0) {
+      throw new GetFinancialInstitutionRelationError({ 
+        code: GetFinancialInstitutionRelationErrorCode.RELATION_NOT_FOUND, 
+        message: GET_FINANCIAL_INSTITUTION_RELATION_ERRORS_MESSAGES.RELATION_NOT_FOUND 
+      });
+    }
+
+    const relation = relations[0];
+
+    logger.startStep(GET_FINANCIAL_INSTITUTION_RELATION_STEPS.DECRYPT_CREDENTIALS, logGroup);
+    let decryptedCredentialsString: string;
+    try {
+      decryptedCredentialsString = decryptText(relation.encryptedCredentials);
+    } catch (error) {
+      throw new GetFinancialInstitutionRelationError({ 
+        code: GetFinancialInstitutionRelationErrorCode.DECRYPTION_FAILED, 
+        message: GET_FINANCIAL_INSTITUTION_RELATION_ERRORS_MESSAGES.DECRYPTION_FAILED 
+      });
+    }
+    logger.endStep(GET_FINANCIAL_INSTITUTION_RELATION_STEPS.DECRYPT_CREDENTIALS);
+
+    logger.startStep(GET_FINANCIAL_INSTITUTION_RELATION_STEPS.PARSE_CREDENTIALS, logGroup);
+    let credentials: any;
+    try {
+      credentials = JSON.parse(decryptedCredentialsString);
+    } catch (error) {
+      throw new GetFinancialInstitutionRelationError({ 
+        code: GetFinancialInstitutionRelationErrorCode.INVALID_CREDENTIALS_FORMAT, 
+        message: GET_FINANCIAL_INSTITUTION_RELATION_ERRORS_MESSAGES.INVALID_CREDENTIALS_FORMAT 
+      });
+    }
+    logger.endStep(GET_FINANCIAL_INSTITUTION_RELATION_STEPS.PARSE_CREDENTIALS);
+
+    return {
+      id: relation.id,
+      companyId: relation.companyId,
+      financialInstitutionId: relation.financialInstitutionId,
+      credentials,
+      createdAt: relation.createdAt,
+      updatedAt: relation.updatedAt,
+    };
   }
 }

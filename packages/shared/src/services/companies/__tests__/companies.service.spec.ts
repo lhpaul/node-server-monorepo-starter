@@ -2,12 +2,14 @@
 import { ExecutionLogger } from '../../../definitions';
 import { FinancialInstitution } from '../../../domain';
 import { CompaniesRepository, CompanyFinancialInstitutionRelationsRepository, FinancialInstitutionsRepository } from '../../../repositories';
-import { encryptText } from '../../../utils/encryption';
+import { decryptText, encryptText } from '../../../utils/encryption';
 
 // Local imports (alphabetical)
 import {
   ADD_FINANCIAL_INSTITUTION_ERRORS_MESSAGES,
   ADD_FINANCIAL_INSTITUTION_STEPS,
+  GET_FINANCIAL_INSTITUTION_RELATION_ERRORS_MESSAGES,
+  GET_FINANCIAL_INSTITUTION_RELATION_STEPS,
   LIST_FINANCIAL_INSTITUTIONS_STEPS,
   REMOVE_FINANCIAL_INSTITUTION_ERRORS_MESSAGES,
   REMOVE_FINANCIAL_INSTITUTION_STEPS,
@@ -17,6 +19,8 @@ import {
 import {
   AddFinancialInstitutionError,
   AddFinancialInstitutionErrorCode,
+  GetFinancialInstitutionRelationError,
+  GetFinancialInstitutionRelationErrorCode,
   RemoveFinancialInstitutionError,
   RemoveFinancialInstitutionErrorCode,
   UpdateFinancialInstitutionError,
@@ -24,8 +28,9 @@ import {
 } from '../companies.service.errors';
 import {
   AddFinancialInstitutionInput,
+  GetFinancialInstitutionRelationInput,
   RemoveFinancialInstitutionInput,
-  UpdateFinancialInstitutionInput,
+  UpdateCompanyFinancialInstitutionInput,
 } from '../companies.service.interfaces';
 import { CompaniesService } from '../companies.service';
 
@@ -288,7 +293,7 @@ describe(CompaniesService.name, () => {
     const mockCompanyId = 'company-123';
     const mockFinancialInstitutionId = 'fi-456';
     const mockCredentials = { username: 'newuser', password: 'newpass', apiKey: 'new-api-key' };
-    const mockInput: UpdateFinancialInstitutionInput = {
+    const mockInput: UpdateCompanyFinancialInstitutionInput = {
       financialInstitutionId: mockFinancialInstitutionId,
       credentials: mockCredentials,
     };
@@ -306,7 +311,7 @@ describe(CompaniesService.name, () => {
       // Arrange
       const circularObject: any = {};
       circularObject.self = circularObject;
-      const invalidInput: UpdateFinancialInstitutionInput = {
+      const invalidInput: UpdateCompanyFinancialInstitutionInput = {
         financialInstitutionId: mockFinancialInstitutionId,
         credentials: circularObject,
       };
@@ -372,7 +377,7 @@ describe(CompaniesService.name, () => {
 
     it('should handle empty credentials object', async () => {
       // Arrange
-      const emptyCredentialsInput: UpdateFinancialInstitutionInput = {
+      const emptyCredentialsInput: UpdateCompanyFinancialInstitutionInput = {
         financialInstitutionId: mockFinancialInstitutionId,
         credentials: {},
       };
@@ -391,7 +396,7 @@ describe(CompaniesService.name, () => {
 
     it('should handle null credentials', async () => {
       // Arrange
-      const nullCredentialsInput: UpdateFinancialInstitutionInput = {
+      const nullCredentialsInput: UpdateCompanyFinancialInstitutionInput = {
         financialInstitutionId: mockFinancialInstitutionId,
         credentials: null as any,
       };
@@ -410,7 +415,7 @@ describe(CompaniesService.name, () => {
 
     it('should handle primitive credentials', async () => {
       // Arrange
-      const primitiveCredentialsInput: UpdateFinancialInstitutionInput = {
+      const primitiveCredentialsInput: UpdateCompanyFinancialInstitutionInput = {
         financialInstitutionId: mockFinancialInstitutionId,
         credentials: 'simple-string' as any,
       };
@@ -548,7 +553,7 @@ describe(CompaniesService.name, () => {
           ssl: true,
         },
       };
-      const complexInput: UpdateFinancialInstitutionInput = {
+      const complexInput: UpdateCompanyFinancialInstitutionInput = {
         financialInstitutionId: mockFinancialInstitutionId,
         credentials: complexCredentials,
       };
@@ -573,7 +578,7 @@ describe(CompaniesService.name, () => {
         apiKey: 'key-with-unicode-🚀-🎉-🔥',
         notes: 'Special chars: !@#$%^&*()_+-=[]{}|;:,.<>?',
       };
-      const specialInput: UpdateFinancialInstitutionInput = {
+      const specialInput: UpdateCompanyFinancialInstitutionInput = {
         financialInstitutionId: mockFinancialInstitutionId,
         credentials: specialCredentials,
       };
@@ -964,6 +969,179 @@ describe(CompaniesService.name, () => {
       // Assert
       expect(result).toHaveLength(0);
       expect(mockFinancialInstitutionsRepository.getDocument).toHaveBeenCalledTimes(3);
+    });
+  });
+
+  describe(CompaniesService.prototype.getFinancialInstitutionRelation.name, () => {
+    const mockCompanyId = 'company-1';
+    const mockFinancialInstitutionId = 'fi-1';
+    const mockRelationId = 'relation-1';
+    const mockCredentials = { username: 'testuser', password: 'testpass' };
+    const mockEncryptedCredentials = 'encrypted-credentials-string';
+    const mockDecryptedCredentialsString = JSON.stringify(mockCredentials);
+    const logGroup = `${CompaniesService.name}.${CompaniesService.prototype.getFinancialInstitutionRelation.name}`;
+
+    const mockRelation = {
+      id: mockRelationId,
+      companyId: mockCompanyId,
+      financialInstitutionId: mockFinancialInstitutionId,
+      encryptedCredentials: mockEncryptedCredentials,
+      createdAt: new Date('2023-01-01'),
+      updatedAt: new Date('2023-01-02'),
+    };
+
+    const mockInput: GetFinancialInstitutionRelationInput = {
+      financialInstitutionId: mockFinancialInstitutionId,
+    };
+
+    beforeEach(() => {
+      // Mock the decryptText function
+      (decryptText as jest.Mock).mockReturnValue(mockDecryptedCredentialsString);
+    });
+
+    it('should return company financial institution relation with decrypted credentials', async () => {
+      // Arrange
+      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue([mockRelation]);
+
+      // Act
+      const result = await companiesService.getFinancialInstitutionRelation(mockCompanyId, mockInput, mockLogger);
+
+      // Assert
+      expect(result).toEqual({
+        id: mockRelationId,
+        companyId: mockCompanyId,
+        financialInstitutionId: mockFinancialInstitutionId,
+        credentials: mockCredentials,
+        createdAt: mockRelation.createdAt,
+        updatedAt: mockRelation.updatedAt,
+      });
+
+      expect(mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList).toHaveBeenCalledWith({
+        companyId: [{ value: mockCompanyId, operator: '==' }],
+        financialInstitutionId: [{ value: mockFinancialInstitutionId, operator: '==' }],
+      }, mockLogger);
+
+      expect(decryptText).toHaveBeenCalledWith(mockEncryptedCredentials);
+    });
+
+    it('should throw GetFinancialInstitutionRelationError when relation is not found', async () => {
+      // Arrange
+      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue([]);
+
+      // Act & Assert
+      await expect(companiesService.getFinancialInstitutionRelation(mockCompanyId, mockInput, mockLogger))
+        .rejects
+        .toThrow(GetFinancialInstitutionRelationError);
+
+      await expect(companiesService.getFinancialInstitutionRelation(mockCompanyId, mockInput, mockLogger))
+        .rejects
+        .toMatchObject({
+          code: GetFinancialInstitutionRelationErrorCode.RELATION_NOT_FOUND,
+          message: GET_FINANCIAL_INSTITUTION_RELATION_ERRORS_MESSAGES.RELATION_NOT_FOUND,
+        });
+    });
+
+    it('should throw GetFinancialInstitutionRelationError when decryption fails', async () => {
+      // Arrange
+      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue([mockRelation]);
+      const decryptionError = new Error('Decryption failed');
+      (decryptText as jest.Mock).mockImplementation(() => {
+        throw decryptionError;
+      });
+
+      // Act & Assert
+      await expect(companiesService.getFinancialInstitutionRelation(mockCompanyId, mockInput, mockLogger))
+        .rejects
+        .toThrow(GetFinancialInstitutionRelationError);
+
+      await expect(companiesService.getFinancialInstitutionRelation(mockCompanyId, mockInput, mockLogger))
+        .rejects
+        .toMatchObject({
+          code: GetFinancialInstitutionRelationErrorCode.DECRYPTION_FAILED,
+          message: GET_FINANCIAL_INSTITUTION_RELATION_ERRORS_MESSAGES.DECRYPTION_FAILED,
+        });
+    });
+
+    it('should throw GetFinancialInstitutionRelationError when credentials JSON parsing fails', async () => {
+      // Arrange
+      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue([mockRelation]);
+      (decryptText as jest.Mock).mockReturnValue('invalid-json');
+
+      // Act & Assert
+      await expect(companiesService.getFinancialInstitutionRelation(mockCompanyId, mockInput, mockLogger))
+        .rejects
+        .toThrow(GetFinancialInstitutionRelationError);
+
+      await expect(companiesService.getFinancialInstitutionRelation(mockCompanyId, mockInput, mockLogger))
+        .rejects
+        .toMatchObject({
+          code: GetFinancialInstitutionRelationErrorCode.INVALID_CREDENTIALS_FORMAT,
+          message: GET_FINANCIAL_INSTITUTION_RELATION_ERRORS_MESSAGES.INVALID_CREDENTIALS_FORMAT,
+        });
+    });
+
+    it('should call logger methods in the correct order', async () => {
+      // Arrange
+      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue([mockRelation]);
+
+      // Act
+      await companiesService.getFinancialInstitutionRelation(mockCompanyId, mockInput, mockLogger);
+
+      // Assert
+      expect(mockLogger.startStep).toHaveBeenNthCalledWith(1, GET_FINANCIAL_INSTITUTION_RELATION_STEPS.FIND_RELATION, logGroup);
+      expect(mockLogger.endStep).toHaveBeenNthCalledWith(1, GET_FINANCIAL_INSTITUTION_RELATION_STEPS.FIND_RELATION);
+      expect(mockLogger.startStep).toHaveBeenNthCalledWith(2, GET_FINANCIAL_INSTITUTION_RELATION_STEPS.DECRYPT_CREDENTIALS, logGroup);
+      expect(mockLogger.endStep).toHaveBeenNthCalledWith(2, GET_FINANCIAL_INSTITUTION_RELATION_STEPS.DECRYPT_CREDENTIALS);
+      expect(mockLogger.startStep).toHaveBeenNthCalledWith(3, GET_FINANCIAL_INSTITUTION_RELATION_STEPS.PARSE_CREDENTIALS, logGroup);
+      expect(mockLogger.endStep).toHaveBeenNthCalledWith(3, GET_FINANCIAL_INSTITUTION_RELATION_STEPS.PARSE_CREDENTIALS);
+    });
+
+    it('should ensure logger.endStep is called even if getDocumentsList throws an error', async () => {
+      // Arrange
+      const repositoryError = new Error('Repository error');
+      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockRejectedValue(repositoryError);
+
+      // Act & Assert
+      await expect(companiesService.getFinancialInstitutionRelation(mockCompanyId, mockInput, mockLogger))
+        .rejects
+        .toThrow(repositoryError);
+
+      // Verify that endStep was still called for the FIND_RELATION step
+      expect(mockLogger.endStep).toHaveBeenCalledWith(GET_FINANCIAL_INSTITUTION_RELATION_STEPS.FIND_RELATION);
+    });
+
+    it('should ensure logger.endStep is called even if decryptText throws an error', async () => {
+      // Arrange
+      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue([mockRelation]);
+      const decryptionError = new Error('Decryption failed');
+      (decryptText as jest.Mock).mockImplementation(() => {
+        throw decryptionError;
+      });
+
+      // Act & Assert
+      await expect(companiesService.getFinancialInstitutionRelation(mockCompanyId, mockInput, mockLogger))
+        .rejects
+        .toMatchObject({
+          code: GetFinancialInstitutionRelationErrorCode.DECRYPTION_FAILED,
+          message: GET_FINANCIAL_INSTITUTION_RELATION_ERRORS_MESSAGES.DECRYPTION_FAILED,
+        });
+
+      // Verify that endStep was still called for the FIND_RELATION step
+      expect(mockLogger.endStep).toHaveBeenCalledWith(GET_FINANCIAL_INSTITUTION_RELATION_STEPS.FIND_RELATION);
+    });
+
+    it('should handle repository getDocumentsList errors gracefully', async () => {
+      // Arrange
+      const repositoryError = new Error('Database connection failed');
+      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockRejectedValue(repositoryError);
+
+      // Act & Assert
+      await expect(companiesService.getFinancialInstitutionRelation(mockCompanyId, mockInput, mockLogger))
+        .rejects
+        .toThrow('Database connection failed');
+
+      // Verify that decryptText was not called
+      expect(decryptText).not.toHaveBeenCalled();
     });
   });
 }); 
