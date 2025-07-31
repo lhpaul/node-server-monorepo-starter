@@ -1,9 +1,10 @@
 // Internal modules (farthest path first, then alphabetical)
-import { Company } from '../../domain';
+import { Company, FinancialInstitution } from '../../domain';
 import { ExecutionLogger } from '../../definitions';
 import {
   CompaniesRepository,
   CompanyFinancialInstitutionRelationsRepository,
+  FinancialInstitutionsRepository,
   CompanyDocument,
   CreateCompanyDocumentInput,
   QueryCompaniesInput,
@@ -14,10 +15,11 @@ import { encryptText } from '../../utils/encryption';
 
 // Local imports (alphabetical)
 import {
-  ADD_FINANCIAL_INSTITUTION_STEPS,
   ADD_FINANCIAL_INSTITUTION_ERRORS_MESSAGES,
-  REMOVE_FINANCIAL_INSTITUTION_STEPS,
+  ADD_FINANCIAL_INSTITUTION_STEPS,
+  LIST_FINANCIAL_INSTITUTIONS_STEPS,
   REMOVE_FINANCIAL_INSTITUTION_ERRORS_MESSAGES,
+  REMOVE_FINANCIAL_INSTITUTION_STEPS,
 } from './companies.service.constants';
 import {
   AddFinancialInstitutionError,
@@ -26,11 +28,11 @@ import {
   RemoveFinancialInstitutionErrorCode,
 } from './companies.service.errors';
 import {
-  CreateCompanyInput,
-  UpdateCompanyInput,
-  FilterCompaniesInput,
   AddFinancialInstitutionInput,
+  CreateCompanyInput,
+  FilterCompaniesInput,
   RemoveFinancialInstitutionInput,
+  UpdateCompanyInput,
 } from './companies.service.interfaces';
 
 export class CompaniesService extends DomainModelService<Company, CompanyDocument, CreateCompanyInput, CreateCompanyDocumentInput, UpdateCompanyInput, UpdateCompanyDocumentInput, FilterCompaniesInput, QueryCompaniesInput> {
@@ -120,5 +122,44 @@ export class CompaniesService extends DomainModelService<Company, CompanyDocumen
     logger.startStep(REMOVE_FINANCIAL_INSTITUTION_STEPS.DELETE_RELATION, logGroup);
     await CompanyFinancialInstitutionRelationsRepository.getInstance().deleteDocument(relations[0].id, logger)
       .finally(() => logger.endStep(REMOVE_FINANCIAL_INSTITUTION_STEPS.DELETE_RELATION));
+  }
+
+  /**
+   * Lists all financial institutions related to a company
+   * @param companyId - The ID of the company
+   * @param logger - Logger instance for tracking execution
+   * @returns Promise resolving to an array of FinancialInstitution objects
+   */
+  public async listFinancialInstitutions(
+    companyId: string,
+    logger: ExecutionLogger
+  ): Promise<FinancialInstitution[]> {
+    const logGroup = `${this.constructor.name}.${this.listFinancialInstitutions.name}`;
+
+    logger.startStep(LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_RELATIONS, logGroup);
+    const relations = await CompanyFinancialInstitutionRelationsRepository.getInstance().getDocumentsList({
+      companyId: [{ value: companyId, operator: '==' }],
+    }, logger).finally(() => logger.endStep(LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_RELATIONS));
+
+    if (relations.length === 0) {
+      return [];
+    }
+
+    logger.startStep(LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_FINANCIAL_INSTITUTIONS, logGroup);
+    const financialInstitutionIds = relations.map(relation => relation.financialInstitutionId);
+    const financialInstitutions: FinancialInstitution[] = [];
+
+    try {
+      for (const financialInstitutionId of financialInstitutionIds) {
+        const financialInstitutionDoc = await FinancialInstitutionsRepository.getInstance().getDocument(financialInstitutionId, logger);
+        if (financialInstitutionDoc) {
+          financialInstitutions.push(new FinancialInstitution(financialInstitutionDoc));
+        }
+      }
+    } finally {
+      logger.endStep(LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_FINANCIAL_INSTITUTIONS);
+    }
+
+    return financialInstitutions;
   }
 }

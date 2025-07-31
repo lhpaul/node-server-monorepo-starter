@@ -1,10 +1,11 @@
 // Internal modules (farthest path first, then alphabetical)
 import { ExecutionLogger } from '../../../definitions';
-import { CompaniesRepository, CompanyFinancialInstitutionRelationsRepository } from '../../../repositories';
+import { FinancialInstitution } from '../../../domain';
+import { CompaniesRepository, CompanyFinancialInstitutionRelationsRepository, FinancialInstitutionsRepository } from '../../../repositories';
 import { encryptText } from '../../../utils/encryption';
 
 // Local imports (alphabetical)
-import { ADD_FINANCIAL_INSTITUTION_STEPS, ADD_FINANCIAL_INSTITUTION_ERRORS_MESSAGES, REMOVE_FINANCIAL_INSTITUTION_STEPS, REMOVE_FINANCIAL_INSTITUTION_ERRORS_MESSAGES } from '../companies.service.constants';
+import { ADD_FINANCIAL_INSTITUTION_ERRORS_MESSAGES, ADD_FINANCIAL_INSTITUTION_STEPS, LIST_FINANCIAL_INSTITUTIONS_STEPS, REMOVE_FINANCIAL_INSTITUTION_ERRORS_MESSAGES, REMOVE_FINANCIAL_INSTITUTION_STEPS } from '../companies.service.constants';
 import { AddFinancialInstitutionError, AddFinancialInstitutionErrorCode, RemoveFinancialInstitutionError, RemoveFinancialInstitutionErrorCode } from '../companies.service.errors';
 import { AddFinancialInstitutionInput, RemoveFinancialInstitutionInput } from '../companies.service.interfaces';
 import { CompaniesService } from '../companies.service';
@@ -15,6 +16,7 @@ jest.mock('../../../utils/encryption');
 describe(CompaniesService.name, () => {
   let mockCompaniesRepository: jest.Mocked<CompaniesRepository>;
   let mockCompanyFinancialInstitutionRelationsRepository: jest.Mocked<CompanyFinancialInstitutionRelationsRepository>;
+  let mockFinancialInstitutionsRepository: jest.Mocked<FinancialInstitutionsRepository>;
   let mockLogger: jest.Mocked<ExecutionLogger>;
   let companiesService: CompaniesService;
 
@@ -33,6 +35,10 @@ describe(CompaniesService.name, () => {
       deleteDocument: jest.fn(),
     } as unknown as jest.Mocked<CompanyFinancialInstitutionRelationsRepository>;
 
+    mockFinancialInstitutionsRepository = {
+      getDocument: jest.fn(),
+    } as unknown as jest.Mocked<FinancialInstitutionsRepository>;
+
     // Create mock logger
     mockLogger = {
       startStep: jest.fn(),
@@ -42,6 +48,7 @@ describe(CompaniesService.name, () => {
     // Setup the mocks to return our mock instances
     (CompaniesRepository.getInstance as jest.Mock).mockReturnValue(mockCompaniesRepository);
     (CompanyFinancialInstitutionRelationsRepository.getInstance as jest.Mock).mockReturnValue(mockCompanyFinancialInstitutionRelationsRepository);
+    (FinancialInstitutionsRepository.getInstance as jest.Mock).mockReturnValue(mockFinancialInstitutionsRepository);
 
     // Mock the encryptText function
     (encryptText as jest.Mock).mockReturnValue('encrypted-credentials');
@@ -391,6 +398,245 @@ describe(CompaniesService.name, () => {
       await expect(companiesService.removeFinancialInstitution(mockCompanyId, mockInput, mockLogger))
         .rejects
         .toThrow('Delete operation failed');
+    });
+  });
+
+  describe(CompaniesService.prototype.listFinancialInstitutions.name, () => {
+    const mockCompanyId = 'company-123';
+    const logGroup = `${CompaniesService.name}.${CompaniesService.prototype.listFinancialInstitutions.name}`;
+
+    const mockFinancialInstitution1 = {
+      id: 'fi-1',
+      name: 'Bank of America',
+      createdAt: new Date('2023-01-01'),
+      updatedAt: new Date('2023-01-01'),
+    };
+
+    const mockFinancialInstitution2 = {
+      id: 'fi-2',
+      name: 'Chase Bank',
+      createdAt: new Date('2023-01-02'),
+      updatedAt: new Date('2023-01-02'),
+    };
+
+    const mockFinancialInstitution3 = {
+      id: 'fi-3',
+      name: 'Wells Fargo',
+      createdAt: new Date('2023-01-03'),
+      updatedAt: new Date('2023-01-03'),
+    };
+
+    const mockRelations = [
+      {
+        id: 'relation-1',
+        companyId: mockCompanyId,
+        financialInstitutionId: 'fi-1',
+        encryptedCredentials: 'encrypted-credentials-1',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: 'relation-2',
+        companyId: mockCompanyId,
+        financialInstitutionId: 'fi-2',
+        encryptedCredentials: 'encrypted-credentials-2',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: 'relation-3',
+        companyId: mockCompanyId,
+        financialInstitutionId: 'fi-3',
+        encryptedCredentials: 'encrypted-credentials-3',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ];
+
+    it('should return empty array when no financial institutions are related to the company', async () => {
+      // Arrange
+      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue([]);
+
+      // Act
+      const result = await companiesService.listFinancialInstitutions(mockCompanyId, mockLogger);
+
+      // Assert
+      expect(result).toEqual([]);
+      expect(mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList).toHaveBeenCalledWith({
+        companyId: [{ value: mockCompanyId, operator: '==' }],
+      }, mockLogger);
+      expect(mockFinancialInstitutionsRepository.getDocument).not.toHaveBeenCalled();
+      expect(mockLogger.startStep).toHaveBeenCalledWith(LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_RELATIONS, logGroup);
+      expect(mockLogger.endStep).toHaveBeenCalledWith(LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_RELATIONS);
+      // When no relations exist, the second step should not be called
+      expect(mockLogger.startStep).not.toHaveBeenCalledWith(LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_FINANCIAL_INSTITUTIONS, logGroup);
+      expect(mockLogger.endStep).not.toHaveBeenCalledWith(LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_FINANCIAL_INSTITUTIONS);
+    });
+
+    it('should return all financial institutions related to the company', async () => {
+      // Arrange
+      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue(mockRelations);
+      mockFinancialInstitutionsRepository.getDocument
+        .mockResolvedValueOnce(mockFinancialInstitution1)
+        .mockResolvedValueOnce(mockFinancialInstitution2)
+        .mockResolvedValueOnce(mockFinancialInstitution3);
+
+      // Act
+      const result = await companiesService.listFinancialInstitutions(mockCompanyId, mockLogger);
+
+      // Assert
+      expect(result).toHaveLength(3);
+      expect(result[0]).toBeInstanceOf(FinancialInstitution);
+      expect(result[1]).toBeInstanceOf(FinancialInstitution);
+      expect(result[2]).toBeInstanceOf(FinancialInstitution);
+      expect(result[0]).toMatchObject(mockFinancialInstitution1);
+      expect(result[1]).toMatchObject(mockFinancialInstitution2);
+      expect(result[2]).toMatchObject(mockFinancialInstitution3);
+
+      expect(mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList).toHaveBeenCalledWith({
+        companyId: [{ value: mockCompanyId, operator: '==' }],
+      }, mockLogger);
+
+      expect(mockFinancialInstitutionsRepository.getDocument).toHaveBeenCalledWith('fi-1', mockLogger);
+      expect(mockFinancialInstitutionsRepository.getDocument).toHaveBeenCalledWith('fi-2', mockLogger);
+      expect(mockFinancialInstitutionsRepository.getDocument).toHaveBeenCalledWith('fi-3', mockLogger);
+      expect(mockFinancialInstitutionsRepository.getDocument).toHaveBeenCalledTimes(3);
+
+      expect(mockLogger.startStep).toHaveBeenCalledWith(LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_RELATIONS, logGroup);
+      expect(mockLogger.endStep).toHaveBeenCalledWith(LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_RELATIONS);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_FINANCIAL_INSTITUTIONS, logGroup);
+      expect(mockLogger.endStep).toHaveBeenCalledWith(LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_FINANCIAL_INSTITUTIONS);
+    });
+
+    it('should handle missing financial institutions gracefully', async () => {
+      // Arrange
+      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue(mockRelations);
+      mockFinancialInstitutionsRepository.getDocument
+        .mockResolvedValueOnce(mockFinancialInstitution1)
+        .mockResolvedValueOnce(null) // Missing financial institution
+        .mockResolvedValueOnce(mockFinancialInstitution3);
+
+      // Act
+      const result = await companiesService.listFinancialInstitutions(mockCompanyId, mockLogger);
+
+      // Assert
+      expect(result).toHaveLength(2);
+      expect(result[0]).toBeInstanceOf(FinancialInstitution);
+      expect(result[1]).toBeInstanceOf(FinancialInstitution);
+      expect(result[0]).toMatchObject(mockFinancialInstitution1);
+      expect(result[1]).toMatchObject(mockFinancialInstitution3);
+
+      expect(mockFinancialInstitutionsRepository.getDocument).toHaveBeenCalledWith('fi-1', mockLogger);
+      expect(mockFinancialInstitutionsRepository.getDocument).toHaveBeenCalledWith('fi-2', mockLogger);
+      expect(mockFinancialInstitutionsRepository.getDocument).toHaveBeenCalledWith('fi-3', mockLogger);
+      expect(mockFinancialInstitutionsRepository.getDocument).toHaveBeenCalledTimes(3);
+    });
+
+    it('should handle single financial institution relation', async () => {
+      // Arrange
+      const singleRelation = [mockRelations[0]];
+      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue(singleRelation);
+      mockFinancialInstitutionsRepository.getDocument.mockResolvedValueOnce(mockFinancialInstitution1);
+
+      // Act
+      const result = await companiesService.listFinancialInstitutions(mockCompanyId, mockLogger);
+
+      // Assert
+      expect(result).toHaveLength(1);
+      expect(result[0]).toBeInstanceOf(FinancialInstitution);
+      expect(result[0]).toMatchObject(mockFinancialInstitution1);
+
+      expect(mockFinancialInstitutionsRepository.getDocument).toHaveBeenCalledWith('fi-1', mockLogger);
+      expect(mockFinancialInstitutionsRepository.getDocument).toHaveBeenCalledTimes(1);
+    });
+
+    it('should call logger methods in the correct order', async () => {
+      // Arrange
+      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue(mockRelations);
+      mockFinancialInstitutionsRepository.getDocument
+        .mockResolvedValueOnce(mockFinancialInstitution1)
+        .mockResolvedValueOnce(mockFinancialInstitution2)
+        .mockResolvedValueOnce(mockFinancialInstitution3);
+
+      // Act
+      await companiesService.listFinancialInstitutions(mockCompanyId, mockLogger);
+
+      // Assert
+      expect(mockLogger.startStep).toHaveBeenNthCalledWith(1, LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_RELATIONS, logGroup);
+      expect(mockLogger.endStep).toHaveBeenNthCalledWith(1, LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_RELATIONS);
+      expect(mockLogger.startStep).toHaveBeenNthCalledWith(2, LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_FINANCIAL_INSTITUTIONS, logGroup);
+      expect(mockLogger.endStep).toHaveBeenNthCalledWith(2, LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_FINANCIAL_INSTITUTIONS);
+    });
+
+    it('should ensure logger.endStep is called even if getDocumentsList throws an error', async () => {
+      // Arrange
+      const repositoryError = new Error('Repository error');
+      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockRejectedValue(repositoryError);
+
+      // Act & Assert
+      await expect(companiesService.listFinancialInstitutions(mockCompanyId, mockLogger))
+        .rejects
+        .toThrow(repositoryError);
+
+      // Verify that endStep was still called for the GET_RELATIONS step
+      expect(mockLogger.endStep).toHaveBeenCalledWith(LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_RELATIONS);
+    });
+
+    it('should ensure logger.endStep is called even if getDocument throws an error', async () => {
+      // Arrange
+      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue(mockRelations);
+      const repositoryError = new Error('Repository error');
+      mockFinancialInstitutionsRepository.getDocument.mockRejectedValue(repositoryError);
+
+      // Act & Assert
+      await expect(companiesService.listFinancialInstitutions(mockCompanyId, mockLogger))
+        .rejects
+        .toThrow(repositoryError);
+
+      // Verify that endStep was still called for the GET_FINANCIAL_INSTITUTIONS step
+      expect(mockLogger.endStep).toHaveBeenCalledWith(LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_FINANCIAL_INSTITUTIONS);
+    });
+
+    it('should handle repository getDocumentsList errors gracefully', async () => {
+      // Arrange
+      const repositoryError = new Error('Database connection failed');
+      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockRejectedValue(repositoryError);
+
+      // Act & Assert
+      await expect(companiesService.listFinancialInstitutions(mockCompanyId, mockLogger))
+        .rejects
+        .toThrow('Database connection failed');
+
+      // Verify that getDocument was not called
+      expect(mockFinancialInstitutionsRepository.getDocument).not.toHaveBeenCalled();
+    });
+
+    it('should handle repository getDocument errors gracefully', async () => {
+      // Arrange
+      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue(mockRelations);
+      const repositoryError = new Error('Financial institution not found');
+      mockFinancialInstitutionsRepository.getDocument.mockRejectedValue(repositoryError);
+
+      // Act & Assert
+      await expect(companiesService.listFinancialInstitutions(mockCompanyId, mockLogger))
+        .rejects
+        .toThrow('Financial institution not found');
+    });
+
+    it('should handle all financial institutions being missing', async () => {
+      // Arrange
+      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue(mockRelations);
+      mockFinancialInstitutionsRepository.getDocument
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce(null);
+
+      // Act
+      const result = await companiesService.listFinancialInstitutions(mockCompanyId, mockLogger);
+
+      // Assert
+      expect(result).toHaveLength(0);
+      expect(mockFinancialInstitutionsRepository.getDocument).toHaveBeenCalledTimes(3);
     });
   });
 }); 
