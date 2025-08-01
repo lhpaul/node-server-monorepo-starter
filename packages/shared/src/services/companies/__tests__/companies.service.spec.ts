@@ -1248,7 +1248,7 @@ describe(CompaniesService.name, () => {
     };
 
     const mockInput: GetFinancialInstitutionRelationInput = {
-      financialInstitutionId: mockFinancialInstitutionId,
+      financialInstitutionRelationId: mockRelationId,
     };
 
     beforeEach(() => {
@@ -1258,8 +1258,9 @@ describe(CompaniesService.name, () => {
 
     it('should return company financial institution relation with decrypted credentials', async () => {
       // Arrange
-      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue([mockRelation]);
+      mockCompanyFinancialInstitutionRelationsRepository.getDocument.mockResolvedValue(mockRelation);
       mockFinancialInstitutionsRepository.getDocument.mockResolvedValue(mockFinancialInstitution);
+      
       // Act
       const result = await companiesService.getFinancialInstitution(mockCompanyId, mockInput, mockLogger);
 
@@ -1276,19 +1277,29 @@ describe(CompaniesService.name, () => {
         },
       });
 
-      expect(mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList).toHaveBeenCalledWith({
-        companyId: [{ value: mockCompanyId, operator: '==' }],
-        financialInstitutionId: [{ value: mockFinancialInstitutionId, operator: '==' }],
-      }, mockLogger);
-
+      expect(mockCompanyFinancialInstitutionRelationsRepository.getDocument).toHaveBeenCalledWith(mockRelationId, mockLogger);
       expect(mockFinancialInstitutionsRepository.getDocument).toHaveBeenCalledWith(mockFinancialInstitutionId, mockLogger);
-
       expect(decryptText).toHaveBeenCalledWith(mockEncryptedCredentials);
     });
 
     it('should return null when relation is not found', async () => {
       // Arrange
-      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue([]);
+      mockCompanyFinancialInstitutionRelationsRepository.getDocument.mockResolvedValue(null);
+
+      // Act
+      const result = await companiesService.getFinancialInstitution(mockCompanyId, mockInput, mockLogger);
+
+      // Assert
+      expect(result).toBeNull();
+    });
+
+    it('should return null when relation belongs to different company', async () => {
+      // Arrange
+      const differentCompanyRelation = {
+        ...mockRelation,
+        companyId: 'different-company-id',
+      };
+      mockCompanyFinancialInstitutionRelationsRepository.getDocument.mockResolvedValue(differentCompanyRelation);
 
       // Act
       const result = await companiesService.getFinancialInstitution(mockCompanyId, mockInput, mockLogger);
@@ -1299,7 +1310,7 @@ describe(CompaniesService.name, () => {
 
     it('should throw Error when financial institution is not found', async () => {
       // Arrange
-      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue([mockRelation]);
+      mockCompanyFinancialInstitutionRelationsRepository.getDocument.mockResolvedValue(mockRelation);
       mockFinancialInstitutionsRepository.getDocument.mockResolvedValue(null);
 
       // Act & Assert
@@ -1310,36 +1321,36 @@ describe(CompaniesService.name, () => {
 
     it('should call logger methods in the correct order', async () => {
       // Arrange
-      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue([mockRelation]);
+      mockCompanyFinancialInstitutionRelationsRepository.getDocument.mockResolvedValue(mockRelation);
       mockFinancialInstitutionsRepository.getDocument.mockResolvedValue(mockFinancialInstitution);
 
       // Act
       await companiesService.getFinancialInstitution(mockCompanyId, mockInput, mockLogger);
 
       // Assert
-      expect(mockLogger.startStep).toHaveBeenNthCalledWith(1, GET_FINANCIAL_INSTITUTION_RELATION_STEPS.FIND_RELATION, logGroup);
-      expect(mockLogger.endStep).toHaveBeenNthCalledWith(1, GET_FINANCIAL_INSTITUTION_RELATION_STEPS.FIND_RELATION);
+      expect(mockLogger.startStep).toHaveBeenNthCalledWith(1, GET_FINANCIAL_INSTITUTION_RELATION_STEPS.GET_RELATION, logGroup);
+      expect(mockLogger.endStep).toHaveBeenNthCalledWith(1, GET_FINANCIAL_INSTITUTION_RELATION_STEPS.GET_RELATION);
       expect(mockLogger.startStep).toHaveBeenNthCalledWith(2, GET_FINANCIAL_INSTITUTION_RELATION_STEPS.GET_FINANCIAL_INSTITUTION, logGroup);
       expect(mockLogger.endStep).toHaveBeenNthCalledWith(2, GET_FINANCIAL_INSTITUTION_RELATION_STEPS.GET_FINANCIAL_INSTITUTION);
     });
 
-    it('should ensure logger.endStep is called even if getDocumentsList throws an error', async () => {
+    it('should ensure logger.endStep is called even if relation getDocument throws an error', async () => {
       // Arrange
       const repositoryError = new Error('Repository error');
-      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockRejectedValue(repositoryError);
+      mockCompanyFinancialInstitutionRelationsRepository.getDocument.mockRejectedValue(repositoryError);
 
       // Act & Assert
       await expect(companiesService.getFinancialInstitution(mockCompanyId, mockInput, mockLogger))
         .rejects
         .toThrow(repositoryError);
 
-      // Verify that endStep was still called for the FIND_RELATION step
-      expect(mockLogger.endStep).toHaveBeenCalledWith(GET_FINANCIAL_INSTITUTION_RELATION_STEPS.FIND_RELATION);
+      // Verify that endStep was still called for the GET_RELATION step
+      expect(mockLogger.endStep).toHaveBeenCalledWith(GET_FINANCIAL_INSTITUTION_RELATION_STEPS.GET_RELATION);
     });
 
-    it('should ensure logger.endStep is called even if getDocument throws an error', async () => {
+    it('should ensure logger.endStep is called even if financial institution getDocument throws an error', async () => {
       // Arrange
-      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue([mockRelation]);
+      mockCompanyFinancialInstitutionRelationsRepository.getDocument.mockResolvedValue(mockRelation);
       mockFinancialInstitutionsRepository.getDocument.mockRejectedValue(new Error('Repository error'));
 
       // Act & Assert
@@ -1349,6 +1360,119 @@ describe(CompaniesService.name, () => {
 
       // Verify that endStep was still called for the GET_FINANCIAL_INSTITUTION step
       expect(mockLogger.endStep).toHaveBeenCalledWith(GET_FINANCIAL_INSTITUTION_RELATION_STEPS.GET_FINANCIAL_INSTITUTION);
+    });
+    it('should handle complex nested credential objects', async () => {
+      // Arrange
+      const complexCredentials = {
+        authentication: {
+          username: 'complex-user',
+          password: 'complex-pass',
+          twoFactor: {
+            enabled: true,
+            secret: 'secret-key',
+          },
+        },
+        api: {
+          key: 'api-key-123',
+          version: 'v2',
+          endpoints: ['/auth', '/data', '/sync'],
+        },
+        settings: {
+          timeout: 30000,
+          retries: 3,
+          ssl: true,
+        },
+      };
+
+      (decryptText as jest.Mock).mockReturnValue(JSON.stringify(complexCredentials));
+      mockCompanyFinancialInstitutionRelationsRepository.getDocument.mockResolvedValue(mockRelation);
+      mockFinancialInstitutionsRepository.getDocument.mockResolvedValue(mockFinancialInstitution);
+
+      // Act
+      const result = await companiesService.getFinancialInstitution(mockCompanyId, mockInput, mockLogger);
+
+      // Assert
+      expect(result).toMatchObject({
+        id: mockRelationId,
+        companyId: mockCompanyId,
+        credentials: complexCredentials,
+        financialInstitution: {
+          id: mockFinancialInstitutionId,
+          name: mockFinancialInstitution.name,
+        },
+      });
+      expect(result?.credentials.authentication.twoFactor.enabled).toBe(true);
+      expect(result?.credentials.api.endpoints).toContain('/auth');
+      expect(result?.credentials.settings.timeout).toBe(30000);
+    });
+
+    it('should handle credentials with special characters and unicode', async () => {
+      // Arrange
+      const specialCredentials = {
+        username: 'user@domain.com',
+        password: 'p@ssw0rd!@#$%^&*()',
+        apiKey: 'key-with-unicode-🚀-🎉-🔥',
+        notes: 'Special chars: !@#$%^&*()_+-=[]{}|;:,.<>?',
+      };
+
+      (decryptText as jest.Mock).mockReturnValue(JSON.stringify(specialCredentials));
+      mockCompanyFinancialInstitutionRelationsRepository.getDocument.mockResolvedValue(mockRelation);
+      mockFinancialInstitutionsRepository.getDocument.mockResolvedValue(mockFinancialInstitution);
+
+      // Act
+      const result = await companiesService.getFinancialInstitution(mockCompanyId, mockInput, mockLogger);
+
+      // Assert
+      expect(result).toMatchObject({
+        id: mockRelationId,
+        companyId: mockCompanyId,
+        credentials: specialCredentials,
+        financialInstitution: {
+          id: mockFinancialInstitutionId,
+          name: mockFinancialInstitution.name,
+        },
+      });
+      expect(result?.credentials.username).toBe('user@domain.com');
+      expect(result?.credentials.apiKey).toBe('key-with-unicode-🚀-🎉-🔥');
+      expect(result?.credentials.notes).toBe('Special chars: !@#$%^&*()_+-=[]{}|;:,.<>?');
+    });
+
+    it('should verify exact object structure of returned item', async () => {
+      // Arrange
+      mockCompanyFinancialInstitutionRelationsRepository.getDocument.mockResolvedValue(mockRelation);
+      mockFinancialInstitutionsRepository.getDocument.mockResolvedValue(mockFinancialInstitution);
+
+      // Act
+      const result = await companiesService.getFinancialInstitution(mockCompanyId, mockInput, mockLogger);
+
+      // Assert
+      expect(result).not.toBeNull();
+      
+      // Verify all required properties exist
+      expect(result).toHaveProperty('id');
+      expect(result).toHaveProperty('companyId');
+      expect(result).toHaveProperty('credentials');
+      expect(result).toHaveProperty('createdAt');
+      expect(result).toHaveProperty('updatedAt');
+      expect(result).toHaveProperty('financialInstitution');
+      expect(result?.financialInstitution).toHaveProperty('id');
+      expect(result?.financialInstitution).toHaveProperty('name');
+
+      // Verify property types
+      expect(typeof result?.id).toBe('string');
+      expect(typeof result?.companyId).toBe('string');
+      expect(typeof result?.credentials).toBe('object');
+      expect(result?.createdAt).toBeInstanceOf(Date);
+      expect(result?.updatedAt).toBeInstanceOf(Date);
+      expect(typeof result?.financialInstitution.id).toBe('string');
+      expect(typeof result?.financialInstitution.name).toBe('string');
+
+      // Verify exact values
+      expect(result?.id).toBe(mockRelationId);
+      expect(result?.companyId).toBe(mockCompanyId);
+      expect(result?.credentials).toEqual(mockCredentials);
+      expect(result?.financialInstitution.id).toBe(mockFinancialInstitutionId);
+      expect(result?.financialInstitution.name).toBe('Bank of America');
     });
   });
 });

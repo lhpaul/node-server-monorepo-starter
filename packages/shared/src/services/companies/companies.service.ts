@@ -230,17 +230,13 @@ export class CompaniesService extends DomainModelService<Company, CompanyDocumen
   ): Promise<CompanyFinancialInstitution | null> {
     const logGroup = `${this.constructor.name}.${this.getFinancialInstitution.name}`;
 
-    logger.startStep(GET_FINANCIAL_INSTITUTION_RELATION_STEPS.FIND_RELATION, logGroup);
-    const relations = await CompanyFinancialInstitutionRelationsRepository.getInstance().getDocumentsList({
-      companyId: [{ value: companyId, operator: '==' }],
-      financialInstitutionId: [{ value: input.financialInstitutionId, operator: '==' }],
-    }, logger).finally(() => logger.endStep(GET_FINANCIAL_INSTITUTION_RELATION_STEPS.FIND_RELATION));
+    logger.startStep(GET_FINANCIAL_INSTITUTION_RELATION_STEPS.GET_RELATION, logGroup);
+    const relation = await CompanyFinancialInstitutionRelationsRepository.getInstance().getDocument(input.financialInstitutionRelationId, logger)
+    .finally(() => logger.endStep(GET_FINANCIAL_INSTITUTION_RELATION_STEPS.GET_RELATION));
 
-    if (relations.length === 0) {
+    if (!relation || relation.companyId !== companyId) {
       return null;
     }
-
-    const relation = relations[0];
 
     logger.startStep(GET_FINANCIAL_INSTITUTION_RELATION_STEPS.GET_FINANCIAL_INSTITUTION, logGroup);
     const financialInstitution = await FinancialInstitutionsRepository.getInstance().getDocument(relation.financialInstitutionId, logger)

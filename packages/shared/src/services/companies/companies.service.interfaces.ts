@@ -14,7 +14,7 @@ export interface FilterCompaniesInput extends FilterInput {
 }
 
 export interface RemoveFinancialInstitutionInput {
-  financialInstitutionId: string;
+  financialInstitutionRelationId: string;
 }
 
 export interface UpdateCompanyFinancialInstitutionInput {
@@ -27,7 +27,7 @@ export interface UpdateCompanyInput {
 }
 
 export interface GetFinancialInstitutionRelationInput {
-  financialInstitutionId: string;
+  financialInstitutionRelationId: string;
 }
 
 export interface CompanyFinancialInstitution {

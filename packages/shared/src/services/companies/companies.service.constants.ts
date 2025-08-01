@@ -14,7 +14,7 @@ export const GET_FINANCIAL_INSTITUTION_RELATION_ERRORS_MESSAGES = {
 };
 
 export const GET_FINANCIAL_INSTITUTION_RELATION_STEPS = {
-  FIND_RELATION: 'find-relation',
+  GET_RELATION: 'get-relation',
   GET_FINANCIAL_INSTITUTION: 'get-financial-institution',
 };
 
