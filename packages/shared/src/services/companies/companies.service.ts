@@ -60,6 +60,8 @@ export class CompaniesService extends DomainModelService<Company, CompanyDocumen
    * @param input - The input containing financial institution ID and credentials
    * @param logger - Logger instance for tracking execution
    * @returns Promise resolving to the ID of the created company financial institution relation
+   * @throws AddFinancialInstitutionError with code INVALID_CREDENTIALS_FORMAT if the credentials are invalid
+   * @throws AddFinancialInstitutionError with code RELATION_ALREADY_EXISTS if the relation already exists
    */
   public async addFinancialInstitution(
     companyId: string,
@@ -107,6 +109,8 @@ export class CompaniesService extends DomainModelService<Company, CompanyDocumen
    * @param input - The input containing financial institution ID and new credentials
    * @param logger - Logger instance for tracking execution
    * @returns Promise resolving when the update is complete
+   * @throws UpdateFinancialInstitutionError with code INVALID_CREDENTIALS_FORMAT if the credentials are invalid
+   * @throws UpdateFinancialInstitutionError with code RELATION_NOT_FOUND if the relation is not found or belongs to a different company
    */
   public async updateFinancialInstitution(
     companyId: string,
@@ -142,6 +146,7 @@ export class CompaniesService extends DomainModelService<Company, CompanyDocumen
    * @param input - The input containing financial institution ID to remove
    * @param logger - Logger instance for tracking execution
    * @returns Promise resolving when the removal is complete
+   * @throws RemoveFinancialInstitutionError with code RELATION_NOT_FOUND if the relation is not found or belongs to a different company
    */
   public async removeFinancialInstitution(
     companyId: string,
@@ -222,6 +227,7 @@ export class CompaniesService extends DomainModelService<Company, CompanyDocumen
    * @param input - The input containing financial institution ID
    * @param logger - Logger instance for tracking execution
    * @returns Promise resolving to the company financial institution relation with decrypted credentials
+
    */
   public async getFinancialInstitution(
     companyId: string,
