@@ -31,3 +31,27 @@ export function hasCompanyTransactionsUpdatePermission(companyId: string, permis
 export function hasCompanyTransactionsDeletePermission(companyId: string, permissions: UserPermissions) {
   return permissions.companies[companyId]?.some((permission) => permission === 'transactions:delete' || permission === 'transactions:write');
 }
+
+export function hasCompanyFinancialInstitutionsCreatePermission(companyId: string, permissions: UserPermissions) {
+  return permissions.companies[companyId]?.some((permission) => permission === 'financial-institutions:create' || permission === 'financial-institutions:write');
+}
+
+export function hasCompanyFinancialInstitutionsReadPermission(companyId: string, permissions: UserPermissions) {
+  return permissions.companies[companyId]?.some((permission) => permission === 'financial-institutions:read' || permission === 'financial-institutions:write');
+}
+
+export function hasCompanyFinancialInstitutionsUpdatePermission(companyId: string, permissions: UserPermissions) {
+  return permissions.companies[companyId]?.some((permission) => permission === 'financial-institutions:update' || permission === 'financial-institutions:write');
+}
+
+export function hasCompanyFinancialInstitutionsDeletePermission(companyId: string, permissions: UserPermissions) {
+  return permissions.companies[companyId]?.some((permission) => permission === 'financial-institutions:delete' || permission === 'financial-institutions:write');
+}
+
+export function hasCompanyFinancialInstitutionsListPermission(companyId: string, permissions: UserPermissions) {
+  return permissions.companies[companyId]?.some((permission) => permission === 'financial-institutions:read' || permission === 'financial-institutions:write');
+}
+
+export function hasCompanyFinancialInstitutionsGetPermission(companyId: string, permissions: UserPermissions) {
+  return permissions.companies[companyId]?.some((permission) => permission === 'financial-institutions:read' || permission === 'financial-institutions:write');
+}

@@ -197,7 +197,6 @@ export class CompaniesService extends DomainModelService<Company, CompanyDocumen
         const financialInstitutionDoc = await FinancialInstitutionsRepository.getInstance().getDocument(relation.financialInstitutionId, logger);
         if (financialInstitutionDoc) {
           const financialInstitution = new FinancialInstitution(financialInstitutionDoc);
-          
           const decryptedCredentialsString = decryptText(relation.encryptedCredentials);
           const credentials = JSON.parse(decryptedCredentialsString);
 

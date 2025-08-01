@@ -17,7 +17,8 @@ export const MOCK_COMPANY_FINANCIAL_INSTITUTION_RELATIONS: CompanyFinancialInsti
     id: '0',
     companyId: '0',
     financialInstitutionId: '0',
-    encryptedCredentials: 'encrypted-credentials-0',
+    // username: 'test-username. password: 'test-password'
+    encryptedCredentials: 'YWUzYjZlZGEyOTk5ZmJlMjY1NzY1M2UyZmViMzRjNzY6ZDkzOTgwZWRlZjkzZjljNGE1ZjBkN2Q3MTJmOTFjMGY6YWI0ZTVjNTQ2YTFkNWEwMWYzY2I0Zjg5YTgyOTYwZWI1OGVmOTIxODAzY2MzMjEzMDQ4NTU5NmU2OGIzOGZjNGI5NTU4NWIwZjU4MzRjYzFhOTZiNzExMWM5NzE0YTFjODc2N2M4MGE3ZTQ4MjY3OTVjNTFiMjk4ODkxY2I5MTU=',
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -25,7 +26,8 @@ export const MOCK_COMPANY_FINANCIAL_INSTITUTION_RELATIONS: CompanyFinancialInsti
     id: '1',
     companyId: '1',
     financialInstitutionId: '0',
-    encryptedCredentials: 'encrypted-credentials-1',
+    // username: 'test-username. password: 'test-password'
+    encryptedCredentials: 'YWUzYjZlZGEyOTk5ZmJlMjY1NzY1M2UyZmViMzRjNzY6ZDkzOTgwZWRlZjkzZjljNGE1ZjBkN2Q3MTJmOTFjMGY6YWI0ZTVjNTQ2YTFkNWEwMWYzY2I0Zjg5YTgyOTYwZWI1OGVmOTIxODAzY2MzMjEzMDQ4NTU5NmU2OGIzOGZjNGI5NTU4NWIwZjU4MzRjYzFhOTZiNzExMWM5NzE0YTFjODc2N2M4MGE3ZTQ4MjY3OTVjNTFiMjk4ODkxY2I5MTU=',
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -33,7 +35,8 @@ export const MOCK_COMPANY_FINANCIAL_INSTITUTION_RELATIONS: CompanyFinancialInsti
     id: '2',
     companyId: '0',
     financialInstitutionId: '1',
-    encryptedCredentials: 'encrypted-credentials-2',
+    // username: 'test-username. password: 'test-password'
+    encryptedCredentials: 'YWUzYjZlZGEyOTk5ZmJlMjY1NzY1M2UyZmViMzRjNzY6ZDkzOTgwZWRlZjkzZjljNGE1ZjBkN2Q3MTJmOTFjMGY6YWI0ZTVjNTQ2YTFkNWEwMWYzY2I0Zjg5YTgyOTYwZWI1OGVmOTIxODAzY2MzMjEzMDQ4NTU5NmU2OGIzOGZjNGI5NTU4NWIwZjU4MzRjYzFhOTZiNzExMWM5NzE0YTFjODc2N2M4MGE3ZTQ4MjY3OTVjNTFiMjk4ODkxY2I5MTU=',
     createdAt: new Date(),
     updatedAt: new Date(),
   },

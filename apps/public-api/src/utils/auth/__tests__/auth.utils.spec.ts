@@ -8,6 +8,12 @@ import {
   hasCompanyTransactionsUpdatePermission,
   hasCompanyTransactionsDeletePermission,
   hasCompanySubscriptionsReadPermission,
+  hasCompanyFinancialInstitutionsCreatePermission,
+  hasCompanyFinancialInstitutionsReadPermission,
+  hasCompanyFinancialInstitutionsUpdatePermission,
+  hasCompanyFinancialInstitutionsDeletePermission,
+  hasCompanyFinancialInstitutionsListPermission,
+  hasCompanyFinancialInstitutionsGetPermission,
 } from '../auth.utils';
 
 describe('Auth Utils', () => {
@@ -249,6 +255,177 @@ describe('Auth Utils', () => {
 
       it('should return undefined when company does not exist in permissions', () => {
         const result = hasCompanyTransactionsDeletePermission('non-existent-company', mockTransactionPermissions);
+        expect(result).toBeUndefined();
+      });
+    });
+  });
+
+  describe('Financial Institution Permissions', () => {
+    const mockFinancialInstitutionPermissions: UserPermissions = {
+      companies: {
+        'company-123': ['financial-institutions:read', 'financial-institutions:update'],
+        'company-456': ['financial-institutions:write'],
+      },
+    };
+
+    describe(hasCompanyFinancialInstitutionsCreatePermission.name, () => {
+      it('should return true when user has financial-institutions:create permission', () => {
+        const permissions: UserPermissions = {
+          companies: {
+            'company-123': ['financial-institutions:create'],
+          },
+        };
+        const result = hasCompanyFinancialInstitutionsCreatePermission(mockCompanyId, permissions);
+        expect(result).toBe(true);
+      });
+
+      it('should return true when user has financial-institutions:write permission', () => {
+        const result = hasCompanyFinancialInstitutionsCreatePermission('company-456', mockFinancialInstitutionPermissions);
+        expect(result).toBe(true);
+      });
+
+      it('should return false when user has no create or write permissions', () => {
+        const result = hasCompanyFinancialInstitutionsCreatePermission(mockCompanyId, mockFinancialInstitutionPermissions);
+        expect(result).toBe(false);
+      });
+
+      it('should return undefined when company does not exist in permissions', () => {
+        const result = hasCompanyFinancialInstitutionsCreatePermission('non-existent-company', mockFinancialInstitutionPermissions);
+        expect(result).toBeUndefined();
+      });
+    });
+
+    describe(hasCompanyFinancialInstitutionsReadPermission.name, () => {
+      it('should return true when user has financial-institutions:read permission', () => {
+        const result = hasCompanyFinancialInstitutionsReadPermission(mockCompanyId, mockFinancialInstitutionPermissions);
+        expect(result).toBe(true);
+      });
+
+      it('should return true when user has financial-institutions:write permission', () => {
+        const result = hasCompanyFinancialInstitutionsReadPermission('company-456', mockFinancialInstitutionPermissions);
+        expect(result).toBe(true);
+      });
+
+      it('should return false when user has no read or write permissions', () => {
+        const permissions: UserPermissions = {
+          companies: {
+            'company-123': ['financial-institutions:update'],
+          },
+        };
+        const result = hasCompanyFinancialInstitutionsReadPermission(mockCompanyId, permissions);
+        expect(result).toBe(false);
+      });
+
+      it('should return undefined when company does not exist in permissions', () => {
+        const result = hasCompanyFinancialInstitutionsReadPermission('non-existent-company', mockFinancialInstitutionPermissions);
+        expect(result).toBeUndefined();
+      });
+    });
+
+    describe(hasCompanyFinancialInstitutionsUpdatePermission.name, () => {
+      it('should return true when user has financial-institutions:update permission', () => {
+        const result = hasCompanyFinancialInstitutionsUpdatePermission(mockCompanyId, mockFinancialInstitutionPermissions);
+        expect(result).toBe(true);
+      });
+
+      it('should return true when user has financial-institutions:write permission', () => {
+        const result = hasCompanyFinancialInstitutionsUpdatePermission('company-456', mockFinancialInstitutionPermissions);
+        expect(result).toBe(true);
+      });
+
+      it('should return false when user has no update or write permissions', () => {
+        const permissions: UserPermissions = {
+          companies: {
+            'company-123': ['financial-institutions:read'],
+          },
+        };
+        const result = hasCompanyFinancialInstitutionsUpdatePermission(mockCompanyId, permissions);
+        expect(result).toBe(false);
+      });
+
+      it('should return undefined when company does not exist in permissions', () => {
+        const result = hasCompanyFinancialInstitutionsUpdatePermission('non-existent-company', mockFinancialInstitutionPermissions);
+        expect(result).toBeUndefined();
+      });
+    });
+
+    describe(hasCompanyFinancialInstitutionsDeletePermission.name, () => {
+      it('should return true when user has financial-institutions:delete permission', () => {
+        const permissions: UserPermissions = {
+          companies: {
+            'company-123': ['financial-institutions:delete'],
+          },
+        };
+        const result = hasCompanyFinancialInstitutionsDeletePermission(mockCompanyId, permissions);
+        expect(result).toBe(true);
+      });
+
+      it('should return true when user has financial-institutions:write permission', () => {
+        const result = hasCompanyFinancialInstitutionsDeletePermission('company-456', mockFinancialInstitutionPermissions);
+        expect(result).toBe(true);
+      });
+
+      it('should return false when user has no delete or write permissions', () => {
+        const result = hasCompanyFinancialInstitutionsDeletePermission(mockCompanyId, mockFinancialInstitutionPermissions);
+        expect(result).toBe(false);
+      });
+
+      it('should return undefined when company does not exist in permissions', () => {
+        const result = hasCompanyFinancialInstitutionsDeletePermission('non-existent-company', mockFinancialInstitutionPermissions);
+        expect(result).toBeUndefined();
+      });
+    });
+
+    describe(hasCompanyFinancialInstitutionsListPermission.name, () => {
+      it('should return true when user has financial-institutions:read permission', () => {
+        const result = hasCompanyFinancialInstitutionsListPermission(mockCompanyId, mockFinancialInstitutionPermissions);
+        expect(result).toBe(true);
+      });
+
+      it('should return true when user has financial-institutions:write permission', () => {
+        const result = hasCompanyFinancialInstitutionsListPermission('company-456', mockFinancialInstitutionPermissions);
+        expect(result).toBe(true);
+      });
+
+      it('should return false when user has no read or write permissions', () => {
+        const permissions: UserPermissions = {
+          companies: {
+            'company-123': ['financial-institutions:update'],
+          },
+        };
+        const result = hasCompanyFinancialInstitutionsListPermission(mockCompanyId, permissions);
+        expect(result).toBe(false);
+      });
+
+      it('should return undefined when company does not exist in permissions', () => {
+        const result = hasCompanyFinancialInstitutionsListPermission('non-existent-company', mockFinancialInstitutionPermissions);
+        expect(result).toBeUndefined();
+      });
+    });
+
+    describe(hasCompanyFinancialInstitutionsGetPermission.name, () => {
+      it('should return true when user has financial-institutions:read permission', () => {
+        const result = hasCompanyFinancialInstitutionsGetPermission(mockCompanyId, mockFinancialInstitutionPermissions);
+        expect(result).toBe(true);
+      });
+
+      it('should return true when user has financial-institutions:write permission', () => {
+        const result = hasCompanyFinancialInstitutionsGetPermission('company-456', mockFinancialInstitutionPermissions);
+        expect(result).toBe(true);
+      });
+
+      it('should return false when user has no read or write permissions', () => {
+        const permissions: UserPermissions = {
+          companies: {
+            'company-123': ['financial-institutions:update'],
+          },
+        };
+        const result = hasCompanyFinancialInstitutionsGetPermission(mockCompanyId, permissions);
+        expect(result).toBe(false);
+      });
+
+      it('should return undefined when company does not exist in permissions', () => {
+        const result = hasCompanyFinancialInstitutionsGetPermission('non-existent-company', mockFinancialInstitutionPermissions);
         expect(result).toBeUndefined();
       });
     });
