@@ -19,11 +19,3 @@ export enum UpdateFinancialInstitutionErrorCode {
 }
 
 export class UpdateFinancialInstitutionError extends KnownError<UpdateFinancialInstitutionErrorCode> {}
-
-export enum GetFinancialInstitutionRelationErrorCode {
-  RELATION_NOT_FOUND = 'relation-not-found',
-  DECRYPTION_FAILED = 'decryption-failed',
-  INVALID_CREDENTIALS_FORMAT = 'invalid-credentials-format',
-}
-
-export class GetFinancialInstitutionRelationError extends KnownError<GetFinancialInstitutionRelationErrorCode> {}

@@ -28,8 +28,6 @@ import {
 import {
   AddFinancialInstitutionError,
   AddFinancialInstitutionErrorCode,
-  GetFinancialInstitutionRelationError,
-  GetFinancialInstitutionRelationErrorCode,
   RemoveFinancialInstitutionError,
   RemoveFinancialInstitutionErrorCode,
   UpdateFinancialInstitutionError,
@@ -37,7 +35,7 @@ import {
 } from './companies.service.errors';
 import {
   AddFinancialInstitutionInput,
-  CompanyFinancialInstitutionRelationWithDecryptedCredentials,
+  CompanyFinancialInstitution,
   CreateCompanyInput,
   FilterCompaniesInput,
   GetFinancialInstitutionRelationInput,
@@ -182,12 +180,12 @@ export class CompaniesService extends DomainModelService<Company, CompanyDocumen
    * Lists all financial institutions related to a company
    * @param companyId - The ID of the company
    * @param logger - Logger instance for tracking execution
-   * @returns Promise resolving to an array of FinancialInstitution objects
+   * @returns Promise resolving to an array of CompanyFinancialInstitution objects
    */
   public async listFinancialInstitutions(
     companyId: string,
     logger: ExecutionLogger
-  ): Promise<FinancialInstitution[]> {
+  ): Promise<CompanyFinancialInstitution[]> {
     const logGroup = `${this.constructor.name}.${this.listFinancialInstitutions.name}`;
 
     logger.startStep(LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_RELATIONS, logGroup);
@@ -200,21 +198,35 @@ export class CompaniesService extends DomainModelService<Company, CompanyDocumen
     }
 
     logger.startStep(LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_FINANCIAL_INSTITUTIONS, logGroup);
-    const financialInstitutionIds = relations.map(relation => relation.financialInstitutionId);
-    const financialInstitutions: FinancialInstitution[] = [];
+    const companyFinancialInstitutions: CompanyFinancialInstitution[] = [];
 
     try {
-      for (const financialInstitutionId of financialInstitutionIds) {
-        const financialInstitutionDoc = await FinancialInstitutionsRepository.getInstance().getDocument(financialInstitutionId, logger);
+      for (const relation of relations) {
+        const financialInstitutionDoc = await FinancialInstitutionsRepository.getInstance().getDocument(relation.financialInstitutionId, logger);
         if (financialInstitutionDoc) {
-          financialInstitutions.push(new FinancialInstitution(financialInstitutionDoc));
+          const financialInstitution = new FinancialInstitution(financialInstitutionDoc);
+          
+          const decryptedCredentialsString = decryptText(relation.encryptedCredentials);
+          const credentials = JSON.parse(decryptedCredentialsString);
+
+          companyFinancialInstitutions.push({
+            id: relation.id,
+            companyId: relation.companyId,
+            credentials,
+            createdAt: relation.createdAt,
+            updatedAt: relation.updatedAt,
+            financialInstitution: {
+              id: financialInstitution.id,
+              name: financialInstitution.name,
+            },
+          });
         }
       }
     } finally {
       logger.endStep(LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_FINANCIAL_INSTITUTIONS);
     }
 
-    return financialInstitutions;
+    return companyFinancialInstitutions;
   }
 
   /**
@@ -224,12 +236,12 @@ export class CompaniesService extends DomainModelService<Company, CompanyDocumen
    * @param logger - Logger instance for tracking execution
    * @returns Promise resolving to the company financial institution relation with decrypted credentials
    */
-  public async getFinancialInstitutionRelation(
+  public async getFinancialInstitution(
     companyId: string,
     input: GetFinancialInstitutionRelationInput,
     logger: ExecutionLogger
-  ): Promise<CompanyFinancialInstitutionRelationWithDecryptedCredentials> {
-    const logGroup = `${this.constructor.name}.${this.getFinancialInstitutionRelation.name}`;
+  ): Promise<CompanyFinancialInstitution | null> {
+    const logGroup = `${this.constructor.name}.${this.getFinancialInstitution.name}`;
 
     logger.startStep(GET_FINANCIAL_INSTITUTION_RELATION_STEPS.FIND_RELATION, logGroup);
     const relations = await CompanyFinancialInstitutionRelationsRepository.getInstance().getDocumentsList({
@@ -238,42 +250,29 @@ export class CompaniesService extends DomainModelService<Company, CompanyDocumen
     }, logger).finally(() => logger.endStep(GET_FINANCIAL_INSTITUTION_RELATION_STEPS.FIND_RELATION));
 
     if (relations.length === 0) {
-      throw new GetFinancialInstitutionRelationError({ 
-        code: GetFinancialInstitutionRelationErrorCode.RELATION_NOT_FOUND, 
-        message: GET_FINANCIAL_INSTITUTION_RELATION_ERRORS_MESSAGES.RELATION_NOT_FOUND 
-      });
+      return null;
     }
 
     const relation = relations[0];
 
-    logger.startStep(GET_FINANCIAL_INSTITUTION_RELATION_STEPS.DECRYPT_CREDENTIALS, logGroup);
-    let decryptedCredentialsString: string;
-    try {
-      decryptedCredentialsString = decryptText(relation.encryptedCredentials);
-    } catch (error) {
-      throw new GetFinancialInstitutionRelationError({ 
-        code: GetFinancialInstitutionRelationErrorCode.DECRYPTION_FAILED, 
-        message: GET_FINANCIAL_INSTITUTION_RELATION_ERRORS_MESSAGES.DECRYPTION_FAILED 
-      });
-    }
-    logger.endStep(GET_FINANCIAL_INSTITUTION_RELATION_STEPS.DECRYPT_CREDENTIALS);
+    logger.startStep(GET_FINANCIAL_INSTITUTION_RELATION_STEPS.GET_FINANCIAL_INSTITUTION, logGroup);
+    const financialInstitution = await FinancialInstitutionsRepository.getInstance().getDocument(relation.financialInstitutionId, logger)
+    .finally(() => logger.endStep(GET_FINANCIAL_INSTITUTION_RELATION_STEPS.GET_FINANCIAL_INSTITUTION));
 
-    logger.startStep(GET_FINANCIAL_INSTITUTION_RELATION_STEPS.PARSE_CREDENTIALS, logGroup);
-    let credentials: any;
-    try {
-      credentials = JSON.parse(decryptedCredentialsString);
-    } catch (error) {
-      throw new GetFinancialInstitutionRelationError({ 
-        code: GetFinancialInstitutionRelationErrorCode.INVALID_CREDENTIALS_FORMAT, 
-        message: GET_FINANCIAL_INSTITUTION_RELATION_ERRORS_MESSAGES.INVALID_CREDENTIALS_FORMAT 
-      });
+    if (!financialInstitution) {
+      throw new Error(GET_FINANCIAL_INSTITUTION_RELATION_ERRORS_MESSAGES.FINANCIAL_INSTITUTION_NOT_FOUND);
     }
-    logger.endStep(GET_FINANCIAL_INSTITUTION_RELATION_STEPS.PARSE_CREDENTIALS);
+
+    const decryptedCredentialsString = decryptText(relation.encryptedCredentials);
+    const credentials = JSON.parse(decryptedCredentialsString);
 
     return {
       id: relation.id,
       companyId: relation.companyId,
-      financialInstitutionId: relation.financialInstitutionId,
+      financialInstitution: {
+        id: relation.financialInstitutionId,
+        name: financialInstitution.name,
+      },
       credentials,
       createdAt: relation.createdAt,
       updatedAt: relation.updatedAt,

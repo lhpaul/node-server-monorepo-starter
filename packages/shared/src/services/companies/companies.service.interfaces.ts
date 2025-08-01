@@ -1,8 +1,8 @@
 import { FilterInput, FilterItem } from '../../definitions/domain.interfaces';
 
 export interface AddFinancialInstitutionInput {
-  financialInstitutionId: string;
   credentials: any; // should be type JSON
+  financialInstitutionId: string;
 }
 
 export interface CreateCompanyInput {
@@ -18,8 +18,8 @@ export interface RemoveFinancialInstitutionInput {
 }
 
 export interface UpdateCompanyFinancialInstitutionInput {
-  financialInstitutionId: string;
   credentials: any; // should be type JSON
+  financialInstitutionId: string;
 }
 
 export interface UpdateCompanyInput {
@@ -30,11 +30,14 @@ export interface GetFinancialInstitutionRelationInput {
   financialInstitutionId: string;
 }
 
-export interface CompanyFinancialInstitutionRelationWithDecryptedCredentials {
+export interface CompanyFinancialInstitution {
   companyId: string;
   createdAt: Date;
   credentials: any; // decrypted credentials as JSON
-  financialInstitutionId: string;
+  financialInstitution: {
+    id: string;
+    name: string;
+  };
   id: string;
   updatedAt: Date;
 }
