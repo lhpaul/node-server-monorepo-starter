@@ -19,7 +19,7 @@ export interface RemoveFinancialInstitutionInput {
 
 export interface UpdateCompanyFinancialInstitutionInput {
   credentials: any; // should be type JSON
-  financialInstitutionId: string;
+  financialInstitutionRelationId: string;
 }
 
 export interface UpdateCompanyInput {

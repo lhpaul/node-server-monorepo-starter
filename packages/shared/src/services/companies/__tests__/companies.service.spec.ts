@@ -52,8 +52,9 @@ describe(CompaniesService.name, () => {
 
     mockCompanyFinancialInstitutionRelationsRepository = {
       createDocument: jest.fn(),
-      getDocumentsList: jest.fn(),
       deleteDocument: jest.fn(),
+      getDocument: jest.fn(),
+      getDocumentsList: jest.fn(),
       updateDocument: jest.fn(),
     } as unknown as jest.Mocked<CompanyFinancialInstitutionRelationsRepository>;
 
@@ -291,16 +292,16 @@ describe(CompaniesService.name, () => {
 
   describe(CompaniesService.prototype.updateFinancialInstitution.name, () => {
     const mockCompanyId = 'company-123';
-    const mockFinancialInstitutionId = 'fi-456';
+    const mockFinancialInstitutionRelationId = 'relation-789';
     const mockCredentials = { username: 'newuser', password: 'newpass', apiKey: 'new-api-key' };
     const mockInput: UpdateCompanyFinancialInstitutionInput = {
-      financialInstitutionId: mockFinancialInstitutionId,
+      financialInstitutionRelationId: mockFinancialInstitutionRelationId,
       credentials: mockCredentials,
     };
     const mockRelation = {
-      id: 'relation-789',
+      id: mockFinancialInstitutionRelationId,
       companyId: mockCompanyId,
-      financialInstitutionId: mockFinancialInstitutionId,
+      financialInstitutionId: 'fi-456',
       encryptedCredentials: 'old-encrypted-credentials',
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -312,7 +313,7 @@ describe(CompaniesService.name, () => {
       const circularObject: any = {};
       circularObject.self = circularObject;
       const invalidInput: UpdateCompanyFinancialInstitutionInput = {
-        financialInstitutionId: mockFinancialInstitutionId,
+        financialInstitutionRelationId: mockFinancialInstitutionRelationId,
         credentials: circularObject,
       };
 
@@ -329,9 +330,34 @@ describe(CompaniesService.name, () => {
         });
     });
 
-    it('should throw UpdateFinancialInstitutionError when no relation is found', async () => {
+    it('should throw UpdateFinancialInstitutionError when relation is not found', async () => {
       // Arrange
-      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue([]);
+      mockCompanyFinancialInstitutionRelationsRepository.getDocument.mockResolvedValue(null);
+
+      // Act & Assert
+      await expect(companiesService.updateFinancialInstitution(mockCompanyId, mockInput, mockLogger))
+        .rejects
+        .toThrow(UpdateFinancialInstitutionError);
+
+      await expect(companiesService.updateFinancialInstitution(mockCompanyId, mockInput, mockLogger))
+        .rejects
+        .toMatchObject({
+          code: UpdateFinancialInstitutionErrorCode.RELATION_NOT_FOUND,
+          message: UPDATE_FINANCIAL_INSTITUTION_ERRORS_MESSAGES.RELATION_NOT_FOUND,
+        });
+
+      // Verify that updateDocument was not called
+      expect(mockCompanyFinancialInstitutionRelationsRepository.updateDocument).not.toHaveBeenCalled();
+      expect(encryptText).not.toHaveBeenCalled();
+    });
+
+    it('should throw UpdateFinancialInstitutionError when relation belongs to different company', async () => {
+      // Arrange
+      const differentCompanyRelation = {
+        ...mockRelation,
+        companyId: 'different-company-id',
+      };
+      mockCompanyFinancialInstitutionRelationsRepository.getDocument.mockResolvedValue(differentCompanyRelation);
 
       // Act & Assert
       await expect(companiesService.updateFinancialInstitution(mockCompanyId, mockInput, mockLogger))
@@ -352,25 +378,20 @@ describe(CompaniesService.name, () => {
 
     it('should successfully update a financial institution relation for a company', async () => {
       // Arrange
-      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue([mockRelation]);
+      mockCompanyFinancialInstitutionRelationsRepository.getDocument.mockResolvedValue(mockRelation);
       mockCompanyFinancialInstitutionRelationsRepository.updateDocument.mockResolvedValue();
 
       // Act
       await companiesService.updateFinancialInstitution(mockCompanyId, mockInput, mockLogger);
 
       // Assert
-      expect(mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList).toHaveBeenCalledWith({
-        companyId: [{ value: mockCompanyId, operator: '==' }],
-        financialInstitutionId: [{ value: mockFinancialInstitutionId, operator: '==' }],
-      }, mockLogger);
+      expect(mockCompanyFinancialInstitutionRelationsRepository.getDocument).toHaveBeenCalledWith(mockFinancialInstitutionRelationId, mockLogger);
       expect(encryptText).toHaveBeenCalledWith(JSON.stringify(mockCredentials));
-      expect(mockCompanyFinancialInstitutionRelationsRepository.updateDocument).toHaveBeenCalledWith(mockRelation.id, {
+      expect(mockCompanyFinancialInstitutionRelationsRepository.updateDocument).toHaveBeenCalledWith(mockFinancialInstitutionRelationId, {
         encryptedCredentials: 'encrypted-credentials',
       }, mockLogger);
-      expect(mockLogger.startStep).toHaveBeenCalledWith(UPDATE_FINANCIAL_INSTITUTION_STEPS.FIND_RELATION, logGroup);
-      expect(mockLogger.endStep).toHaveBeenCalledWith(UPDATE_FINANCIAL_INSTITUTION_STEPS.FIND_RELATION);
-      expect(mockLogger.startStep).toHaveBeenCalledWith(UPDATE_FINANCIAL_INSTITUTION_STEPS.ENCRYPT_CREDENTIALS, logGroup);
-      expect(mockLogger.endStep).toHaveBeenCalledWith(UPDATE_FINANCIAL_INSTITUTION_STEPS.ENCRYPT_CREDENTIALS);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(UPDATE_FINANCIAL_INSTITUTION_STEPS.GET_RELATION, logGroup);
+      expect(mockLogger.endStep).toHaveBeenCalledWith(UPDATE_FINANCIAL_INSTITUTION_STEPS.GET_RELATION);
       expect(mockLogger.startStep).toHaveBeenCalledWith(UPDATE_FINANCIAL_INSTITUTION_STEPS.UPDATE_RELATION, logGroup);
       expect(mockLogger.endStep).toHaveBeenCalledWith(UPDATE_FINANCIAL_INSTITUTION_STEPS.UPDATE_RELATION);
     });
@@ -378,10 +399,10 @@ describe(CompaniesService.name, () => {
     it('should handle empty credentials object', async () => {
       // Arrange
       const emptyCredentialsInput: UpdateCompanyFinancialInstitutionInput = {
-        financialInstitutionId: mockFinancialInstitutionId,
+        financialInstitutionRelationId: mockFinancialInstitutionRelationId,
         credentials: {},
       };
-      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue([mockRelation]);
+      mockCompanyFinancialInstitutionRelationsRepository.getDocument.mockResolvedValue(mockRelation);
       mockCompanyFinancialInstitutionRelationsRepository.updateDocument.mockResolvedValue();
 
       // Act
@@ -389,7 +410,7 @@ describe(CompaniesService.name, () => {
 
       // Assert
       expect(encryptText).toHaveBeenCalledWith('{}');
-      expect(mockCompanyFinancialInstitutionRelationsRepository.updateDocument).toHaveBeenCalledWith(mockRelation.id, {
+      expect(mockCompanyFinancialInstitutionRelationsRepository.updateDocument).toHaveBeenCalledWith(mockFinancialInstitutionRelationId, {
         encryptedCredentials: 'encrypted-credentials',
       }, mockLogger);
     });
@@ -397,10 +418,10 @@ describe(CompaniesService.name, () => {
     it('should handle null credentials', async () => {
       // Arrange
       const nullCredentialsInput: UpdateCompanyFinancialInstitutionInput = {
-        financialInstitutionId: mockFinancialInstitutionId,
+        financialInstitutionRelationId: mockFinancialInstitutionRelationId,
         credentials: null as any,
       };
-      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue([mockRelation]);
+      mockCompanyFinancialInstitutionRelationsRepository.getDocument.mockResolvedValue(mockRelation);
       mockCompanyFinancialInstitutionRelationsRepository.updateDocument.mockResolvedValue();
 
       // Act
@@ -408,7 +429,7 @@ describe(CompaniesService.name, () => {
 
       // Assert
       expect(encryptText).toHaveBeenCalledWith('null');
-      expect(mockCompanyFinancialInstitutionRelationsRepository.updateDocument).toHaveBeenCalledWith(mockRelation.id, {
+      expect(mockCompanyFinancialInstitutionRelationsRepository.updateDocument).toHaveBeenCalledWith(mockFinancialInstitutionRelationId, {
         encryptedCredentials: 'encrypted-credentials',
       }, mockLogger);
     });
@@ -416,10 +437,10 @@ describe(CompaniesService.name, () => {
     it('should handle primitive credentials', async () => {
       // Arrange
       const primitiveCredentialsInput: UpdateCompanyFinancialInstitutionInput = {
-        financialInstitutionId: mockFinancialInstitutionId,
+        financialInstitutionRelationId: mockFinancialInstitutionRelationId,
         credentials: 'simple-string' as any,
       };
-      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue([mockRelation]);
+      mockCompanyFinancialInstitutionRelationsRepository.getDocument.mockResolvedValue(mockRelation);
       mockCompanyFinancialInstitutionRelationsRepository.updateDocument.mockResolvedValue();
 
       // Act
@@ -427,40 +448,14 @@ describe(CompaniesService.name, () => {
 
       // Assert
       expect(encryptText).toHaveBeenCalledWith('"simple-string"');
-      expect(mockCompanyFinancialInstitutionRelationsRepository.updateDocument).toHaveBeenCalledWith(mockRelation.id, {
+      expect(mockCompanyFinancialInstitutionRelationsRepository.updateDocument).toHaveBeenCalledWith(mockFinancialInstitutionRelationId, {
         encryptedCredentials: 'encrypted-credentials',
       }, mockLogger);
-    });
-
-    it('should handle multiple relations and update the first one', async () => {
-      // Arrange
-      const mockRelations = [
-        mockRelation,
-        {
-          id: 'relation-790',
-          companyId: mockCompanyId,
-          financialInstitutionId: mockFinancialInstitutionId,
-          encryptedCredentials: 'encrypted-credentials-2',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      ];
-      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue(mockRelations);
-      mockCompanyFinancialInstitutionRelationsRepository.updateDocument.mockResolvedValue();
-
-      // Act
-      await companiesService.updateFinancialInstitution(mockCompanyId, mockInput, mockLogger);
-
-      // Assert
-      expect(mockCompanyFinancialInstitutionRelationsRepository.updateDocument).toHaveBeenCalledWith(mockRelations[0].id, {
-        encryptedCredentials: 'encrypted-credentials',
-      }, mockLogger);
-      expect(mockCompanyFinancialInstitutionRelationsRepository.updateDocument).toHaveBeenCalledTimes(1);
     });
 
     it('should ensure logger.endStep is called even if updateDocument throws an error', async () => {
       // Arrange
-      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue([mockRelation]);
+      mockCompanyFinancialInstitutionRelationsRepository.getDocument.mockResolvedValue(mockRelation);
       const repositoryError = new Error('Repository error');
       mockCompanyFinancialInstitutionRelationsRepository.updateDocument.mockRejectedValue(repositoryError);
 
@@ -473,41 +468,39 @@ describe(CompaniesService.name, () => {
       expect(mockLogger.endStep).toHaveBeenCalledWith(UPDATE_FINANCIAL_INSTITUTION_STEPS.UPDATE_RELATION);
     });
 
-    it('should ensure logger.endStep is called even if getDocumentsList throws an error', async () => {
+    it('should ensure logger.endStep is called even if getDocument throws an error', async () => {
       // Arrange
       const repositoryError = new Error('Repository error');
-      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockRejectedValue(repositoryError);
+      mockCompanyFinancialInstitutionRelationsRepository.getDocument.mockRejectedValue(repositoryError);
 
       // Act & Assert
       await expect(companiesService.updateFinancialInstitution(mockCompanyId, mockInput, mockLogger))
         .rejects
         .toThrow(repositoryError);
 
-      // Verify that endStep was still called for the FIND_RELATION step
-      expect(mockLogger.endStep).toHaveBeenCalledWith(UPDATE_FINANCIAL_INSTITUTION_STEPS.FIND_RELATION);
+      // Verify that endStep was still called for the GET_RELATION step
+      expect(mockLogger.endStep).toHaveBeenCalledWith(UPDATE_FINANCIAL_INSTITUTION_STEPS.GET_RELATION);
     });
 
     it('should call logger methods in the correct order', async () => {
       // Arrange
-      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue([mockRelation]);
+      mockCompanyFinancialInstitutionRelationsRepository.getDocument.mockResolvedValue(mockRelation);
       mockCompanyFinancialInstitutionRelationsRepository.updateDocument.mockResolvedValue();
 
       // Act
       await companiesService.updateFinancialInstitution(mockCompanyId, mockInput, mockLogger);
 
       // Assert
-      expect(mockLogger.startStep).toHaveBeenNthCalledWith(1, UPDATE_FINANCIAL_INSTITUTION_STEPS.FIND_RELATION, logGroup);
-      expect(mockLogger.endStep).toHaveBeenNthCalledWith(1, UPDATE_FINANCIAL_INSTITUTION_STEPS.FIND_RELATION);
-      expect(mockLogger.startStep).toHaveBeenNthCalledWith(2, UPDATE_FINANCIAL_INSTITUTION_STEPS.ENCRYPT_CREDENTIALS, logGroup);
-      expect(mockLogger.endStep).toHaveBeenNthCalledWith(2, UPDATE_FINANCIAL_INSTITUTION_STEPS.ENCRYPT_CREDENTIALS);
-      expect(mockLogger.startStep).toHaveBeenNthCalledWith(3, UPDATE_FINANCIAL_INSTITUTION_STEPS.UPDATE_RELATION, logGroup);
-      expect(mockLogger.endStep).toHaveBeenNthCalledWith(3, UPDATE_FINANCIAL_INSTITUTION_STEPS.UPDATE_RELATION);
+      expect(mockLogger.startStep).toHaveBeenNthCalledWith(1, UPDATE_FINANCIAL_INSTITUTION_STEPS.GET_RELATION, logGroup);
+      expect(mockLogger.endStep).toHaveBeenNthCalledWith(1, UPDATE_FINANCIAL_INSTITUTION_STEPS.GET_RELATION);
+      expect(mockLogger.startStep).toHaveBeenNthCalledWith(2, UPDATE_FINANCIAL_INSTITUTION_STEPS.UPDATE_RELATION, logGroup);
+      expect(mockLogger.endStep).toHaveBeenNthCalledWith(2, UPDATE_FINANCIAL_INSTITUTION_STEPS.UPDATE_RELATION);
     });
 
-    it('should handle repository getDocumentsList errors gracefully', async () => {
+    it('should handle repository getDocument errors gracefully', async () => {
       // Arrange
       const repositoryError = new Error('Database connection failed');
-      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockRejectedValue(repositoryError);
+      mockCompanyFinancialInstitutionRelationsRepository.getDocument.mockRejectedValue(repositoryError);
 
       // Act & Assert
       await expect(companiesService.updateFinancialInstitution(mockCompanyId, mockInput, mockLogger))
@@ -521,7 +514,7 @@ describe(CompaniesService.name, () => {
 
     it('should handle repository updateDocument errors gracefully', async () => {
       // Arrange
-      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue([mockRelation]);
+      mockCompanyFinancialInstitutionRelationsRepository.getDocument.mockResolvedValue(mockRelation);
       const repositoryError = new Error('Update operation failed');
       mockCompanyFinancialInstitutionRelationsRepository.updateDocument.mockRejectedValue(repositoryError);
 
@@ -554,10 +547,10 @@ describe(CompaniesService.name, () => {
         },
       };
       const complexInput: UpdateCompanyFinancialInstitutionInput = {
-        financialInstitutionId: mockFinancialInstitutionId,
+        financialInstitutionRelationId: mockFinancialInstitutionRelationId,
         credentials: complexCredentials,
       };
-      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue([mockRelation]);
+      mockCompanyFinancialInstitutionRelationsRepository.getDocument.mockResolvedValue(mockRelation);
       mockCompanyFinancialInstitutionRelationsRepository.updateDocument.mockResolvedValue();
 
       // Act
@@ -565,7 +558,7 @@ describe(CompaniesService.name, () => {
 
       // Assert
       expect(encryptText).toHaveBeenCalledWith(JSON.stringify(complexCredentials));
-      expect(mockCompanyFinancialInstitutionRelationsRepository.updateDocument).toHaveBeenCalledWith(mockRelation.id, {
+      expect(mockCompanyFinancialInstitutionRelationsRepository.updateDocument).toHaveBeenCalledWith(mockFinancialInstitutionRelationId, {
         encryptedCredentials: 'encrypted-credentials',
       }, mockLogger);
     });
@@ -579,10 +572,10 @@ describe(CompaniesService.name, () => {
         notes: 'Special chars: !@#$%^&*()_+-=[]{}|;:,.<>?',
       };
       const specialInput: UpdateCompanyFinancialInstitutionInput = {
-        financialInstitutionId: mockFinancialInstitutionId,
+        financialInstitutionRelationId: mockFinancialInstitutionRelationId,
         credentials: specialCredentials,
       };
-      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue([mockRelation]);
+      mockCompanyFinancialInstitutionRelationsRepository.getDocument.mockResolvedValue(mockRelation);
       mockCompanyFinancialInstitutionRelationsRepository.updateDocument.mockResolvedValue();
 
       // Act
@@ -590,7 +583,7 @@ describe(CompaniesService.name, () => {
 
       // Assert
       expect(encryptText).toHaveBeenCalledWith(JSON.stringify(specialCredentials));
-      expect(mockCompanyFinancialInstitutionRelationsRepository.updateDocument).toHaveBeenCalledWith(mockRelation.id, {
+      expect(mockCompanyFinancialInstitutionRelationsRepository.updateDocument).toHaveBeenCalledWith(mockFinancialInstitutionRelationId, {
         encryptedCredentials: 'encrypted-credentials',
       }, mockLogger);
     });
@@ -598,14 +591,14 @@ describe(CompaniesService.name, () => {
 
   describe(CompaniesService.prototype.removeFinancialInstitution.name, () => {
     const mockCompanyId = 'company-123';
-    const mockFinancialInstitutionId = 'fi-456';
+    const mockFinancialInstitutionRelationId = 'relation-789';
     const mockInput: RemoveFinancialInstitutionInput = {
-      financialInstitutionId: mockFinancialInstitutionId,
+      financialInstitutionRelationId: mockFinancialInstitutionRelationId,
     };
     const mockRelation = {
-      id: 'relation-789',
+      id: mockFinancialInstitutionRelationId,
       companyId: mockCompanyId,
-      financialInstitutionId: mockFinancialInstitutionId,
+      financialInstitutionId: 'fi-456',
       encryptedCredentials: 'encrypted-credentials',
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -614,27 +607,24 @@ describe(CompaniesService.name, () => {
 
     it('should successfully remove a financial institution from a company', async () => {
       // Arrange
-      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue([mockRelation]);
+      mockCompanyFinancialInstitutionRelationsRepository.getDocument.mockResolvedValue(mockRelation);
       mockCompanyFinancialInstitutionRelationsRepository.deleteDocument.mockResolvedValue();
 
       // Act
       await companiesService.removeFinancialInstitution(mockCompanyId, mockInput, mockLogger);
 
       // Assert
-      expect(mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList).toHaveBeenCalledWith({
-        companyId: [{ value: mockCompanyId, operator: '==' }],
-        financialInstitutionId: [{ value: mockFinancialInstitutionId, operator: '==' }],
-      }, mockLogger);
-      expect(mockCompanyFinancialInstitutionRelationsRepository.deleteDocument).toHaveBeenCalledWith(mockRelation.id, mockLogger);
-      expect(mockLogger.startStep).toHaveBeenCalledWith(REMOVE_FINANCIAL_INSTITUTION_STEPS.FIND_RELATION, logGroup);
-      expect(mockLogger.endStep).toHaveBeenCalledWith(REMOVE_FINANCIAL_INSTITUTION_STEPS.FIND_RELATION);
+      expect(mockCompanyFinancialInstitutionRelationsRepository.getDocument).toHaveBeenCalledWith(mockFinancialInstitutionRelationId, mockLogger);
+      expect(mockCompanyFinancialInstitutionRelationsRepository.deleteDocument).toHaveBeenCalledWith(mockFinancialInstitutionRelationId, mockLogger);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(REMOVE_FINANCIAL_INSTITUTION_STEPS.GET_RELATION, logGroup);
+      expect(mockLogger.endStep).toHaveBeenCalledWith(REMOVE_FINANCIAL_INSTITUTION_STEPS.GET_RELATION);
       expect(mockLogger.startStep).toHaveBeenCalledWith(REMOVE_FINANCIAL_INSTITUTION_STEPS.DELETE_RELATION, logGroup);
       expect(mockLogger.endStep).toHaveBeenCalledWith(REMOVE_FINANCIAL_INSTITUTION_STEPS.DELETE_RELATION);
     });
 
-    it('should throw RemoveFinancialInstitutionError when no relation is found', async () => {
+    it('should throw RemoveFinancialInstitutionError when relation is not found', async () => {
       // Arrange
-      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue([]);
+      mockCompanyFinancialInstitutionRelationsRepository.getDocument.mockResolvedValue(null);
 
       // Act & Assert
       await expect(companiesService.removeFinancialInstitution(mockCompanyId, mockInput, mockLogger))
@@ -652,33 +642,61 @@ describe(CompaniesService.name, () => {
       expect(mockCompanyFinancialInstitutionRelationsRepository.deleteDocument).not.toHaveBeenCalled();
     });
 
-    it('should handle multiple relations and delete the first one', async () => {
+    it('should throw RemoveFinancialInstitutionError when relation belongs to different company', async () => {
       // Arrange
-      const mockRelations = [
-        mockRelation,
-        {
-          id: 'relation-790',
-          companyId: mockCompanyId,
-          financialInstitutionId: mockFinancialInstitutionId,
-          encryptedCredentials: 'encrypted-credentials-2',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      ];
-      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue(mockRelations);
+      const differentCompanyRelation = {
+        ...mockRelation,
+        companyId: 'different-company-id',
+      };
+      mockCompanyFinancialInstitutionRelationsRepository.getDocument.mockResolvedValue(differentCompanyRelation);
+
+      // Act & Assert
+      await expect(companiesService.removeFinancialInstitution(mockCompanyId, mockInput, mockLogger))
+        .rejects
+        .toThrow(RemoveFinancialInstitutionError);
+
+      await expect(companiesService.removeFinancialInstitution(mockCompanyId, mockInput, mockLogger))
+        .rejects
+        .toMatchObject({
+          code: RemoveFinancialInstitutionErrorCode.RELATION_NOT_FOUND,
+          message: REMOVE_FINANCIAL_INSTITUTION_ERRORS_MESSAGES.RELATION_NOT_FOUND,
+        });
+
+      // Verify that deleteDocument was not called
+      expect(mockCompanyFinancialInstitutionRelationsRepository.deleteDocument).not.toHaveBeenCalled();
+    });
+
+    it('should call logger methods in the correct order', async () => {
+      // Arrange
+      mockCompanyFinancialInstitutionRelationsRepository.getDocument.mockResolvedValue(mockRelation);
       mockCompanyFinancialInstitutionRelationsRepository.deleteDocument.mockResolvedValue();
 
       // Act
       await companiesService.removeFinancialInstitution(mockCompanyId, mockInput, mockLogger);
 
       // Assert
-      expect(mockCompanyFinancialInstitutionRelationsRepository.deleteDocument).toHaveBeenCalledWith(mockRelations[0].id, mockLogger);
-      expect(mockCompanyFinancialInstitutionRelationsRepository.deleteDocument).toHaveBeenCalledTimes(1);
+      expect(mockLogger.startStep).toHaveBeenNthCalledWith(1, REMOVE_FINANCIAL_INSTITUTION_STEPS.GET_RELATION, logGroup);
+      expect(mockLogger.endStep).toHaveBeenNthCalledWith(1, REMOVE_FINANCIAL_INSTITUTION_STEPS.GET_RELATION);
+      expect(mockLogger.startStep).toHaveBeenNthCalledWith(2, REMOVE_FINANCIAL_INSTITUTION_STEPS.DELETE_RELATION, logGroup);
+      expect(mockLogger.endStep).toHaveBeenNthCalledWith(2, REMOVE_FINANCIAL_INSTITUTION_STEPS.DELETE_RELATION);
+    });
+    
+    it('should ensure logger.endStep is called even if getDocument throws an error', async () => {
+      // Arrange
+      mockCompanyFinancialInstitutionRelationsRepository.getDocument.mockRejectedValue(new Error('Repository error'));
+
+      // Act & Assert
+      await expect(companiesService.removeFinancialInstitution(mockCompanyId, mockInput, mockLogger))
+        .rejects
+        .toThrow('Repository error');
+
+      // Verify that endStep was still called for the GET_RELATION step
+      expect(mockLogger.endStep).toHaveBeenCalledWith(REMOVE_FINANCIAL_INSTITUTION_STEPS.GET_RELATION);
     });
 
     it('should ensure logger.endStep is called even if deleteDocument throws an error', async () => {
       // Arrange
-      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue([mockRelation]);
+      mockCompanyFinancialInstitutionRelationsRepository.getDocument.mockResolvedValue(mockRelation);
       const repositoryError = new Error('Repository error');
       mockCompanyFinancialInstitutionRelationsRepository.deleteDocument.mockRejectedValue(repositoryError);
 
@@ -689,47 +707,6 @@ describe(CompaniesService.name, () => {
 
       // Verify that endStep was still called for the DELETE_RELATION step
       expect(mockLogger.endStep).toHaveBeenCalledWith(REMOVE_FINANCIAL_INSTITUTION_STEPS.DELETE_RELATION);
-    });
-
-    it('should call logger methods in the correct order', async () => {
-      // Arrange
-      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue([mockRelation]);
-      mockCompanyFinancialInstitutionRelationsRepository.deleteDocument.mockResolvedValue();
-
-      // Act
-      await companiesService.removeFinancialInstitution(mockCompanyId, mockInput, mockLogger);
-
-      // Assert
-      expect(mockLogger.startStep).toHaveBeenNthCalledWith(1, REMOVE_FINANCIAL_INSTITUTION_STEPS.FIND_RELATION, logGroup);
-      expect(mockLogger.endStep).toHaveBeenNthCalledWith(1, REMOVE_FINANCIAL_INSTITUTION_STEPS.FIND_RELATION);
-      expect(mockLogger.startStep).toHaveBeenNthCalledWith(2, REMOVE_FINANCIAL_INSTITUTION_STEPS.DELETE_RELATION, logGroup);
-      expect(mockLogger.endStep).toHaveBeenNthCalledWith(2, REMOVE_FINANCIAL_INSTITUTION_STEPS.DELETE_RELATION);
-    });
-
-    it('should handle repository getDocumentsList errors gracefully', async () => {
-      // Arrange
-      const repositoryError = new Error('Database connection failed');
-      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockRejectedValue(repositoryError);
-
-      // Act & Assert
-      await expect(companiesService.removeFinancialInstitution(mockCompanyId, mockInput, mockLogger))
-        .rejects
-        .toThrow('Database connection failed');
-
-      // Verify that deleteDocument was not called
-      expect(mockCompanyFinancialInstitutionRelationsRepository.deleteDocument).not.toHaveBeenCalled();
-    });
-
-    it('should handle repository deleteDocument errors gracefully', async () => {
-      // Arrange
-      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue([mockRelation]);
-      const repositoryError = new Error('Delete operation failed');
-      mockCompanyFinancialInstitutionRelationsRepository.deleteDocument.mockRejectedValue(repositoryError);
-
-      // Act & Assert
-      await expect(companiesService.removeFinancialInstitution(mockCompanyId, mockInput, mockLogger))
-        .rejects
-        .toThrow('Delete operation failed');
     });
   });
 

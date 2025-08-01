@@ -120,28 +120,20 @@ export class CompaniesService extends DomainModelService<Company, CompanyDocumen
     } catch (error) {
       throw new UpdateFinancialInstitutionError({ code: UpdateFinancialInstitutionErrorCode.INVALID_CREDENTIALS_FORMAT, message: UPDATE_FINANCIAL_INSTITUTION_ERRORS_MESSAGES.INVALID_CREDENTIALS_FORMAT});
     }
-    
-    logger.startStep(UPDATE_FINANCIAL_INSTITUTION_STEPS.FIND_RELATION, logGroup);
-    const relations = await CompanyFinancialInstitutionRelationsRepository.getInstance().getDocumentsList({
-      companyId: [{ value: companyId, operator: '==' }],
-      financialInstitutionId: [{ value: input.financialInstitutionId, operator: '==' }],
-    }, logger).finally(() => logger.endStep(UPDATE_FINANCIAL_INSTITUTION_STEPS.FIND_RELATION));
 
-    if (relations.length === 0) {
-      throw new UpdateFinancialInstitutionError({ 
-        code: UpdateFinancialInstitutionErrorCode.RELATION_NOT_FOUND, 
-        message: UPDATE_FINANCIAL_INSTITUTION_ERRORS_MESSAGES.RELATION_NOT_FOUND 
-      });
+    logger.startStep(UPDATE_FINANCIAL_INSTITUTION_STEPS.GET_RELATION, logGroup);
+    const relation = await CompanyFinancialInstitutionRelationsRepository.getInstance().getDocument(input.financialInstitutionRelationId, logger)
+    .finally(() => logger.endStep(UPDATE_FINANCIAL_INSTITUTION_STEPS.GET_RELATION));
+
+    if (!relation || relation.companyId !== companyId) {
+      throw new UpdateFinancialInstitutionError({ code: UpdateFinancialInstitutionErrorCode.RELATION_NOT_FOUND, message: UPDATE_FINANCIAL_INSTITUTION_ERRORS_MESSAGES.RELATION_NOT_FOUND });
     }
-    
-    logger.startStep(UPDATE_FINANCIAL_INSTITUTION_STEPS.ENCRYPT_CREDENTIALS, logGroup);
-    const encryptedCredentials = encryptText(credentialsString);
-    logger.endStep(UPDATE_FINANCIAL_INSTITUTION_STEPS.ENCRYPT_CREDENTIALS);
 
     logger.startStep(UPDATE_FINANCIAL_INSTITUTION_STEPS.UPDATE_RELATION, logGroup);
-    await CompanyFinancialInstitutionRelationsRepository.getInstance().updateDocument(relations[0].id, {
-      encryptedCredentials,
-    }, logger).finally(() => logger.endStep(UPDATE_FINANCIAL_INSTITUTION_STEPS.UPDATE_RELATION));
+    await CompanyFinancialInstitutionRelationsRepository.getInstance().updateDocument(input.financialInstitutionRelationId, {
+      encryptedCredentials: encryptText(credentialsString),
+    }, logger)
+    .finally(() => logger.endStep(UPDATE_FINANCIAL_INSTITUTION_STEPS.UPDATE_RELATION));
   }
 
   /**
@@ -158,21 +150,16 @@ export class CompaniesService extends DomainModelService<Company, CompanyDocumen
   ): Promise<void> {
     const logGroup = `${this.constructor.name}.${this.removeFinancialInstitution.name}`;
 
-    logger.startStep(REMOVE_FINANCIAL_INSTITUTION_STEPS.FIND_RELATION, logGroup);
-    const relations = await CompanyFinancialInstitutionRelationsRepository.getInstance().getDocumentsList({
-      companyId: [{ value: companyId, operator: '==' }],
-      financialInstitutionId: [{ value: input.financialInstitutionId, operator: '==' }],
-    }, logger).finally(() => logger.endStep(REMOVE_FINANCIAL_INSTITUTION_STEPS.FIND_RELATION));
+    logger.startStep(REMOVE_FINANCIAL_INSTITUTION_STEPS.GET_RELATION, logGroup);
+    const relation = await CompanyFinancialInstitutionRelationsRepository.getInstance().getDocument(input.financialInstitutionRelationId, logger)
+    .finally(() => logger.endStep(REMOVE_FINANCIAL_INSTITUTION_STEPS.GET_RELATION));
 
-    if (relations.length === 0) {
-      throw new RemoveFinancialInstitutionError({ 
-        code: RemoveFinancialInstitutionErrorCode.RELATION_NOT_FOUND, 
-        message: REMOVE_FINANCIAL_INSTITUTION_ERRORS_MESSAGES.RELATION_NOT_FOUND 
-      });
+    if (!relation || relation.companyId !== companyId) {
+      throw new RemoveFinancialInstitutionError({ code: RemoveFinancialInstitutionErrorCode.RELATION_NOT_FOUND, message: REMOVE_FINANCIAL_INSTITUTION_ERRORS_MESSAGES.RELATION_NOT_FOUND });
     }
 
     logger.startStep(REMOVE_FINANCIAL_INSTITUTION_STEPS.DELETE_RELATION, logGroup);
-    await CompanyFinancialInstitutionRelationsRepository.getInstance().deleteDocument(relations[0].id, logger)
+    await CompanyFinancialInstitutionRelationsRepository.getInstance().deleteDocument(input.financialInstitutionRelationId, logger)
       .finally(() => logger.endStep(REMOVE_FINANCIAL_INSTITUTION_STEPS.DELETE_RELATION));
   }
 

@@ -29,7 +29,7 @@ export const REMOVE_FINANCIAL_INSTITUTION_ERRORS_MESSAGES = {
 
 export const REMOVE_FINANCIAL_INSTITUTION_STEPS = {
   DELETE_RELATION: 'delete-relation',
-  FIND_RELATION: 'find-relation',
+  GET_RELATION: 'get-relation',
 };
 
 export const UPDATE_FINANCIAL_INSTITUTION_ERRORS_MESSAGES = {
@@ -38,7 +38,6 @@ export const UPDATE_FINANCIAL_INSTITUTION_ERRORS_MESSAGES = {
 };
 
 export const UPDATE_FINANCIAL_INSTITUTION_STEPS = {
-  ENCRYPT_CREDENTIALS: 'encrypt-credentials',
-  FIND_RELATION: 'find-relation',
+  GET_RELATION: 'get-relation',
   UPDATE_RELATION: 'update-relation',
 };
