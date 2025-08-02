@@ -11,14 +11,24 @@ export const ERROR_RESPONSES = {
 export const CREATE_COMPANY_BODY_JSON_SCHEMA = {
   type: 'object',
   properties: {
+    countryCode: { 
+      type: 'string',
+      pattern: '^[A-Z]{2}$',
+      description: 'ISO 3166-1 alpha-2 country code (e.g., US, CA, MX)'
+    },
     name: { type: 'string' },
   },
-  required: ['name'],
+  required: ['countryCode', 'name'],
 } as const;
 
 export const UPDATE_COMPANY_BODY_JSON_SCHEMA = {
   type: 'object',
   properties: {
+    countryCode: { 
+      type: 'string',
+      pattern: '^[A-Z]{2}$',
+      description: 'ISO 3166-1 alpha-2 country code (e.g., US, CA, MX)'
+    },
     name: { type: 'string' },
   },
 } as const;

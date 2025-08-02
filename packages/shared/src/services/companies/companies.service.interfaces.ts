@@ -6,10 +6,12 @@ export interface AddFinancialInstitutionInput {
 }
 
 export interface CreateCompanyInput {
+  countryCode: string;
   name: string;
 }
 
 export interface FilterCompaniesInput extends FilterInput {
+  countryCode?: FilterItem<string>[];
   name?: FilterItem<string>[];
 }
 
@@ -23,6 +25,7 @@ export interface UpdateCompanyFinancialInstitutionInput {
 }
 
 export interface UpdateCompanyInput {
+  countryCode?: string;
   name?: string;
 }
 

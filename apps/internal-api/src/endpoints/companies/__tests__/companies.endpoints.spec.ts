@@ -43,7 +43,18 @@ describe(companiesEndpointsBuilder.name, () => {
       url: URL_V1,
       handler: createCompanyHandler,
       schema: {
-        body: CREATE_COMPANY_BODY_JSON_SCHEMA,
+        body: {
+          type: 'object',
+          properties: {
+            countryCode: { 
+              type: 'string',
+              pattern: '^[A-Z]{2}$',
+              description: 'ISO 3166-1 alpha-2 country code (e.g., US, CA, MX)'
+            },
+            name: { type: 'string' },
+          },
+          required: ['countryCode', 'name'],
+        },
       },
     });
   });
@@ -62,6 +73,9 @@ describe(companiesEndpointsBuilder.name, () => {
             'name[gt]': { type: 'string' },
             'name[le]': { type: 'string' },
             'name[lt]': { type: 'string' },
+            countryCode: { type: 'string' },
+            'countryCode[in]': { type: 'string' },
+            'countryCode[not-in]': { type: 'string' },
           },
         },
       },
@@ -85,7 +99,17 @@ describe(companiesEndpointsBuilder.name, () => {
       url: URL_WITH_ID_V1,
       handler: updateCompanyHandler,
       schema: {
-        body: UPDATE_COMPANY_BODY_JSON_SCHEMA,
+        body: {
+          type: 'object',
+          properties: {
+            countryCode: { 
+              type: 'string',
+              pattern: '^[A-Z]{2}$',
+              description: 'ISO 3166-1 alpha-2 country code (e.g., US, CA, MX)'
+            },
+            name: { type: 'string' },
+          },
+        },
         params: COMPANY_ENDPOINTS_PARAMS_JSON_SCHEMA,
       },
     });

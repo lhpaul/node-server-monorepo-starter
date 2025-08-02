@@ -13,9 +13,9 @@ describe(listCompaniesHandler.name, () => {
   let mockService: Partial<CompaniesService>;
   let mockLogger: any;
   const mockCompanies = [
-    { id: '1', name: 'Company 1', createdAt: new Date(), updatedAt: new Date() },
-    { id: '2', name: 'Company 2', createdAt: new Date(), updatedAt: new Date() },
-    { id: '3', name: 'Company 3', createdAt: new Date(), updatedAt: new Date() },
+    { id: '1', name: 'Company 1', countryCode: 'US', createdAt: new Date(), updatedAt: new Date() },
+    { id: '2', name: 'Company 2', countryCode: 'CA', createdAt: new Date(), updatedAt: new Date() },
+    { id: '3', name: 'Company 3', countryCode: 'GB', createdAt: new Date(), updatedAt: new Date() },
   ];
   const logGroup = listCompaniesHandler.name;
   beforeEach(() => {

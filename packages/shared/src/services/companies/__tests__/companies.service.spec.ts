@@ -717,6 +717,7 @@ describe(CompaniesService.name, () => {
     const mockFinancialInstitution1 = {
       id: 'fi-1',
       name: 'Bank of America',
+      countryCode: 'US',
       createdAt: new Date('2023-01-01'),
       updatedAt: new Date('2023-01-01'),
     };
@@ -724,6 +725,7 @@ describe(CompaniesService.name, () => {
     const mockFinancialInstitution2 = {
       id: 'fi-2',
       name: 'Chase Bank',
+      countryCode: 'US',
       createdAt: new Date('2023-01-02'),
       updatedAt: new Date('2023-01-02'),
     };
@@ -731,6 +733,7 @@ describe(CompaniesService.name, () => {
     const mockFinancialInstitution3 = {
       id: 'fi-3',
       name: 'Wells Fargo',
+      countryCode: 'US',
       createdAt: new Date('2023-01-03'),
       updatedAt: new Date('2023-01-03'),
     };
@@ -1195,6 +1198,7 @@ describe(CompaniesService.name, () => {
       const largeNumberOfFinancialInstitutions = Array.from({ length: 100 }, (_, index) => ({
         id: `fi-${index + 1}`,
         name: `Bank ${index + 1}`,
+        countryCode: 'US',
         createdAt: new Date(),
         updatedAt: new Date(),
       }));
@@ -1243,6 +1247,7 @@ describe(CompaniesService.name, () => {
     const mockFinancialInstitution = {
       id: mockFinancialInstitutionId,
       name: 'Bank of America',
+      countryCode: 'US',
       createdAt: new Date('2023-01-01'),
       updatedAt: new Date('2023-01-02'),
     };

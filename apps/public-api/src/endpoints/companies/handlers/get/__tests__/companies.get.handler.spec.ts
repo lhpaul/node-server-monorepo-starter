@@ -74,6 +74,7 @@ describe(getCompanyHandler.name, () => {
     const mockCompany = {
       id: mockParams.id,
       name: 'Test Company',
+      countryCode: 'US',
       createdAt: new Date(),
       updatedAt: new Date(),
     };

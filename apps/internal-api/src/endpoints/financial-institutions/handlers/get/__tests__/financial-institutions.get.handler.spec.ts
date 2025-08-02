@@ -48,6 +48,7 @@ describe(getFinancialInstitutionHandler.name, () => {
     const mockFinancialInstitution = {
       id: '123',
       name: 'Test Bank',
+      countryCode: 'US',
       createdAt: new Date(),
       updatedAt: new Date(),
     };

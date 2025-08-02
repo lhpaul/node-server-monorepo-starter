@@ -5,6 +5,7 @@ describe(Company.name, () => {
     createdAt: new Date(),
     id: 'comp-123',
     name: 'Test Company',
+    countryCode: 'US',
     updatedAt: new Date(),
   };
   let company: Company;
@@ -22,6 +23,7 @@ describe(Company.name, () => {
       expect(company.createdAt).toBe(initialValues.createdAt);
       expect(company.id).toBe(initialValues.id);
       expect(company.name).toBe(initialValues.name);
+      expect(company.countryCode).toBe(initialValues.countryCode);
       expect(company.updatedAt).toBe(initialValues.updatedAt);
     });
   });

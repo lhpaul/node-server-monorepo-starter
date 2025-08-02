@@ -55,12 +55,14 @@ describe(listFinancialInstitutionsHandler.name, () => {
       { 
         id: 'fi-1', 
         name: 'Bank of America',
+        countryCode: 'US',
         createdAt: new Date(), 
         updatedAt: new Date() 
       },
       { 
         id: 'fi-2', 
         name: 'Chase Bank',
+        countryCode: 'US',
         createdAt: new Date(), 
         updatedAt: new Date() 
       },
@@ -92,6 +94,7 @@ describe(listFinancialInstitutionsHandler.name, () => {
       { 
         id: 'fi-1', 
         name: 'Bank of America',
+        countryCode: 'US',
         createdAt: new Date(), 
         updatedAt: new Date() 
       },
@@ -182,6 +185,7 @@ describe(listFinancialInstitutionsHandler.name, () => {
       { 
         id: 'fi-1', 
         name: 'Bank of America',
+        countryCode: 'US',
         createdAt: new Date(), 
         updatedAt: new Date() 
       },

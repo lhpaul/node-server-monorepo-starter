@@ -1,4 +1,5 @@
 export interface UpdateFinancialInstitutionBody {
+  countryCode?: string;
   name?: string;
 }
 

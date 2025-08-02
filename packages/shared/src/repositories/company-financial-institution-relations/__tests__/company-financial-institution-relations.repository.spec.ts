@@ -105,6 +105,7 @@ describe(CompanyFinancialInstitutionRelationsRepository.name, () => {
     const mockFinancialInstitution = {
       id: '0',
       name: 'Test Financial Institution',
+      countryCode: 'US',
       createdAt: new Date(),
       updatedAt: new Date(),
     };

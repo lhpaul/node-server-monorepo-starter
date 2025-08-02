@@ -29,6 +29,11 @@ export const QUERY_STRING_JSON_SCHEMA = {
       'le',
       'lt',
     ]),
+    ...buildSchemaForQueryParamsProperty('countryCode', 'string', [
+      'eq',
+      'in',
+      'not-in',
+    ]),
   },
 } as const;
 

@@ -55,8 +55,8 @@ describe(listFinancialInstitutionsHandler.name, () => {
 
   it('should list financial institutions successfully', async () => {
     const mockResult = [
-      { id: '1', name: 'Test Bank 1', createdAt: new Date(), updatedAt: new Date() },
-      { id: '2', name: 'Test Bank 2', createdAt: new Date(), updatedAt: new Date() },
+      { id: '1', name: 'Test Bank 1', countryCode: 'US', createdAt: new Date(), updatedAt: new Date() },
+      { id: '2', name: 'Test Bank 2', countryCode: 'US', createdAt: new Date(), updatedAt: new Date() },
     ];
     jest.spyOn(mockService, 'getResourcesList').mockResolvedValue(mockResult);
 

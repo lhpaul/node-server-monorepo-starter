@@ -77,7 +77,7 @@ export const DEFAULT_PAGE_SIZE = 20;
 /**
  * Supported language codes for internationalization
  */
-export const SUPPORTED_LANGUAGES = ['en', 'es', 'fr'] as const;
+export const SUPPORTED_LANGUAGES = ['en', 'es', 'fr'];
 ```
 
 ```typescript
