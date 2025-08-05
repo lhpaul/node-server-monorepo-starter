@@ -1,36 +1,40 @@
-import { STATUS_CODES } from '@repo/fastify';
-import { TransactionCategory, TransactionCategoryType } from '@repo/shared/domain';
+import { STATUS_CODES, transformQueryParams } from '@repo/fastify';
 import { TransactionCategoriesService } from '@repo/shared/services';
-import { FastifyReply, FastifyRequest } from 'fastify';
+import { TransactionCategory, TransactionCategoryType } from '@repo/shared/domain';
+import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
-import { listTransactionCategoriesHandler } from '../transaction-categories.list.handler';
 import { STEPS } from '../transaction-categories.list.handler.constants';
+import { ListTransactionCategoriesQuery } from '../transaction-categories.list.handler.interfaces';
+import { listTransactionCategoriesHandler } from '../transaction-categories.list.handler';
+import { parseTransactionCategoryToResource } from '../../../transaction-categories.endpoint.utils';
+
+jest.mock('@repo/fastify', () => ({
+  STATUS_CODES: {
+    OK: 200,
+  },
+  transformQueryParams: jest.fn(),
+}));
 
 jest.mock('@repo/shared/services');
+
+jest.mock('../../../transaction-categories.endpoint.utils', () => ({
+  parseTransactionCategoryToResource: jest.fn(),
+}));
 
 describe(listTransactionCategoriesHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;
   let mockReply: Partial<FastifyReply>;
+  let mockLogger: Partial<FastifyBaseLogger>;
   let mockService: Partial<TransactionCategoriesService>;
-  let mockLogger: any;
-  const mockCategories = [
-    { id: '1', name: 'Groceries', type: TransactionCategoryType.EXPENSE, createdAt: new Date(), updatedAt: new Date() },
-    { id: '2', name: 'Salary', type: TransactionCategoryType.INCOME, createdAt: new Date(), updatedAt: new Date() },
-  ];
+  let mockQuery: ListTransactionCategoriesQuery;
   const logGroup = listTransactionCategoriesHandler.name;
 
   beforeEach(() => {
-    jest.clearAllMocks();
-
     mockLogger = {
       child: jest.fn().mockReturnThis(),
       startStep: jest.fn(),
       endStep: jest.fn(),
-    };
-
-    mockRequest = {
-      log: mockLogger,
-      query: {},
+      error: jest.fn(),
     };
 
     mockReply = {
@@ -38,63 +42,95 @@ describe(listTransactionCategoriesHandler.name, () => {
       send: jest.fn(),
     };
 
+    mockQuery = {
+      limit: 10,
+      offset: 0,
+      type: 'income',
+    };
+
+    mockRequest = {
+      log: mockLogger as FastifyBaseLogger,
+      query: mockQuery,
+    };
+
     mockService = {
       getResourcesList: jest.fn(),
     };
 
-    (TransactionCategoriesService.getInstance as jest.Mock).mockReturnValue(mockService);
+    (TransactionCategoriesService.getInstance as jest.Mock).mockReturnValue(
+      mockService,
+    );
+
+    (transformQueryParams as jest.Mock).mockReturnValue({
+      limit: 10,
+      offset: 0,
+      type: 'income',
+    });
   });
 
   afterEach(() => {
     jest.clearAllMocks();
   });
 
-  it('should return all transaction categories when no query parameters are provided', async () => {
-    jest.spyOn(mockService, 'getResourcesList').mockResolvedValue(mockCategories);
+  it('should return list of transaction categories successfully', async () => {
+    const mockTransactionCategories = [
+      new TransactionCategory({
+        id: 'category-1',
+        name: { en: 'Salary', es: 'Salario' },
+        type: TransactionCategoryType.INCOME,
+        createdAt: new Date('2023-01-01'),
+        updatedAt: new Date('2023-01-01'),
+      }),
+      new TransactionCategory({
+        id: 'category-2',
+        name: { en: 'Groceries', es: 'Comestibles' },
+        type: TransactionCategoryType.EXPENSE,
+        createdAt: new Date('2023-01-02'),
+        updatedAt: new Date('2023-01-02'),
+      }),
+    ];
 
-    await listTransactionCategoriesHandler(
-      mockRequest as FastifyRequest,
-      mockReply as FastifyReply,
-    );
-
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.LIST_TRANSACTION_CATEGORIES.id, logGroup);
-    expect(mockService.getResourcesList).toHaveBeenCalledWith(
-      {},
-      mockLogger,
-    );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.LIST_TRANSACTION_CATEGORIES.id);
-    expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
-    expect(mockReply.send).toHaveBeenCalledWith(mockCategories);
-  });
-
-  it('should filter transaction categories based on query parameters', async () => {
-    const queryParams = {
-      name: 'Groceries',
-      type: 'expense',
-    };
-    mockRequest.query = queryParams;
-    const filteredCategories = [mockCategories[0]];
-    jest.spyOn(mockService, 'getResourcesList').mockResolvedValue(filteredCategories);
-
-    await listTransactionCategoriesHandler(
-      mockRequest as FastifyRequest,
-      mockReply as FastifyReply,
-    );
-
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.LIST_TRANSACTION_CATEGORIES.id, logGroup);
-    expect(mockService.getResourcesList).toHaveBeenCalledWith(
+    const mockTransformedCategories = [
       {
-        name: [{ operator: '==', value: 'Groceries' }],
-        type: [{ operator: '==', value: 'expense' }],
+        id: 'category-1',
+        name: { en: 'Salary', es: 'Salario' },
+        type: TransactionCategoryType.INCOME,
+        createdAt: '2023-01-01T00:00:00.000Z',
+        updatedAt: '2023-01-01T00:00:00.000Z',
       },
+      {
+        id: 'category-2',
+        name: { en: 'Groceries', es: 'Comestibles' },
+        type: TransactionCategoryType.EXPENSE,
+        createdAt: '2023-01-02T00:00:00.000Z',
+        updatedAt: '2023-01-02T00:00:00.000Z',
+      },
+    ];
+
+    jest.spyOn(mockService, 'getResourcesList').mockResolvedValue(mockTransactionCategories);
+    (parseTransactionCategoryToResource as jest.Mock).mockImplementation((transactionCategory) => mockTransformedCategories.find((category) => category.id === transactionCategory.id));
+
+    await listTransactionCategoriesHandler(
+      mockRequest as FastifyRequest,
+      mockReply as FastifyReply,
+    );
+
+    expect(mockLogger.child).toHaveBeenCalledWith({ handler: listTransactionCategoriesHandler.name });
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.LIST_TRANSACTION_CATEGORIES.id, logGroup);
+    expect(transformQueryParams).toHaveBeenCalledWith(mockQuery);
+    expect(mockService.getResourcesList).toHaveBeenCalledWith(
+      { limit: 10, offset: 0, type: 'income' },
       mockLogger,
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.LIST_TRANSACTION_CATEGORIES.id);
+    expect(parseTransactionCategoryToResource).toHaveBeenCalledTimes(2);
+    expect(parseTransactionCategoryToResource).toHaveBeenCalledWith(mockTransactionCategories[0]);
+    expect(parseTransactionCategoryToResource).toHaveBeenCalledWith(mockTransactionCategories[1]);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
-    expect(mockReply.send).toHaveBeenCalledWith(filteredCategories);
+    expect(mockReply.send).toHaveBeenCalledWith(mockTransformedCategories);
   });
 
-  it('should handle empty result set', async () => {
+  it('should handle empty result from service', async () => {
     jest.spyOn(mockService, 'getResourcesList').mockResolvedValue([]);
 
     await listTransactionCategoriesHandler(
@@ -104,11 +140,12 @@ describe(listTransactionCategoriesHandler.name, () => {
 
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.LIST_TRANSACTION_CATEGORIES.id, logGroup);
     expect(mockService.getResourcesList).toHaveBeenCalledWith(
-      {},
+      { limit: 10, offset: 0, type: 'income' },
       mockLogger,
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.LIST_TRANSACTION_CATEGORIES.id);
-    expect(mockReply.code).toHaveBeenCalledWith(200);
+    expect(parseTransactionCategoryToResource).not.toHaveBeenCalled();
+    expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
     expect(mockReply.send).toHaveBeenCalledWith([]);
   });
 
@@ -124,8 +161,101 @@ describe(listTransactionCategoriesHandler.name, () => {
     ).rejects.toThrow(error);
 
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.LIST_TRANSACTION_CATEGORIES.id, logGroup);
+    expect(mockService.getResourcesList).toHaveBeenCalledWith(
+      { limit: 10, offset: 0, type: 'income' },
+      mockLogger,
+    );
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.LIST_TRANSACTION_CATEGORIES.id);
     expect(mockReply.code).not.toHaveBeenCalled();
     expect(mockReply.send).not.toHaveBeenCalled();
+  });
+
+  it('should handle different query parameters', async () => {
+    const customQuery = {
+      limit: 5,
+      offset: 10,
+      type: 'expense',
+    };
+
+    mockRequest.query = customQuery;
+    (transformQueryParams as jest.Mock).mockReturnValue({
+      limit: 5,
+      offset: 10,
+      type: 'expense',
+    });
+
+    const mockTransactionCategories = [
+      new TransactionCategory({
+        id: 'category-3',
+        name: { en: 'Transportation', es: 'Transporte' },
+        type: TransactionCategoryType.EXPENSE,
+        createdAt: new Date('2023-01-03'),
+        updatedAt: new Date('2023-01-03'),
+      }),
+    ];
+
+    jest.spyOn(mockService, 'getResourcesList').mockResolvedValue(mockTransactionCategories);
+
+    await listTransactionCategoriesHandler(
+      mockRequest as FastifyRequest,
+      mockReply as FastifyReply,
+    );
+
+    expect(transformQueryParams).toHaveBeenCalledWith(customQuery);
+    expect(mockService.getResourcesList).toHaveBeenCalledWith(
+      { limit: 5, offset: 10, type: 'expense' },
+      mockLogger,
+    );
+  });
+
+  it('should ensure logger.endStep is called even when service throws error', async () => {
+    const error = new Error('Service error');
+    jest.spyOn(mockService, 'getResourcesList').mockRejectedValue(error);
+
+    try {
+      await listTransactionCategoriesHandler(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+      );
+    } catch (e) {
+      // Expected to throw
+    }
+
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.LIST_TRANSACTION_CATEGORIES.id, logGroup);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.LIST_TRANSACTION_CATEGORIES.id);
+  });
+
+  it('should handle single transaction category result', async () => {
+    const mockTransactionCategory = new TransactionCategory({
+      id: 'category-1',
+      name: { en: 'Salary', es: 'Salario' },
+      type: TransactionCategoryType.INCOME,
+      createdAt: new Date('2023-01-01'),
+      updatedAt: new Date('2023-01-01'),
+    });
+
+    const mockTransformedCategory = {
+      id: 'category-1',
+      name: { en: 'Salary', es: 'Salario' },
+      type: TransactionCategoryType.INCOME,
+      createdAt: '2023-01-01T00:00:00.000Z',
+      updatedAt: '2023-01-01T00:00:00.000Z',
+    };
+
+    jest.spyOn(mockService, 'getResourcesList').mockResolvedValue([mockTransactionCategory]);
+    (parseTransactionCategoryToResource as jest.Mock).mockImplementation((_transactionCategory) => mockTransformedCategory);
+
+    await listTransactionCategoriesHandler(
+      mockRequest as FastifyRequest,
+      mockReply as FastifyReply,
+    );
+
+    expect(mockService.getResourcesList).toHaveBeenCalledWith(
+      { limit: 10, offset: 0, type: TransactionCategoryType.INCOME },
+      mockLogger,
+    );
+    expect(parseTransactionCategoryToResource).toHaveBeenCalledTimes(1);
+    expect(parseTransactionCategoryToResource).toHaveBeenCalledWith(mockTransactionCategory);
+    expect(mockReply.send).toHaveBeenCalledWith([mockTransformedCategory]);
   });
 }); 

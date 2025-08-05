@@ -4,6 +4,7 @@ import {
   HTTP_METHODS_MAP,
 } from '@repo/fastify';
 import { FastifyInstance, RouteOptions } from 'fastify';
+
 import {
   CREATE_TRANSACTION_CATEGORY_BODY_JSON_SCHEMA,
   TRANSACTION_CATEGORY_ENDPOINTS_PARAMS_JSON_SCHEMA,
@@ -22,13 +23,7 @@ import {
 export const QUERY_STRING_JSON_SCHEMA = {
   type: 'object',
   properties: {
-    ...buildSchemaForQueryParamsProperty('name', 'string', [
-      'eq',
-      'ge',
-      'gt',
-      'le',
-      'lt',
-    ]),
+    // TODO: add name filtering
     ...buildSchemaForQueryParamsProperty('type', 'string', [
       'eq',
     ]),

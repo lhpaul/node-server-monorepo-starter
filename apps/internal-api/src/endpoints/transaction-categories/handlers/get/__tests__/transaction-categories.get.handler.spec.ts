@@ -1,104 +1,164 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { TransactionCategoryType } from '@repo/shared/domain';
+import { TransactionCategory, TransactionCategoryType } from '@repo/shared/domain';
 import { TransactionCategoriesService } from '@repo/shared/services';
-import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
+import { FastifyReply, FastifyRequest } from 'fastify';
 
-import { ERROR_RESPONSES } from '../../../transaction-categories.endpoints.constants';
 import { STEPS } from '../transaction-categories.get.handler.constants';
+import { GetTransactionCategoryParams } from '../transaction-categories.get.handler.interfaces';
 import { getTransactionCategoryHandler } from '../transaction-categories.get.handler';
+import { parseTransactionCategoryToResource } from '../../../transaction-categories.endpoint.utils';
 
-jest.mock('@repo/shared/services');
+// Mock dependencies
+jest.mock('@repo/shared/services', () => ({
+  TransactionCategoriesService: {
+    getInstance: jest.fn(),
+  },
+}));
+
+jest.mock('../../../transaction-categories.endpoint.utils', () => ({
+  parseTransactionCategoryToResource: jest.fn(),
+}));
 
 describe(getTransactionCategoryHandler.name, () => {
-  let mockRequest: Partial<FastifyRequest>;
-  let mockReply: Partial<FastifyReply>;
-  let mockLogger: {
-    startStep: jest.Mock;
-    endStep: jest.Mock;
-  } & Partial<FastifyBaseLogger>;
-  let mockService: Partial<TransactionCategoriesService>;
-
-  const mockParams = { id: 'transaction-category-123' };
-  const logGroup = getTransactionCategoryHandler.name;
+  let mockRequest: FastifyRequest;
+  let mockReply: FastifyReply;
+  let mockService: jest.Mocked<TransactionCategoriesService>;
+  let mockLogger: any;
+  let mockParams: GetTransactionCategoryParams;
 
   beforeEach(() => {
+    jest.clearAllMocks();
+
+    // Mock logger
     mockLogger = {
       child: jest.fn().mockReturnThis(),
       startStep: jest.fn(),
       endStep: jest.fn(),
     };
 
+    // Mock request
     mockRequest = {
-      log: mockLogger as FastifyBaseLogger,
-      params: mockParams,
-    };
+      log: mockLogger,
+      params: { id: 'test-id' },
+    } as unknown as FastifyRequest;
 
+    // Mock reply
     mockReply = {
       code: jest.fn().mockReturnThis(),
-      send: jest.fn(),
-    };
+      send: jest.fn().mockReturnThis(),
+    } as unknown as FastifyReply;
 
+    // Mock service
     mockService = {
       getResource: jest.fn(),
-    };
+    } as unknown as jest.Mocked<TransactionCategoriesService>;
 
     (TransactionCategoriesService.getInstance as jest.Mock).mockReturnValue(mockService);
+
+    // Mock params
+    mockParams = { id: 'test-id' };
   });
 
-  it('should successfully retrieve a transaction category', async () => {
-    const mockCategory = {
-      id: mockParams.id,
-      name: 'Groceries',
+  it('should successfully get a transaction category and return it', async () => {
+    // Arrange
+    const mockTransactionCategory = new TransactionCategory({
+      id: 'test-id',
+      name: { en: 'Test Category', es: 'Categoría de Prueba' },
       type: TransactionCategoryType.EXPENSE,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      createdAt: new Date('2023-01-01T00:00:00Z'),
+      updatedAt: new Date('2023-01-01T00:00:00Z'),
+    });
+
+    const mockResource = {
+      id: 'test-id',
+      name: { en: 'Test Category', es: 'Categoría de Prueba' },
+      type: 'expense' as const,
+      createdAt: '2023-01-01T00:00:00.000Z',
+      updatedAt: '2023-01-01T00:00:00.000Z',
     };
 
-    jest.spyOn(mockService, 'getResource').mockResolvedValue(mockCategory);
+    mockService.getResource.mockResolvedValue(mockTransactionCategory);
+    (parseTransactionCategoryToResource as jest.Mock).mockReturnValue(mockResource);
 
-    await getTransactionCategoryHandler(
-      mockRequest as FastifyRequest,
-      mockReply as FastifyReply,
-    );
+    // Act
+    await getTransactionCategoryHandler(mockRequest, mockReply);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION_CATEGORY.id, logGroup);
+    // Assert
+    expect(mockLogger.child).toHaveBeenCalledWith({ handler: getTransactionCategoryHandler.name });
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION_CATEGORY.id, getTransactionCategoryHandler.name);
     expect(mockService.getResource).toHaveBeenCalledWith(mockParams.id, mockLogger);
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION_CATEGORY.id);
-    expect(mockReply.send).toHaveBeenCalledWith(mockCategory);
+    expect(parseTransactionCategoryToResource).toHaveBeenCalledWith(mockTransactionCategory);
+    expect(mockReply.send).toHaveBeenCalledWith(mockResource);
+    expect(mockReply.code).not.toHaveBeenCalled();
   });
 
-  it('should handle transaction category not found', async () => {
-    jest.spyOn(mockService, 'getResource').mockResolvedValue(null);
+  it('should return 404 when transaction category is not found', async () => {
+    // Arrange
+    mockService.getResource.mockResolvedValue(null);
 
-    await getTransactionCategoryHandler(
-      mockRequest as FastifyRequest,
-      mockReply as FastifyReply,
-    );
+    // Act
+    await getTransactionCategoryHandler(mockRequest, mockReply);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION_CATEGORY.id, logGroup);
+    // Assert
+    expect(mockLogger.child).toHaveBeenCalledWith({ handler: getTransactionCategoryHandler.name });
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION_CATEGORY.id, getTransactionCategoryHandler.name);
     expect(mockService.getResource).toHaveBeenCalledWith(mockParams.id, mockLogger);
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION_CATEGORY.id);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.NOT_FOUND);
-    expect(mockReply.send).toHaveBeenCalledWith(
-      ERROR_RESPONSES.TRANSACTION_CATEGORY_NOT_FOUND,
-    );
+    expect(mockReply.send).toHaveBeenCalledWith({
+      code: 'transaction-category-not-found',
+      message: 'Transaction category not found',
+    });
+    expect(parseTransactionCategoryToResource).not.toHaveBeenCalled();
   });
 
-  it('should handle service errors', async () => {
-    const error = new Error('Service error');
-    jest.spyOn(mockService, 'getResource').mockRejectedValue(error);
+  it('should handle service errors and still end the step', async () => {
+    // Arrange
+    const mockError = new Error('Service error');
+    mockService.getResource.mockRejectedValue(mockError);
 
-    await expect(
-      getTransactionCategoryHandler(
-        mockRequest as FastifyRequest,
-        mockReply as FastifyReply,
-      ),
-    ).rejects.toThrow(error);
-
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION_CATEGORY.id, logGroup);
+    // Act & Assert
+    await expect(getTransactionCategoryHandler(mockRequest, mockReply)).rejects.toThrow('Service error');
+    
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION_CATEGORY.id, getTransactionCategoryHandler.name);
     expect(mockService.getResource).toHaveBeenCalledWith(mockParams.id, mockLogger);
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION_CATEGORY.id);
-    expect(mockReply.code).not.toHaveBeenCalled();
-    expect(mockReply.send).not.toHaveBeenCalled();
+  });
+
+  it('should use correct params from request', async () => {
+    // Arrange
+    const customParams = { id: 'custom-id' };
+    mockRequest.params = customParams as GetTransactionCategoryParams;
+    mockService.getResource.mockResolvedValue(null);
+
+    // Act
+    await getTransactionCategoryHandler(mockRequest, mockReply);
+
+    // Assert
+    expect(mockService.getResource).toHaveBeenCalledWith(customParams.id, mockLogger);
+  });
+
+  it('should create logger child with correct handler name', async () => {
+    // Arrange
+    mockService.getResource.mockResolvedValue(null);
+
+    // Act
+    await getTransactionCategoryHandler(mockRequest, mockReply);
+
+    // Assert
+    expect(mockLogger.child).toHaveBeenCalledWith({ handler: getTransactionCategoryHandler.name });
+  });
+
+  it('should call startStep and endStep with correct step ID', async () => {
+    // Arrange
+    mockService.getResource.mockResolvedValue(null);
+
+    // Act
+    await getTransactionCategoryHandler(mockRequest, mockReply);
+
+    // Assert
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION_CATEGORY.id, getTransactionCategoryHandler.name);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION_CATEGORY.id);
   });
 }); 

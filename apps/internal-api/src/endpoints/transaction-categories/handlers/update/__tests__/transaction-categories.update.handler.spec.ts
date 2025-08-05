@@ -1,5 +1,6 @@
 import { TransactionCategoriesService } from '@repo/shared/services';
 import { FastifyReply, FastifyRequest } from 'fastify';
+
 import { updateTransactionCategoryHandler } from '../transaction-categories.update.handler';
 import { 
   UpdateTransactionCategoryBody, 
@@ -25,7 +26,7 @@ describe(updateTransactionCategoryHandler.name, () => {
 
     mockRequest = {
       body: {
-        name: 'Updated Groceries',
+        name: { en: 'Updated Groceries' },
         type: 'expense',
       } as UpdateTransactionCategoryBody,
       params: {
@@ -54,7 +55,7 @@ describe(updateTransactionCategoryHandler.name, () => {
     expect(mockLogger.startStep).toHaveBeenCalledWith('update-transaction-category', updateTransactionCategoryHandler.name);
     expect(mockService.updateResource).toHaveBeenCalledWith(
       'transaction-category-123',
-      { name: 'Updated Groceries', type: 'expense' },
+      { name: { en: 'Updated Groceries' }, type: 'expense' },
       mockLogger
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith('update-transaction-category');
@@ -62,14 +63,14 @@ describe(updateTransactionCategoryHandler.name, () => {
   });
 
   it('should handle partial updates', async () => {
-    mockRequest.body = { name: 'Only Name Update' } as UpdateTransactionCategoryBody;
+    mockRequest.body = { name: { en: 'Only Name Update' } } as UpdateTransactionCategoryBody;
     mockService.updateResource.mockResolvedValue(undefined);
 
     await updateTransactionCategoryHandler(mockRequest, mockReply);
 
     expect(mockService.updateResource).toHaveBeenCalledWith(
       'transaction-category-123',
-      { name: 'Only Name Update' },
+      { name: { en: 'Only Name Update' } },
       mockLogger
     );
   });
@@ -105,7 +106,7 @@ describe(updateTransactionCategoryHandler.name, () => {
 
     expect(mockService.updateResource).toHaveBeenCalledWith(
       'different-category-id',
-      { name: 'Updated Groceries', type: 'expense' },
+      { name: { en: 'Updated Groceries' }, type: 'expense' },
       mockLogger
     );
   });

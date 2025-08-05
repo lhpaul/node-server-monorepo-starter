@@ -2,6 +2,7 @@ import { STATUS_CODES, transformQueryParams } from '@repo/fastify';
 import { TransactionCategoriesService } from '@repo/shared/services';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
+import { parseTransactionCategoryToResource } from '../../transaction-categories.endpoint.utils';
 import { STEPS } from './transaction-categories.list.handler.constants';
 import { ListTransactionCategoriesQuery } from './transaction-categories.list.handler.interfaces';
 
@@ -17,5 +18,5 @@ export const listTransactionCategoriesHandler = async (
   const result = await service
     .getResourcesList(transformQueryParams(query), logger)
     .finally(() => logger.endStep(STEPS.LIST_TRANSACTION_CATEGORIES.id));
-  return reply.code(STATUS_CODES.OK).send(result);
+  return reply.code(STATUS_CODES.OK).send(result.map((transactionCategory) => parseTransactionCategoryToResource(transactionCategory)));
 }; 

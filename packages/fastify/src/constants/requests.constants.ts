@@ -1,5 +1,6 @@
 import { FilterOperator } from '@repo/shared/definitions';
 
+export const ACCEPT_LANGUAGE_HEADER_NAME = 'accept-language';
 export const HTTP_METHODS_MAP = {
   OPTIONS: 'OPTIONS',
   LIST: 'GET',

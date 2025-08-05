@@ -1,5 +1,6 @@
 import { createEndpoint, HTTP_METHODS_MAP } from '@repo/fastify';
 import { FastifyInstance } from 'fastify';
+
 import {
   CREATE_COMPANY_BODY_JSON_SCHEMA,
   COMPANY_ENDPOINTS_PARAMS_JSON_SCHEMA,
@@ -43,18 +44,7 @@ describe(companiesEndpointsBuilder.name, () => {
       url: URL_V1,
       handler: createCompanyHandler,
       schema: {
-        body: {
-          type: 'object',
-          properties: {
-            countryCode: { 
-              type: 'string',
-              pattern: '^[A-Z]{2}$',
-              description: 'ISO 3166-1 alpha-2 country code (e.g., US, CA, MX)'
-            },
-            name: { type: 'string' },
-          },
-          required: ['countryCode', 'name'],
-        },
+        body: CREATE_COMPANY_BODY_JSON_SCHEMA,
       },
     });
   });
@@ -99,17 +89,7 @@ describe(companiesEndpointsBuilder.name, () => {
       url: URL_WITH_ID_V1,
       handler: updateCompanyHandler,
       schema: {
-        body: {
-          type: 'object',
-          properties: {
-            countryCode: { 
-              type: 'string',
-              pattern: '^[A-Z]{2}$',
-              description: 'ISO 3166-1 alpha-2 country code (e.g., US, CA, MX)'
-            },
-            name: { type: 'string' },
-          },
-        },
+        body: UPDATE_COMPANY_BODY_JSON_SCHEMA,
         params: COMPANY_ENDPOINTS_PARAMS_JSON_SCHEMA,
       },
     });

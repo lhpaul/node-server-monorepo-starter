@@ -93,3 +93,109 @@ When responding to an error, the payload must follow this structure:
     ```
 
 Note: 5XX and 404 errors are handled globally in the server file (normally in src/server.ts) and don't need to be handled in individual endpoints.
+
+// Start of work in progress. Ignore for now
+
+## Endpoint Composition
+
+The root file for an endpoint should be called `<endpoint_name>.endpoint.ts` and it expose a const named `<endpoint_name>endpointBuilder` that for each action (or HTTP method) should use `createEndpoint` method of the `Fastify Package` (`@repo/fastify`) declaring the method to be used, the url, the handler and the schemas for either body, params and querystring. Optionally, it can receive [EndpointOptions](../packages/fastify/src/utils/endpoints/endpoints.utils.interfaces.ts) that can be used to avoid requiring authentication or masking fields for the default logs of the `createEndpoint` method. TODO: specify what logs are made by the method
+
+### Create Action
+
+For create action, the http method should be POST and it should specify a the schema for the body and the params in case its a nested endpoint (eg: /company/:companyId/transactions).
+
+### Example
+
+```typescript
+// TODO: add constants values
+createEndpoint(server, {
+  method: [HTTP_METHODS_MAP.CREATE],
+  url: URL_V1,
+  handler: createTransactionHandler,
+  schema: {
+    body: CREATE_COMPANY_TRANSACTION_BODY_JSON_SCHEMA,
+    params: COMPANY_TRANSACTIONS_ENDPOINTS_PARAMS_JSON_SCHEMA,
+  },
+})
+
+```
+
+## Read Action
+
+For the read action, the http method should be GET and it should specify the schema for the params. Normally the params should include the "id" field and optionally the fields for the nested ids (eg: /company/:companyId/transactions).
+
+### Example
+
+```typescript
+```
+
+## List Action
+
+For the list action, the method should be GET and it should specify the schema for filtering and paginating through `querystring`, and in case of nested endpoints the params to specify the ids (eg: /company/:companyId/transactions).
+
+A field can be filtered by the following options:
+
+- `eq`: to filter for an exact value. This can be done by two ways: simple (<field_name>=<value>) or composite(<field_name>[eq]=<value>). **Examples**:
+
+  - simple: `/companies?name=Acme`
+  - composite: `/companies?name[eq]=Acme`
+
+- `gt` or `ge`: Greater than or greater or equal. **Examples**:
+
+  - `/transactions?date[ge]=2025-07-01` // greater or equal than the specified date
+  - `/transactions?date[gt]=2025-07-01` // greater than the specified date but not including it
+
+- `lt` or `le`: Less than or less or equal. **Examples**:
+
+  - `/transactions?date[le]=2025-07-01` // less or equal than the specified date
+  - `/transactions?date[lt]=2025-07-01` // less than the specified date but not including it
+
+To avoid writing too much code for specifying the filtering schema, use the [buildSchemaForQueryParamsProperty](../packages/fastify/src/utils/endpoints/endpoints.utils.ts) helper function.
+
+### Example
+
+This example allows filtering by `amount`, `companyId` and `date`. `amount` and `date` can be filtered by many way but `companyId` can only be equal to a value.
+
+```typescript
+export const QUERY_STRING_JSON_SCHEMA = {
+  type: 'object',
+  properties: {
+    ...buildSchemaForQueryParamsProperty('amount', 'number', [
+      'eq',
+      'ge',
+      'gt',
+      'le',
+      'lt',
+    ]),
+    companyId: { type: 'string' },
+    ...buildSchemaForQueryParamsProperty('date', 'string', [
+      'eq',
+      'ge',
+      'gt',
+      'le',
+      'lt',
+    ]),
+    type: { enum: Object.values(TransactionType) },
+  },
+} as const;
+```
+
+## Update Action
+
+For the read action, the http method should be PATCH and it should specify the schema for the body (with the fields that can be updated) and the params. Normally the params should include the "id" field and optionally the fields for the nested ids (eg: /company/:companyId/transactions).
+
+### Example
+
+```typescript
+```
+
+## Delete Action
+
+For the read action, the http method should be GET and it should specify the schema for the params. Normally the params should include the "id" field and optionally the fields for the nested ids (eg: /company/:companyId/transactions).
+
+### Example
+
+```typescript
+```
+
+// End of work in progress.

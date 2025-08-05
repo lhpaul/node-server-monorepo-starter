@@ -58,11 +58,7 @@ describe(transactionCategoriesEndpointsBuilder.name, () => {
         querystring: {
           type: 'object',
           properties: {
-            name: { type: 'string' },
-            'name[ge]': { type: 'string' },
-            'name[gt]': { type: 'string' },
-            'name[le]': { type: 'string' },
-            'name[lt]': { type: 'string' },
+            // TODO: add name filtering
             type: { type: 'string' },
           },
         },

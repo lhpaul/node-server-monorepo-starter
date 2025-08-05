@@ -4,6 +4,7 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { STEPS } from './transaction-categories.get.handler.constants';
 import { GetTransactionCategoryParams } from './transaction-categories.get.handler.interfaces';
+import { parseTransactionCategoryToResource } from '../../transaction-categories.endpoint.utils';
 
 export const getTransactionCategoryHandler = async (
   request: FastifyRequest,
@@ -25,5 +26,5 @@ export const getTransactionCategoryHandler = async (
     });
   }
   
-  return reply.send(result);
+  return reply.send(parseTransactionCategoryToResource(result));
 }; 
