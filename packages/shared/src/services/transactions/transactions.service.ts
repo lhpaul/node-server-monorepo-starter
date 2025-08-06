@@ -76,7 +76,8 @@ export class TransactionsService extends DomainModelService<Transaction, Transac
         companyId: [{ value: companyId, operator: '==' }],
         date: [{ value: fromDate, operator: '>' }, { value: toDate, operator: '<=' }],
       }, logger),
-    ]).finally(() => logger.endStep(SYNC_WITH_FINANCIAL_INSTITUTION_STEPS.GET_TRANSACTIONS));
+    ]);
+    logger.endStep(SYNC_WITH_FINANCIAL_INSTITUTION_STEPS.GET_TRANSACTIONS);
     
     const syncActions = this._getSyncActions(companyId, financialInstitutionId, financialInstitutionTransactions, internalTransactions);
     if (syncActions.createTransactions.length > 0) {
@@ -107,7 +108,7 @@ export class TransactionsService extends DomainModelService<Transaction, Transac
     const updateTransactions: { id: string; data: UpdateTransactionInput }[] = [];
     const deleteTransactions: string[] = internalTransactions.map((transaction) => transaction.id);
     for (const financialInstitutionTransaction of financialInstitutionTransactions) {
-      const internalTransaction = internalTransactions.find((transaction) => transaction.id === financialInstitutionTransaction.id);
+      const internalTransaction = internalTransactions.find((transaction) => transaction.sourceTransactionId === financialInstitutionTransaction.id);
       if (internalTransaction) {
         deleteTransactions.splice(deleteTransactions.indexOf(internalTransaction.id), 1);
         const date = moment(financialInstitutionTransaction.createdAt).format(DATE_FORMAT);

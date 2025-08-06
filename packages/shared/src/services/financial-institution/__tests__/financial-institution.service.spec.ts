@@ -22,6 +22,7 @@ describe(FinancialInstitutionService.name, () => {
   let mockLogger: jest.Mocked<ExecutionLogger>;
   let service: FinancialInstitutionService;
   const financialInstitutionId = '1';
+  const projectSecret = 'mock-secret-key';
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -43,7 +44,7 @@ describe(FinancialInstitutionService.name, () => {
       getTotalElapsedTime: jest.fn(),
     } as unknown as jest.Mocked<ExecutionLogger>;
 
-    (getSecret as jest.Mock).mockReturnValue('mock-secret-key');
+    (getSecret as jest.Mock).mockReturnValue(projectSecret);
     (getEnvironmentVariable as jest.Mock).mockReturnValue('transactions');
 
     // Clear the instances map before each test
@@ -151,7 +152,7 @@ describe(FinancialInstitutionService.name, () => {
       expect(apiRequest).toHaveBeenCalledWith(
         {
           method: 'GET',
-          url: `mock-secret-key.${HOST_BY_INSTITUTION_ID[financialInstitutionId]}/transactions?sortBy=createdAt&order=desc`,
+          url: `https://${projectSecret}.${HOST_BY_INSTITUTION_ID[financialInstitutionId]}/transactions?sortBy=createdAt&order=desc`,
         },
         mockLogger
       );
@@ -174,7 +175,7 @@ describe(FinancialInstitutionService.name, () => {
       expect(apiRequest).toHaveBeenCalledWith(
         {
           method: 'GET',
-          url: `mock-secret-key.${HOST_BY_INSTITUTION_ID[financialInstitutionId]}/transactions?sortBy=createdAt&order=desc`,
+          url: `https://${projectSecret}.${HOST_BY_INSTITUTION_ID[financialInstitutionId]}/transactions?sortBy=createdAt&order=desc`,
         },
         mockLogger
       );
@@ -304,7 +305,7 @@ describe(FinancialInstitutionService.name, () => {
       expect(apiRequest).toHaveBeenCalledWith(
         {
           method: 'GET',
-          url: `mock-secret-key.${HOST_BY_INSTITUTION_ID[financialInstitutionId]}/transactions?sortBy=createdAt&order=desc`,
+          url: `https://${projectSecret}.${HOST_BY_INSTITUTION_ID[financialInstitutionId]}/transactions?sortBy=createdAt&order=desc`,
         },
         mockLogger
       );
@@ -323,7 +324,7 @@ describe(FinancialInstitutionService.name, () => {
       expect(apiRequest).toHaveBeenCalledWith(
         {
           method: 'GET',
-          url: `mock-secret-key.${HOST_BY_INSTITUTION_ID[financialInstitutionId]}/transactions?sortBy=createdAt&order=desc`,
+          url: `https://${projectSecret}.${HOST_BY_INSTITUTION_ID[financialInstitutionId]}/transactions?sortBy=createdAt&order=desc`,
         },
         mockLogger
       );
@@ -401,7 +402,7 @@ describe(FinancialInstitutionService.name, () => {
       expect(apiRequest).toHaveBeenCalledWith(
         {
           method: 'GET',
-          url: `mock-secret-key.${HOST_BY_INSTITUTION_ID[financialInstitutionId]}/transactions?sortBy=createdAt&order=desc`,
+          url: `https://${projectSecret}.${HOST_BY_INSTITUTION_ID[financialInstitutionId]}/transactions?sortBy=createdAt&order=desc`,
         },
         mockLogger
       );

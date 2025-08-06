@@ -50,8 +50,9 @@ export class FinancialInstitutionService {
     const projectSecret = getSecret(MOCK_API_PROJECT_SECRET_KEY);
     const result = await apiRequest<FinancialInstitutionTransaction[]>({
       method: 'GET',
-      url: `${projectSecret}.${HOST_BY_INSTITUTION_ID[this._config.financialInstitutionId]}/${transactionsEndpoint}?sortBy=createdAt&order=desc`,
-    }, logger).finally(() => logger.endStep(STEPS.GET_TRANSACTIONS.id));
+      url: `https://${projectSecret}.${HOST_BY_INSTITUTION_ID[this._config.financialInstitutionId]}/${transactionsEndpoint}?sortBy=createdAt&order=desc`,
+    }, logger);
+    logger.endStep(STEPS.GET_TRANSACTIONS.id);
 
     if (result.error) {
       logger.warn({
@@ -74,7 +75,10 @@ export class FinancialInstitutionService {
           break;
         }
         if (transactionDate >= fromDate) {
-          filteredTransactions.push(transaction);
+          filteredTransactions.push({
+            ...transaction,
+            amount: Number(transaction.amount),
+          });
         }
       }
       return filteredTransactions;

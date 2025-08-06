@@ -166,17 +166,6 @@ describe(listFinancialInstitutionsHandler.name, () => {
     });
   });
 
-  it('should use correct service instance', async () => {
-    jest.spyOn(mockService, 'getResourcesList').mockResolvedValue([]);
-
-    await listFinancialInstitutionsHandler(
-      mockRequest as FastifyRequest,
-      mockReply as FastifyReply,
-    );
-
-    expect(FinancialInstitutionsService.getInstance).toHaveBeenCalledWith('default');
-  });
-
   it('should handle query with undefined values', async () => {
     mockQuery = { name: undefined };
     mockRequest.query = mockQuery;

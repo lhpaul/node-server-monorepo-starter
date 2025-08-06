@@ -1,16 +1,7 @@
-export interface GetCompanyFinancialInstitutionParams {
-  companyId: string;
-  id: string;
-}
+import { FromSchema } from 'json-schema-to-ts';
 
-export interface GetCompanyFinancialInstitutionResponse {
-  companyId: string;
-  credentials: any;
-  createdAt: string;
-  financialInstitution: {
-    id: string;
-    name: string;
-  };
-  id: string;
-  updatedAt: string;
-} 
+import { COMPANY_FINANCIAL_INSTITUTION_ENDPOINTS_PARAMS_JSON_SCHEMA } from '../../financial-institutions.endpoints.constants';
+
+export type GetCompanyFinancialInstitutionParams = FromSchema<
+  typeof COMPANY_FINANCIAL_INSTITUTION_ENDPOINTS_PARAMS_JSON_SCHEMA
+>;

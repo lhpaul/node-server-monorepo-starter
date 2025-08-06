@@ -11,7 +11,7 @@ export const listFinancialInstitutionsHandler = async (
 ) => {
   const logger = request.log.child({ handler: listFinancialInstitutionsHandler.name });
   const logGroup = listFinancialInstitutionsHandler.name;
-  const service = FinancialInstitutionsService.getInstance('default');
+  const service = FinancialInstitutionsService.getInstance();
   const query = request.query as ListFinancialInstitutionsQuery;
   
   logger.startStep(STEPS.LIST_FINANCIAL_INSTITUTIONS.id, logGroup);
