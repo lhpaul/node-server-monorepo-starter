@@ -1,2 +1,3 @@
-// This file contains constants for the transaction categories service
-// Currently empty as the service doesn't have any custom operations beyond CRUD 
+export const ERRORS_MESSAGES = {
+  INVALID_TRANSACTION_CATEGORY_TYPE: (transactionCategoryType: string | null | undefined, transactionCategoryId: string) => `Invalid transaction category type: ${transactionCategoryType} in document ${transactionCategoryId}`,
+};

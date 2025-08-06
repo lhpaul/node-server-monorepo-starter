@@ -35,8 +35,13 @@ describe(TransactionsRepository.name, () => {
       } as unknown as ExecutionLogger;
       const mockData = {
         companyId: '123',
+        categoryId: '0',
         amount: 100,
         date: '2021-01-01',
+        description: 'test',
+        sourceId: '0',
+        sourceTransactionId: '0',
+        sourceType: 'bank',
         type: TransactionType.CREDIT,
       };
       jest.spyOn(CompaniesRepository, 'getInstance').mockReturnValue({
@@ -59,8 +64,13 @@ describe(TransactionsRepository.name, () => {
       } as unknown as ExecutionLogger;
       const mockData = {
         companyId: '123',
+        categoryId: '0',
         amount: 100,
         date: '2021-01-01',
+        description: 'test',
+        sourceId: '0',
+        sourceTransactionId: '0',
+        sourceType: 'bank',
         type: TransactionType.CREDIT,
       };
       jest.spyOn(CompaniesRepository, 'getInstance').mockReturnValue({

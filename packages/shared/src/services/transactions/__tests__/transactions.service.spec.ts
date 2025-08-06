@@ -40,7 +40,7 @@ describe(TransactionsService.name, () => {
     (TransactionsService as any).instance = undefined;
   });
 
-  describe('getInstance', () => {
+  describe(TransactionsService.getInstance.name, () => {
     it('should create a new instance if one does not exist', () => {
       const service = TransactionsService.getInstance();
       

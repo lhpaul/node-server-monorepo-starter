@@ -1,7 +1,9 @@
+// External dependencies (alphabetical, @ first)
 import moment from 'moment';
+
+// Internal modules (farthest path first, then alphabetical)
 import { ExecutionLogger } from '../../definitions';
 import { Transaction, TransactionSourceType, TransactionType } from '../../domain';
-import { FinancialInstitutionsService, FinancialInstitutionTransaction } from '../financial-institutions';
 import {
   TransactionsRepository,
   TransactionDocument,
@@ -10,6 +12,11 @@ import {
   UpdateTransactionDocumentInput,
 } from '../../repositories';
 import { DomainModelService, DomainModelServiceError, DomainModelServiceErrorCode } from '../../utils/services';
+import { FinancialInstitutionsService, FinancialInstitutionTransaction } from '../financial-institutions';
+
+// Local imports (alphabetical)
+import { TransactionDocumentToModelParser } from './transactions.service.classes';
+import { DATE_FORMAT, ERRORS_MESSAGES, SYNC_WITH_FINANCIAL_INSTITUTION_STEPS } from './transactions.service.constants';
 import {
   CreateTransactionInput,
   FilterTransactionsInput,
@@ -17,14 +24,13 @@ import {
   SyncWithFinancialInstitutionInput,
   UpdateTransactionInput,
 } from './transactions.service.interfaces';
-import { DATE_FORMAT, ERRORS_MESSAGES, SYNC_WITH_FINANCIAL_INSTITUTION_STEPS } from './transactions.service.constants';
 
 export class TransactionsService extends DomainModelService<Transaction, TransactionDocument, CreateTransactionInput, CreateTransactionDocumentInput, UpdateTransactionInput, UpdateTransactionDocumentInput, FilterTransactionsInput, QueryTransactionsInput> {
   private static instance: TransactionsService;
 
   public static getInstance(): TransactionsService {
     if (!this.instance) {
-      this.instance = new TransactionsService(TransactionsRepository.getInstance());
+      this.instance = new TransactionsService(TransactionsRepository.getInstance(), TransactionDocumentToModelParser);
     }
     return this.instance;
   }

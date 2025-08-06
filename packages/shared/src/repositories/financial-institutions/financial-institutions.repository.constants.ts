@@ -22,4 +22,11 @@ export const MOCK_FINANCIAL_INSTITUTIONS: FinancialInstitutionDocument[] = [
     createdAt: new Date('2024-01-01T00:00:00.000Z'),
     updatedAt: new Date('2024-01-01T00:00:00.000Z'),
   },
+  {
+    id: '3',
+    name: 'Bank of Canada',
+    countryCode: 'CA',
+    createdAt: new Date('2024-01-01T00:00:00.000Z'),
+    updatedAt: new Date('2024-01-01T00:00:00.000Z'),
+  },
 ]; 

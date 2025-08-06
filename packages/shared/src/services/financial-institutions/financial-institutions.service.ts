@@ -1,3 +1,4 @@
+// Internal modules (farthest path first, then alphabetical)
 import { ExecutionLogger } from '../../definitions';
 import { FinancialInstitution } from '../../domain';
 import {
@@ -9,7 +10,8 @@ import {
 } from '../../repositories';
 import { apiRequest, getEnvironmentVariable, getSecret } from '../../utils';
 import { DomainModelService } from '../../utils/services';
-import { FinancialInstitutionTransaction } from './financial-institutions.service.models';
+
+// Local imports (alphabetical)
 import {
   GET_TRANSACTIONS_ERROR,
   GET_TRANSACTIONS_ERROR_MESSAGE,
@@ -25,6 +27,7 @@ import {
   GetTransactionsInput,
   UpdateFinancialInstitutionInput,
 } from './financial-institutions.service.interfaces';
+import { FinancialInstitutionTransaction } from './financial-institutions.service.models';
 
 /*
  This is just a mock service for simulating financial institution APIs or scrapers.
@@ -42,7 +45,7 @@ export class FinancialInstitutionsService extends DomainModelService<FinancialIn
     return this.instances.get(financialInstitutionId) as FinancialInstitutionsService;
   }
   constructor(private readonly _config: FinancialInstitutionConfig) {
-    super(FinancialInstitutionsRepository.getInstance());
+    super(FinancialInstitutionsRepository.getInstance(), FinancialInstitution);
     this._config = _config;
   }
 

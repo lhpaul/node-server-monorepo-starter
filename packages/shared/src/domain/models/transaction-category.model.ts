@@ -21,7 +21,7 @@ export class TransactionCategory implements ResourceModel {
   public readonly type: TransactionCategoryType; // type of the category
   public readonly updatedAt: Date; // date of last update
 
-  constructor(transactionCategory: TransactionCategoryData) {
+  constructor(transactionCategory: Required<TransactionCategoryData>) {
     Object.assign(this, transactionCategory);
   }
 

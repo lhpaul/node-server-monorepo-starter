@@ -1,3 +1,4 @@
+// Internal modules (farthest path first, then alphabetical)
 import { Subscription } from '../../domain';
 import {
   SubscriptionsRepository,
@@ -7,6 +8,8 @@ import {
   UpdateSubscriptionDocumentInput,
 } from '../../repositories';
 import { DomainModelService } from '../../utils/services';
+
+// Local imports (alphabetical)
 import {
   CreateSubscriptionInput,
   UpdateSubscriptionInput,
@@ -18,7 +21,7 @@ export class SubscriptionsService extends DomainModelService<Subscription, Subsc
 
   public static getInstance(): SubscriptionsService {
     if (!this.instance) {
-      this.instance = new SubscriptionsService(SubscriptionsRepository.getInstance());
+      this.instance = new SubscriptionsService(SubscriptionsRepository.getInstance(), Subscription);
     }
     return this.instance;
   }

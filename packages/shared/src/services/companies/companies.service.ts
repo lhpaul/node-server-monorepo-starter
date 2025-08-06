@@ -49,7 +49,7 @@ export class CompaniesService extends DomainModelService<Company, CompanyDocumen
 
   public static getInstance(): CompaniesService {
     if (!this.instance) {
-      this.instance = new CompaniesService(CompaniesRepository.getInstance());
+      this.instance = new CompaniesService(CompaniesRepository.getInstance(), Company);
     }
     return this.instance;
   }
