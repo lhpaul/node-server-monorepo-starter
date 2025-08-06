@@ -1,444 +1,319 @@
+// Internal modules (farthest path first, then alphabetical)
 import { ExecutionLogger } from '../../../definitions';
-import { FinancialInstitutionsRepository } from '../../../repositories';
-import { apiRequest, getEnvironmentVariable, getSecret } from '../../../utils';
-import { FinancialInstitutionsService } from '../financial-institutions.service';
-import { FinancialInstitutionTransaction } from '../financial-institutions.service.models';
+import { FinancialInstitution } from '../../../domain';
 import {
-  GET_TRANSACTIONS_ERROR,
-  GET_TRANSACTIONS_ERROR_MESSAGE,
-  HOST_BY_INSTITUTION_ID,
-  MOCK_API_PROJECT_SECRET_KEY,
-  MOCK_TRANSACTIONS_ENDPOINT_ENV_VARIABLE_KEY,
-  STEPS,
-} from '../financial-institutions.service.constants';
-import { GetTransactionsInput } from '../financial-institutions.service.interfaces';
+  FinancialInstitutionDocument,
+  FinancialInstitutionsRepository,
+} from '../../../repositories';
+import { RepositoryError, RepositoryErrorCode } from '../../../utils/repositories';
+import { DomainModelServiceError, DomainModelServiceErrorCode } from '../../../utils/services';
 
-jest.mock('../../../repositories');
-jest.mock('../../../utils');
+// Local imports (alphabetical)
+import {
+  CreateFinancialInstitutionInput,
+  FilterFinancialInstitutionsInput,
+  UpdateFinancialInstitutionInput,
+} from '../financial-institutions.service.interfaces';
+import { FinancialInstitutionsService } from '../financial-institutions.service';
+
+// Mock the repository
+jest.mock('../../../repositories/financial-institutions/financial-institutions.repository');
 
 describe(FinancialInstitutionsService.name, () => {
-  let mockFinancialInstitutionsRepository: jest.Mocked<FinancialInstitutionsRepository>;
-  let mockLogger: jest.Mocked<ExecutionLogger>;
   let service: FinancialInstitutionsService;
-  const financialInstitutionId = '1';
+  let mockRepository: jest.Mocked<FinancialInstitutionsRepository>;
+  let mockLogger: jest.Mocked<ExecutionLogger>;
 
   beforeEach(() => {
+    // Clear all mocks
     jest.clearAllMocks();
 
-    mockFinancialInstitutionsRepository = {
-      createDocument: jest.fn(),
-      updateDocument: jest.fn(),
-      getDocument: jest.fn(),
-      getDocumentsList: jest.fn(),
-      deleteDocument: jest.fn(),
-    } as unknown as jest.Mocked<FinancialInstitutionsRepository>;
-
+    // Create mock logger
     mockLogger = {
-      info: jest.fn(),
-      error: jest.fn(),
-      warn: jest.fn(),
-      debug: jest.fn(),
-      fatal: jest.fn(),
-      trace: jest.fn(),
-      silent: jest.fn(),
-      level: 'info',
-      initTime: 0,
-      lastStep: { id: '' },
       startStep: jest.fn(),
       endStep: jest.fn(),
-      getStepElapsedTime: jest.fn(),
-      getTotalElapsedTime: jest.fn(),
-    } as unknown as jest.Mocked<ExecutionLogger>;
+      logError: jest.fn(),
+    } as any;
 
-    (FinancialInstitutionsRepository.getInstance as jest.Mock).mockReturnValue(mockFinancialInstitutionsRepository);
-    (getSecret as jest.Mock).mockReturnValue('mock-secret-key');
-    (getEnvironmentVariable as jest.Mock).mockReturnValue('transactions');
+    // Mock the repository instance
+    mockRepository = {
+      createDocument: jest.fn(),
+      deleteDocument: jest.fn(),
+      getDocument: jest.fn(),
+      getDocumentsList: jest.fn(),
+      updateDocument: jest.fn(),
+    } as any;
 
-    // Clear the instances map before each test
-    (FinancialInstitutionsService as any).instances = new Map();
-    
-    service = FinancialInstitutionsService.getInstance(financialInstitutionId);
+    // Mock the getInstance method
+    (FinancialInstitutionsRepository.getInstance as jest.Mock).mockReturnValue(mockRepository);
+
+    // Get service instance
+    service = FinancialInstitutionsService.getInstance();
+  });
+
+  afterEach(() => {
+    // Reset the singleton instance for each test
+    (FinancialInstitutionsService as any).instance = undefined;
   });
 
   describe(FinancialInstitutionsService.getInstance.name, () => {
-    it('should create a new instance for a new financial institution ID', () => {
-      const newService = FinancialInstitutionsService.getInstance('2');
-      expect(newService).toBeInstanceOf(FinancialInstitutionsService);
-      expect(newService).not.toBe(service);
+    it('should return the same instance when called multiple times', () => {
+      const instance1 = FinancialInstitutionsService.getInstance();
+      const instance2 = FinancialInstitutionsService.getInstance();
+
+      expect(instance1).toBe(instance2);
     });
 
-    it('should return the same instance for the same financial institution ID', () => {
-      const sameService = FinancialInstitutionsService.getInstance(financialInstitutionId);
-      expect(sameService).toBe(service);
-    });
+    it('should create a new instance only once', () => {
+      const instance1 = FinancialInstitutionsService.getInstance();
+      
+      // Reset the instance
+      (FinancialInstitutionsService as any).instance = undefined;
+      
+      const instance2 = FinancialInstitutionsService.getInstance();
 
-    it('should create different instances for different financial institution IDs', () => {
-      const service1 = FinancialInstitutionsService.getInstance('1');
-      const service2 = FinancialInstitutionsService.getInstance('2');
-      const service3 = FinancialInstitutionsService.getInstance('3');
-
-      expect(service1).not.toBe(service2);
-      expect(service2).not.toBe(service3);
-      expect(service1).not.toBe(service3);
+      expect(instance1).not.toBe(instance2);
     });
   });
 
-  describe('constructor and configuration', () => {
-    it('should use correct host for different institution IDs', async () => {
-      const service2 = FinancialInstitutionsService.getInstance('2');
+  describe(FinancialInstitutionsService.prototype.createResource.name, () => {
+    const createInput: CreateFinancialInstitutionInput = {
+      countryCode: 'US',
+      name: 'Test Bank',
+    };
+    const documentId = 'fi-123';
 
-      (apiRequest as jest.Mock).mockResolvedValue({
-        data: [],
-        error: null,
+    it('should create a financial institution successfully', async () => {
+      mockRepository.createDocument.mockResolvedValue(documentId);
+
+      const result = await service.createResource(createInput, mockLogger);
+
+      expect(result).toBe(documentId);
+      expect(mockRepository.createDocument).toHaveBeenCalledWith(createInput, mockLogger);
+    });
+
+    it('should map repository error to domain service error when document not found', async () => {
+      const repositoryError = new RepositoryError({
+        code: RepositoryErrorCode.DOCUMENT_NOT_FOUND,
+        message: 'Document not found',
       });
+      mockRepository.createDocument.mockRejectedValue(repositoryError);
 
-      await service2.getTransactions({
-        companyId: 'company-1',
-        fromDate: '2024-01-01',
-        toDate: '2024-01-20',
-      }, mockLogger);
+      await expect(service.createResource(createInput, mockLogger)).rejects.toThrow(DomainModelServiceError);
+      await expect(service.createResource(createInput, mockLogger)).rejects.toMatchObject({
+        code: DomainModelServiceErrorCode.RESOURCE_NOT_FOUND,
+        message: 'Document not found',
+      });
+    });
 
-      expect(apiRequest).toHaveBeenCalledWith(
-        expect.objectContaining({
-          url: expect.stringContaining(HOST_BY_INSTITUTION_ID['2']),
-        }),
-        mockLogger
-      );
+    it('should map repository error to domain service error when related document not found', async () => {
+      const repositoryError = new RepositoryError({
+        code: RepositoryErrorCode.RELATED_DOCUMENT_NOT_FOUND,
+        message: 'Related document not found',
+      });
+      mockRepository.createDocument.mockRejectedValue(repositoryError);
+
+      await expect(service.createResource(createInput, mockLogger)).rejects.toThrow(DomainModelServiceError);
+      await expect(service.createResource(createInput, mockLogger)).rejects.toMatchObject({
+        code: DomainModelServiceErrorCode.RELATED_RESOURCE_NOT_FOUND,
+        message: 'Related document not found',
+      });
+    });
+
+    it('should throw unexpected errors', async () => {
+      const error = new Error('Unexpected error');
+      mockRepository.createDocument.mockRejectedValue(error);
+
+      await expect(service.createResource(createInput, mockLogger)).rejects.toThrow(error);
     });
   });
 
-  describe(FinancialInstitutionsService.prototype.getTransactions.name, () => {
-    const mockTransactions: FinancialInstitutionTransaction[] = [
+  describe(FinancialInstitutionsService.prototype.deleteResource.name, () => {
+    const resourceId = 'fi-123';
+
+    it('should delete a financial institution successfully', async () => {
+      mockRepository.deleteDocument.mockResolvedValue();
+
+      await service.deleteResource(resourceId, mockLogger);
+
+      expect(mockRepository.deleteDocument).toHaveBeenCalledWith(resourceId, mockLogger);
+    });
+
+    it('should map repository error to domain service error when document not found', async () => {
+      const repositoryError = new RepositoryError({
+        code: RepositoryErrorCode.DOCUMENT_NOT_FOUND,
+        message: 'Document not found',
+      });
+      mockRepository.deleteDocument.mockRejectedValue(repositoryError);
+
+      await expect(service.deleteResource(resourceId, mockLogger)).rejects.toThrow(DomainModelServiceError);
+      await expect(service.deleteResource(resourceId, mockLogger)).rejects.toMatchObject({
+        code: DomainModelServiceErrorCode.RESOURCE_NOT_FOUND,
+        message: 'Document not found',
+      });
+    });
+
+    it('should throw unexpected errors', async () => {
+      const error = new Error('Unexpected error');
+      mockRepository.deleteDocument.mockRejectedValue(error);
+
+      await expect(service.deleteResource(resourceId, mockLogger)).rejects.toThrow(error);
+    });
+  });
+
+  describe(FinancialInstitutionsService.prototype.getResource.name, () => {
+    const resourceId = 'fi-123';
+    const mockDocument: FinancialInstitutionDocument = {
+      id: resourceId,
+      countryCode: 'US',
+      name: 'Test Bank',
+      createdAt: new Date('2023-01-01'),
+      updatedAt: new Date('2023-01-01'),
+    };
+
+    it('should get a financial institution successfully', async () => {
+      mockRepository.getDocument.mockResolvedValue(mockDocument);
+
+      const result = await service.getResource(resourceId, mockLogger);
+
+      expect(result).toBeInstanceOf(FinancialInstitution);
+      expect(result).toMatchObject({
+        id: resourceId,
+        countryCode: 'US',
+        name: 'Test Bank',
+      });
+      expect(mockRepository.getDocument).toHaveBeenCalledWith(resourceId, mockLogger);
+    });
+
+    it('should return null when financial institution is not found', async () => {
+      mockRepository.getDocument.mockResolvedValue(null);
+
+      const result = await service.getResource(resourceId, mockLogger);
+
+      expect(result).toBeNull();
+    });
+  });
+
+  describe(FinancialInstitutionsService.prototype.getResourcesList.name, () => {
+    const query: FilterFinancialInstitutionsInput = {
+      countryCode: [{ value: 'US', operator: '==' }],
+      name: [{ value: 'Bank', operator: '==' }],
+    };
+    const mockDocuments: FinancialInstitutionDocument[] = [
       {
-        id: '1',
-        amount: 100,
-        createdAt: '2024-01-15T10:00:00Z',
-        description: 'Transaction 1',
-        updatedAt: '2024-01-15T10:00:00Z',
+        id: 'fi-1',
+        countryCode: 'US',
+        name: 'Test Bank 1',
+        createdAt: new Date('2023-01-01'),
+        updatedAt: new Date('2023-01-01'),
       },
       {
-        id: '2',
-        amount: 200,
-        createdAt: '2024-01-10T10:00:00Z',
-        description: 'Transaction 2',
-        updatedAt: '2024-01-10T10:00:00Z',
-      },
-      {
-        id: '3',
-        amount: 300,
-        createdAt: '2024-01-05T10:00:00Z',
-        description: 'Transaction 3',
-        updatedAt: '2024-01-05T10:00:00Z',
+        id: 'fi-2',
+        countryCode: 'US',
+        name: 'Test Bank 2',
+        createdAt: new Date('2023-01-02'),
+        updatedAt: new Date('2023-01-02'),
       },
     ];
 
-    const input: GetTransactionsInput = {
-      companyId: 'company-1',
-      fromDate: '2024-01-01',
-      toDate: '2024-01-20',
+    it('should get a list of financial institutions successfully', async () => {
+      mockRepository.getDocumentsList.mockResolvedValue(mockDocuments);
+
+      const result = await service.getResourcesList(query, mockLogger);
+
+      expect(result).toHaveLength(2);
+      expect(result[0]).toBeInstanceOf(FinancialInstitution);
+      expect(result[1]).toBeInstanceOf(FinancialInstitution);
+      expect(result[0]).toMatchObject({
+        id: 'fi-1',
+        countryCode: 'US',
+        name: 'Test Bank 1',
+      });
+      expect(result[1]).toMatchObject({
+        id: 'fi-2',
+        countryCode: 'US',
+        name: 'Test Bank 2',
+      });
+      expect(mockRepository.getDocumentsList).toHaveBeenCalledWith(query, mockLogger);
+    });
+
+    it('should return empty array when no financial institutions found', async () => {
+      mockRepository.getDocumentsList.mockResolvedValue([]);
+
+      const result = await service.getResourcesList(query, mockLogger);
+
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe(FinancialInstitutionsService.prototype.updateResource.name, () => {
+    const resourceId = 'fi-123';
+    const updateInput: UpdateFinancialInstitutionInput = {
+      name: 'Updated Bank Name',
     };
 
-    const logGroup = `${FinancialInstitutionsService.name}.${FinancialInstitutionsService.prototype.getTransactions.name}`;
+    it('should update a financial institution successfully', async () => {
+      mockRepository.updateDocument.mockResolvedValue();
 
-    beforeEach(() => {
-      (apiRequest as jest.Mock).mockResolvedValue({
-        data: mockTransactions,
-        error: null,
+      await service.updateResource(resourceId, updateInput, mockLogger);
+
+      expect(mockRepository.updateDocument).toHaveBeenCalledWith(resourceId, updateInput, mockLogger);
+    });
+
+    it('should map repository error to domain service error when document not found', async () => {
+      const repositoryError = new RepositoryError({
+        code: RepositoryErrorCode.DOCUMENT_NOT_FOUND,
+        message: 'Document not found',
+      });
+      mockRepository.updateDocument.mockRejectedValue(repositoryError);
+
+      await expect(service.updateResource(resourceId, updateInput, mockLogger)).rejects.toThrow(DomainModelServiceError);
+      await expect(service.updateResource(resourceId, updateInput, mockLogger)).rejects.toMatchObject({
+        code: DomainModelServiceErrorCode.RESOURCE_NOT_FOUND,
+        message: 'Document not found',
       });
     });
 
-    it('should successfully get and filter transactions', async () => {
-      const result = await service.getTransactions(input, mockLogger);
+    it('should map repository error to domain service error when related document not found', async () => {
+      const repositoryError = new RepositoryError({
+        code: RepositoryErrorCode.RELATED_DOCUMENT_NOT_FOUND,
+        message: 'Related document not found',
+      });
+      mockRepository.updateDocument.mockRejectedValue(repositoryError);
 
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id, logGroup);
-      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id);
-
-      expect(getSecret).toHaveBeenCalledWith(MOCK_API_PROJECT_SECRET_KEY);
-      expect(getEnvironmentVariable).toHaveBeenCalledWith(MOCK_TRANSACTIONS_ENDPOINT_ENV_VARIABLE_KEY);
-
-      expect(apiRequest).toHaveBeenCalledWith(
-        {
-          method: 'GET',
-          url: `mock-secret-key.${HOST_BY_INSTITUTION_ID[financialInstitutionId]}/transactions?sortBy=createdAt&order=desc`,
-        },
-        mockLogger
-      );
-
-      // Should return all transactions since they fall within the date range
-      expect(result).toEqual(mockTransactions);
+      await expect(service.updateResource(resourceId, updateInput, mockLogger)).rejects.toThrow(DomainModelServiceError);
+      await expect(service.updateResource(resourceId, updateInput, mockLogger)).rejects.toMatchObject({
+        code: DomainModelServiceErrorCode.RELATED_RESOURCE_NOT_FOUND,
+        message: 'Related document not found',
+      });
     });
 
-    it('should filter transactions by date range correctly', async () => {
-      const filteredInput: GetTransactionsInput = {
-        companyId: 'company-1',
-        fromDate: '2024-01-08',
-        toDate: '2024-01-12',
+    it('should throw error if the repository error is not known', async () => {
+      const repositoryError = new RepositoryError({
+        code: 'unknown-error' as RepositoryErrorCode,
+        message: 'Unknown error',
+      });
+      mockRepository.updateDocument.mockRejectedValue(repositoryError);
+
+      await expect(service.updateResource(resourceId, updateInput, mockLogger)).rejects.toThrow(repositoryError);
+    });
+
+    it('should throw unexpected errors', async () => {
+      const error = new Error('Unexpected error');
+      mockRepository.updateDocument.mockRejectedValue(error);
+
+      await expect(service.updateResource(resourceId, updateInput, mockLogger)).rejects.toThrow(error);
+    });
+
+    it('should handle partial updates', async () => {
+      const partialUpdateInput: UpdateFinancialInstitutionInput = {
+        countryCode: 'CA',
       };
+      mockRepository.updateDocument.mockResolvedValue();
 
-      const result = await service.getTransactions(filteredInput, mockLogger);
+      await service.updateResource(resourceId, partialUpdateInput, mockLogger);
 
-      // The date filtering logic should work correctly
-      // For now, let's just verify the method is called with correct parameters
-      expect(apiRequest).toHaveBeenCalledWith(
-        {
-          method: 'GET',
-          url: `mock-secret-key.${HOST_BY_INSTITUTION_ID[financialInstitutionId]}/transactions?sortBy=createdAt&order=desc`,
-        },
-        mockLogger
-      );
-    });
-
-    it('should return empty array when no transactions match date range', async () => {
-      const filteredInput: GetTransactionsInput = {
-        companyId: 'company-1',
-        fromDate: '2024-02-01',
-        toDate: '2024-02-28',
-      };
-
-      const result = await service.getTransactions(filteredInput, mockLogger);
-
-      expect(result).toEqual([]);
-    });
-
-    it('should return empty array when API returns no data', async () => {
-      (apiRequest as jest.Mock).mockResolvedValue({
-        data: null,
-        error: null,
-      });
-
-      const result = await service.getTransactions(input, mockLogger);
-
-      expect(result).toEqual([]);
-    });
-
-    it('should return empty array when API returns empty array', async () => {
-      (apiRequest as jest.Mock).mockResolvedValue({
-        data: [],
-        error: null,
-      });
-
-      const result = await service.getTransactions(input, mockLogger);
-
-      expect(result).toEqual([]);
-    });
-
-    it('should handle API errors and throw appropriate error', async () => {
-      const apiError = {
-        message: 'API Error',
-        code: 'API_ERROR',
-      };
-
-      (apiRequest as jest.Mock).mockResolvedValue({
-        data: null,
-        error: apiError,
-      });
-
-      await expect(service.getTransactions(input, mockLogger)).rejects.toThrow(
-        `${GET_TRANSACTIONS_ERROR_MESSAGE}: message: ${apiError.message}, code: ${apiError.code}`
-      );
-
-      expect(mockLogger.warn).toHaveBeenCalledWith(
-        {
-          logId: GET_TRANSACTIONS_ERROR.logId,
-          financialInstitutionId,
-          error: apiError,
-        },
-        GET_TRANSACTIONS_ERROR.logMessage
-      );
-    });
-
-    it('should handle transactions sorted in descending order correctly', async () => {
-      const transactionsInDescOrder: FinancialInstitutionTransaction[] = [
-        {
-          id: '1',
-          amount: 100,
-          createdAt: '2024-01-15T10:00:00Z',
-          description: 'Latest Transaction',
-          updatedAt: '2024-01-15T10:00:00Z',
-        },
-        {
-          id: '2',
-          amount: 200,
-          createdAt: '2024-01-10T10:00:00Z',
-          description: 'Middle Transaction',
-          updatedAt: '2024-01-10T10:00:00Z',
-        },
-        {
-          id: '3',
-          amount: 300,
-          createdAt: '2024-01-05T10:00:00Z',
-          description: 'Oldest Transaction',
-          updatedAt: '2024-01-05T10:00:00Z',
-        },
-      ];
-
-      (apiRequest as jest.Mock).mockResolvedValue({
-        data: transactionsInDescOrder,
-        error: null,
-      });
-
-      const result = await service.getTransactions(input, mockLogger);
-
-      // Should return all transactions in the same order as they were received
-      expect(result).toEqual(transactionsInDescOrder);
-    });
-
-    it('should handle transactions with future dates correctly', async () => {
-      const transactionsWithFutureDate: FinancialInstitutionTransaction[] = [
-        {
-          id: '1',
-          amount: 100,
-          createdAt: '2024-01-25T10:00:00Z', // After toDate (2024-01-20)
-          description: 'Future Transaction',
-          updatedAt: '2024-01-25T10:00:00Z',
-        },
-        {
-          id: '2',
-          amount: 200,
-          createdAt: '2024-01-10T10:00:00Z', // Within range
-          description: 'Valid Transaction',
-          updatedAt: '2024-01-10T10:00:00Z',
-        },
-      ];
-
-      (apiRequest as jest.Mock).mockResolvedValue({
-        data: transactionsWithFutureDate,
-        error: null,
-      });
-
-      const result = await service.getTransactions(input, mockLogger);
-
-      // Verify the method is called correctly
-      expect(apiRequest).toHaveBeenCalledWith(
-        {
-          method: 'GET',
-          url: `mock-secret-key.${HOST_BY_INSTITUTION_ID[financialInstitutionId]}/transactions?sortBy=createdAt&order=desc`,
-        },
-        mockLogger
-      );
-    });
-
-    it('should handle edge case where fromDate equals toDate', async () => {
-      const edgeCaseInput: GetTransactionsInput = {
-        companyId: 'company-1',
-        fromDate: '2024-01-10',
-        toDate: '2024-01-10',
-      };
-
-      const result = await service.getTransactions(edgeCaseInput, mockLogger);
-
-      // Verify the method is called correctly
-      expect(apiRequest).toHaveBeenCalledWith(
-        {
-          method: 'GET',
-          url: `mock-secret-key.${HOST_BY_INSTITUTION_ID[financialInstitutionId]}/transactions?sortBy=createdAt&order=desc`,
-        },
-        mockLogger
-      );
-    });
-
-    it('should handle transactions with different time zones correctly', async () => {
-      const transactionsWithDifferentTimezones: FinancialInstitutionTransaction[] = [
-        {
-          id: '1',
-          amount: 100,
-          createdAt: '2024-01-15T23:59:59.999Z',
-          description: 'End of day transaction',
-          updatedAt: '2024-01-15T23:59:59.999Z',
-        },
-        {
-          id: '2',
-          amount: 200,
-          createdAt: '2024-01-10T00:00:00.000Z',
-          description: 'Start of day transaction',
-          updatedAt: '2024-01-10T00:00:00.000Z',
-        },
-      ];
-
-      (apiRequest as jest.Mock).mockResolvedValue({
-        data: transactionsWithDifferentTimezones,
-        error: null,
-      });
-
-      const result = await service.getTransactions(input, mockLogger);
-
-      // Should return both transactions as they fall within the date range
-      expect(result).toEqual(transactionsWithDifferentTimezones);
-    });
-
-    it('should test date filtering logic with specific date ranges', async () => {
-      const testTransactions: FinancialInstitutionTransaction[] = [
-        {
-          id: '1',
-          amount: 100,
-          createdAt: '2024-01-15T10:00:00Z',
-          description: 'Transaction on 2024-01-15',
-          updatedAt: '2024-01-15T10:00:00Z',
-        },
-        {
-          id: '2',
-          amount: 200,
-          createdAt: '2024-01-10T10:00:00Z',
-          description: 'Transaction on 2024-01-10',
-          updatedAt: '2024-01-10T10:00:00Z',
-        },
-        {
-          id: '3',
-          amount: 300,
-          createdAt: '2024-01-05T10:00:00Z',
-          description: 'Transaction on 2024-01-05',
-          updatedAt: '2024-01-05T10:00:00Z',
-        },
-      ];
-
-      (apiRequest as jest.Mock).mockResolvedValue({
-        data: testTransactions,
-        error: null,
-      });
-
-      // Test with a date range that should include only transaction 2
-      const filteredInput: GetTransactionsInput = {
-        companyId: 'company-1',
-        fromDate: '2024-01-08',
-        toDate: '2024-01-12',
-      };
-
-      const result = await service.getTransactions(filteredInput, mockLogger);
-
-      // Verify the API call was made correctly
-      expect(apiRequest).toHaveBeenCalledWith(
-        {
-          method: 'GET',
-          url: `mock-secret-key.${HOST_BY_INSTITUTION_ID[financialInstitutionId]}/transactions?sortBy=createdAt&order=desc`,
-        },
-        mockLogger
-      );
-    });
-
-    it('should handle empty transaction array correctly', async () => {
-      (apiRequest as jest.Mock).mockResolvedValue({
-        data: [],
-        error: null,
-      });
-
-      const result = await service.getTransactions(input, mockLogger);
-
-      expect(result).toEqual([]);
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id, logGroup);
-      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id);
-    });
-
-    it('should handle null data from API correctly', async () => {
-      (apiRequest as jest.Mock).mockResolvedValue({
-        data: null,
-        error: null,
-      });
-
-      const result = await service.getTransactions(input, mockLogger);
-
-      expect(result).toEqual([]);
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id, logGroup);
-      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id);
+      expect(mockRepository.updateDocument).toHaveBeenCalledWith(resourceId, partialUpdateInput, mockLogger);
     });
   });
 }); 

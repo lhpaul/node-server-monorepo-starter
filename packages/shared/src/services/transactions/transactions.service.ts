@@ -12,7 +12,7 @@ import {
   UpdateTransactionDocumentInput,
 } from '../../repositories';
 import { DomainModelService, DomainModelServiceError, DomainModelServiceErrorCode } from '../../utils/services';
-import { FinancialInstitutionsService, FinancialInstitutionTransaction } from '../financial-institutions';
+import { FinancialInstitutionService, FinancialInstitutionTransaction } from '../financial-institution';
 
 // Local imports (alphabetical)
 import { TransactionDocumentToModelParser } from './transactions.service.classes';
@@ -55,12 +55,17 @@ export class TransactionsService extends DomainModelService<Transaction, Transac
     return super.updateResource(id, data, logger);
   }
 
+  /**
+   * Sync transactions with the financial institution
+   * @param input - The {@link SyncWithFinancialInstitutionInput} for the sync with financial institution operation
+   * @param logger - The {@link ExecutionLogger} to use for logging
+   */
   public async syncWithFinancialInstitution(input: SyncWithFinancialInstitutionInput, logger: ExecutionLogger): Promise<void> {
     const { companyId, financialInstitutionId, fromDate, toDate } = input;
     const logGroup = `${TransactionsService.name}.${this.syncWithFinancialInstitution.name}`;
 
     logger.startStep(SYNC_WITH_FINANCIAL_INSTITUTION_STEPS.GET_TRANSACTIONS, logGroup);
-    const financialInstitutionService = FinancialInstitutionsService.getInstance(financialInstitutionId);
+    const financialInstitutionService = FinancialInstitutionService.getInstance(financialInstitutionId);
     const [ financialInstitutionTransactions, internalTransactions ] = await Promise.all([
       financialInstitutionService.getTransactions({
         companyId,

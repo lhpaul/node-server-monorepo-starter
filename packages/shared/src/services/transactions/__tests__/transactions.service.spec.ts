@@ -1,17 +1,20 @@
+// Internal modules (farthest path first, then alphabetical)
 import { ExecutionLogger } from '../../../definitions';
 import { TransactionSourceType, TransactionType } from '../../../domain';
 import { TransactionsRepository } from '../../../repositories';
 import { DomainModelServiceError, DomainModelServiceErrorCode } from '../../../utils';
-import { FinancialInstitutionsService } from '../../financial-institutions';
+
+// Local imports (alphabetical)
+import { FinancialInstitutionService } from '../../financial-institution';
 import { TransactionsService } from '../transactions.service';
 import { ERRORS_MESSAGES, SYNC_WITH_FINANCIAL_INSTITUTION_STEPS } from '../transactions.service.constants';
 
 jest.mock('../../../repositories');
-jest.mock('../../financial-institutions');
+jest.mock('../../financial-institution');
 
 describe(TransactionsService.name, () => {
   let mockTransactionsRepository: jest.Mocked<TransactionsRepository>;
-  let mockFinancialInstitutionsService: jest.Mocked<FinancialInstitutionsService>;
+  let mockFinancialInstitutionsService: jest.Mocked<FinancialInstitutionService>;
   let mockLogger: jest.Mocked<ExecutionLogger>;
 
   beforeEach(() => {
@@ -26,7 +29,7 @@ describe(TransactionsService.name, () => {
 
     mockFinancialInstitutionsService = {
       getTransactions: jest.fn(),
-    } as unknown as jest.Mocked<FinancialInstitutionsService>;
+    } as unknown as jest.Mocked<FinancialInstitutionService>;
 
     mockLogger = {
       startStep: jest.fn(),
@@ -35,7 +38,7 @@ describe(TransactionsService.name, () => {
     } as unknown as jest.Mocked<ExecutionLogger>;
 
     (TransactionsRepository.getInstance as jest.Mock).mockReturnValue(mockTransactionsRepository);
-    (FinancialInstitutionsService.getInstance as jest.Mock).mockReturnValue(mockFinancialInstitutionsService);
+    (FinancialInstitutionService.getInstance as jest.Mock).mockReturnValue(mockFinancialInstitutionsService);
 
     (TransactionsService as any).instance = undefined;
   });
@@ -400,7 +403,7 @@ describe(TransactionsService.name, () => {
 
       await service.syncWithFinancialInstitution(syncInput, mockLogger);
 
-      expect(FinancialInstitutionsService.getInstance).toHaveBeenCalledWith(syncInput.financialInstitutionId);
+      expect(FinancialInstitutionService.getInstance).toHaveBeenCalledWith(syncInput.financialInstitutionId);
     });
 
     it('should call getTransactions with correct parameters', async () => {
