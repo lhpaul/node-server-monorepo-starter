@@ -10,7 +10,7 @@ export const getFinancialInstitutionHandler = async (
 ) => {
   const logger = request.log.child({ handler: getFinancialInstitutionHandler.name });
   const logGroup = getFinancialInstitutionHandler.name;
-  const service = FinancialInstitutionsService.getInstance('admin');
+  const service = FinancialInstitutionsService.getInstance();
   const params = request.params as GetFinancialInstitutionParams;
   
   logger.startStep(STEPS.GET_FINANCIAL_INSTITUTION.id, logGroup);

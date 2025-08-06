@@ -69,7 +69,7 @@ describe(listFinancialInstitutionsHandler.name, () => {
       handler: listFinancialInstitutionsHandler.name,
     });
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.LIST_FINANCIAL_INSTITUTIONS.id, logGroup);
-    expect(FinancialInstitutionsService.getInstance).toHaveBeenCalledWith('admin');
+    expect(FinancialInstitutionsService.getInstance).toHaveBeenCalled();
     expect(transformQueryParams).toHaveBeenCalledWith(mockRequest.query);
     expect(mockService.getResourcesList).toHaveBeenCalledWith(
       { name: { eq: 'Test Bank' } },

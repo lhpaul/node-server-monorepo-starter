@@ -13,7 +13,7 @@ export const deleteFinancialInstitutionHandler = async (
 ) => {
   const logger = request.log.child({ handler: deleteFinancialInstitutionHandler.name });
   const logGroup = deleteFinancialInstitutionHandler.name;
-  const service = FinancialInstitutionsService.getInstance('admin');
+  const service = FinancialInstitutionsService.getInstance();
   const params = request.params as DeleteFinancialInstitutionParams;
   
   try {

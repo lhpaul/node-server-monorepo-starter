@@ -13,7 +13,7 @@ export const updateFinancialInstitutionHandler = async (
 ) => {
   const logger = request.log.child({ handler: updateFinancialInstitutionHandler.name });
   const logGroup = updateFinancialInstitutionHandler.name;
-  const service = FinancialInstitutionsService.getInstance('admin');
+  const service = FinancialInstitutionsService.getInstance();
   const body = request.body as UpdateFinancialInstitutionBody;
   const params = request.params as UpdateFinancialInstitutionParams;
   

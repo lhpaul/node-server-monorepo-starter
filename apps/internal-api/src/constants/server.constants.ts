@@ -6,11 +6,12 @@ export const COR_CONFIG = {
 
 export const FASTIFY_ENV_SCHEMA = {
   type: 'object',
-  required: ['APP_ENV', 'ENCRYPTION_KEY'],
   properties: {
     APP_ENV: { type: 'string' },
     ENCRYPTION_KEY: { type: 'string' },
+    MOCK_API_PROJECT_SECRET: { type: 'string' },
   },
+  required: ['APP_ENV', 'ENCRYPTION_KEY', 'MOCK_API_PROJECT_SECRET'],
 } as const;
 export const FASTIFY_ENV_CONFIG = {
   dotenv: true,

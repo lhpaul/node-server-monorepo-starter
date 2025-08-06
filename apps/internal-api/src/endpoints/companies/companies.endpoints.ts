@@ -4,6 +4,7 @@ import {
   HTTP_METHODS_MAP,
 } from '@repo/fastify';
 import { FastifyInstance, RouteOptions } from 'fastify';
+
 import {
   CREATE_COMPANY_BODY_JSON_SCHEMA,
   COMPANY_ENDPOINTS_PARAMS_JSON_SCHEMA,
@@ -11,6 +12,7 @@ import {
   URL_V1,
   URL_WITH_ID_V1,
 } from './companies.endpoints.constants';
+import { financialInstitutionsEndpointsBuilder } from './endpoints/financial-institutions/financial-institutions.endpoints';
 import {
   createCompanyHandler,
   deleteCompanyHandler,
@@ -80,5 +82,6 @@ export function companiesEndpointsBuilder(server: FastifyInstance): RouteOptions
         params: COMPANY_ENDPOINTS_PARAMS_JSON_SCHEMA,
       },
     }),
+    ...financialInstitutionsEndpointsBuilder(server),
   ];
 }

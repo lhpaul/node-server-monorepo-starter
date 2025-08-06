@@ -59,7 +59,7 @@ describe(updateFinancialInstitutionHandler.name, () => {
       handler: updateFinancialInstitutionHandler.name,
     });
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_FINANCIAL_INSTITUTION.id, logGroup);
-    expect(FinancialInstitutionsService.getInstance).toHaveBeenCalledWith('admin');
+    expect(FinancialInstitutionsService.getInstance).toHaveBeenCalled();
     expect(mockService.updateResource).toHaveBeenCalledWith(
       '123',
       { name: 'Updated Bank Name' },

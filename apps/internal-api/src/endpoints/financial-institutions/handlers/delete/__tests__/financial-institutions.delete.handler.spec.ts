@@ -62,7 +62,7 @@ describe(deleteFinancialInstitutionHandler.name, () => {
     );
 
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DELETE_FINANCIAL_INSTITUTION.id, logGroup);
-    expect(FinancialInstitutionsService.getInstance).toHaveBeenCalledWith('admin');
+    expect(FinancialInstitutionsService.getInstance).toHaveBeenCalled();
     expect(mockService.deleteResource).toHaveBeenCalledWith(
       mockParams.id,
       mockLogger,
