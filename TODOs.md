@@ -13,3 +13,4 @@ This document is to keep track of the technical debt in this repository.
 - Change "models" to "entities"
 - Check how to admin oauth clients and private keys
 - Apply cache to transactions category in public api
+- Check that all methods have JSdoc
