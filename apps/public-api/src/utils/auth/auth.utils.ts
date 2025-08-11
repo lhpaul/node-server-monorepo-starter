@@ -1,4 +1,4 @@
-import { UserPermissions } from '@repo/shared/services';
+import { UserPermissions } from '@repo/shared/domain';
 
 export function hasCompanyReadPermission(companyId: string, permissions: UserPermissions) {
   return permissions.companies[companyId]?.some((permission) => permission === 'company:read' || permission === 'company:write');

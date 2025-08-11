@@ -1,10 +1,10 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { TransactionCategoriesService } from '@repo/shared/services';
+import { TransactionCategoriesService } from '@repo/shared/domain';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { createTransactionCategoryHandler } from '../transaction-categories.create.handler';
 import { CreateTransactionCategoryBody } from '../transaction-categories.create.handler.interfaces';
 
-jest.mock('@repo/shared/services');
+jest.mock('@repo/shared/domain');
 
 describe(createTransactionCategoryHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;

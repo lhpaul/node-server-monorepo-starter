@@ -1,6 +1,5 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { TransactionCategory, TransactionCategoryType } from '@repo/shared/domain';
-import { TransactionCategoriesService } from '@repo/shared/services';
+import { TransactionCategory, TransactionCategoryType, TransactionCategoriesService } from '@repo/shared/domain';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { STEPS } from '../transaction-categories.get.handler.constants';
@@ -9,7 +8,8 @@ import { getTransactionCategoryHandler } from '../transaction-categories.get.han
 import { parseTransactionCategoryToResource } from '../../../transaction-categories.endpoint.utils';
 
 // Mock dependencies
-jest.mock('@repo/shared/services', () => ({
+jest.mock('@repo/shared/domain', () => ({
+  ...jest.requireActual('@repo/shared/domain'),
   TransactionCategoriesService: {
     getInstance: jest.fn(),
   },

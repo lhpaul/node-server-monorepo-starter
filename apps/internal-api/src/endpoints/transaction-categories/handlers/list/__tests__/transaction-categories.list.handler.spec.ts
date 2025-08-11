@@ -1,6 +1,5 @@
 import { STATUS_CODES, transformQueryParams } from '@repo/fastify';
-import { TransactionCategoriesService } from '@repo/shared/services';
-import { TransactionCategory, TransactionCategoryType } from '@repo/shared/domain';
+import { TransactionCategory, TransactionCategoryType, TransactionCategoriesService } from '@repo/shared/domain';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
 import { STEPS } from '../transaction-categories.list.handler.constants';
@@ -15,7 +14,12 @@ jest.mock('@repo/fastify', () => ({
   transformQueryParams: jest.fn(),
 }));
 
-jest.mock('@repo/shared/services');
+jest.mock('@repo/shared/domain', () => ({
+  ...jest.requireActual('@repo/shared/domain'),
+  TransactionCategoriesService: {
+    getInstance: jest.fn(),
+  },
+}));
 
 jest.mock('../../../transaction-categories.endpoint.utils', () => ({
   parseTransactionCategoryToResource: jest.fn(),

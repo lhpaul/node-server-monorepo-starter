@@ -1,5 +1,5 @@
 import { FORBIDDEN_ERROR, STATUS_CODES } from '@repo/fastify';
-import { TransactionsService } from '@repo/shared/services';
+import { TransactionsService } from '@repo/shared/domain';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { hasCompanyFinancialInstitutionsCreatePermission, hasCompanyFinancialInstitutionsReadPermission } from '../../../../../../../utils/auth/auth.utils';
@@ -7,8 +7,8 @@ import { STEPS } from '../sync-transactions.handler.constants';
 import { syncTransactionsHandler } from '../sync-transactions.handler';
 import { SyncTransactionsBody, SyncTransactionsParams } from '../sync-transactions.handler.interfaces';
 
-jest.mock('@repo/shared/services', () => ({
-  ...jest.requireActual('@repo/shared/services'),
+jest.mock('@repo/shared/domain', () => ({
+  ...jest.requireActual('@repo/shared/domain'),
   TransactionsService: {
     getInstance: jest.fn(),
   },

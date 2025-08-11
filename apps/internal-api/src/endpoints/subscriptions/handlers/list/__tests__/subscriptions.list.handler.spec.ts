@@ -1,5 +1,5 @@
 import { STATUS_CODES, transformQueryParams } from '@repo/fastify';
-import { SubscriptionsService } from '@repo/shared/services';
+import { SubscriptionsService } from '@repo/shared/domain';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
 import { listSubscriptionsHandler } from '../subscriptions.list.handler';
@@ -12,7 +12,7 @@ jest.mock('@repo/fastify', () => ({
   transformQueryParams: jest.fn(),
 }));
 
-jest.mock('@repo/shared/services');
+jest.mock('@repo/shared/domain');
 
 describe(listSubscriptionsHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;

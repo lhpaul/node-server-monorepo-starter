@@ -1,5 +1,5 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { CompaniesService } from '@repo/shared/services';
+import { CompaniesService } from '@repo/shared/domain';
 import { DomainModelServiceError, DomainModelServiceErrorCode } from '@repo/shared/utils';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
@@ -7,7 +7,7 @@ import { ERROR_RESPONSES } from '../../../companies.endpoints.constants';
 import { STEPS } from '../companies.delete.handler.constants';
 import { deleteCompanyHandler } from '../companies.delete.handler';
 
-jest.mock('@repo/shared/services');
+jest.mock('@repo/shared/domain');
 jest.mock('@repo/shared/utils', () => ({
   ...jest.requireActual('@repo/shared/utils'),
   DomainModelServiceError: jest.fn(),

@@ -1,5 +1,5 @@
 import { FORBIDDEN_ERROR, STATUS_CODES } from '@repo/fastify';
-import { CompaniesService } from '@repo/shared/services';
+import { CompaniesService } from '@repo/shared/domain';
 import { maskFields } from '@repo/shared/utils';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
@@ -9,7 +9,7 @@ import { STEPS } from '../financial-institutions.get.handler.constants';
 import { getFinancialInstitutionHandler } from '../financial-institutions.get.handler';
 import { GetCompanyFinancialInstitutionParams } from '../financial-institutions.get.handler.interfaces';
 
-jest.mock('@repo/shared/services');
+jest.mock('@repo/shared/domain');
 jest.mock('@repo/shared/utils', () => ({
   ...jest.requireActual('@repo/shared/utils'),
   maskFields: jest.fn(),

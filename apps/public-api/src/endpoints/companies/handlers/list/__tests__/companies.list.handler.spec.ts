@@ -1,5 +1,5 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { CompaniesService } from '@repo/shared/services';
+import { CompaniesService } from '@repo/shared/domain';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../definitions/auth.interfaces';
@@ -12,7 +12,7 @@ jest.mock('@repo/fastify', () => ({
   },
 }));
 
-jest.mock('@repo/shared/services');
+jest.mock('@repo/shared/domain');
 
 describe(listCompaniesHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;

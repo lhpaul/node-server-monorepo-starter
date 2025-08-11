@@ -1,6 +1,6 @@
 import { FORBIDDEN_ERROR, STATUS_CODES } from '@repo/fastify';
 import { TransactionSourceType, TransactionType } from '@repo/shared/domain';
-import { TransactionsService } from '@repo/shared/services';
+import { TransactionsService } from '@repo/shared/domain';
 import { DomainModelServiceError, DomainModelServiceErrorCode } from '@repo/shared/utils';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
@@ -10,7 +10,7 @@ import { createTransactionHandler } from '../transactions.create.handler';
 import { CreateCompanyTransactionBody } from '../transactions.create.handler.interfaces';
 
 
-jest.mock('@repo/shared/services');
+jest.mock('@repo/shared/domain');
 jest.mock('../../../../../../../utils/auth/auth.utils', () => ({
   hasCompanyTransactionsCreatePermission: jest.fn()
 }));

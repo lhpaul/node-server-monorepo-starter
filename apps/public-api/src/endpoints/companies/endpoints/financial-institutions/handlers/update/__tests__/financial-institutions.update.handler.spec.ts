@@ -1,5 +1,5 @@
 import { FORBIDDEN_ERROR, STATUS_CODES } from '@repo/fastify';
-import { CompaniesService, UpdateFinancialInstitutionError, UpdateFinancialInstitutionErrorCode } from '@repo/shared/services';
+import { CompaniesService, UpdateFinancialInstitutionError, UpdateFinancialInstitutionErrorCode } from '@repo/shared/domain';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { hasCompanyFinancialInstitutionsUpdatePermission } from '../../../../../../../utils/auth/auth.utils';
@@ -7,8 +7,8 @@ import { STEPS } from '../financial-institutions.update.handler.constants';
 import { updateFinancialInstitutionHandler } from '../financial-institutions.update.handler';
 import { UpdateCompanyFinancialInstitutionBody, UpdateCompanyFinancialInstitutionParams } from '../financial-institutions.update.handler.interfaces';
 
-jest.mock('@repo/shared/services', () => ({
-  ...jest.requireActual('@repo/shared/services'),
+jest.mock('@repo/shared/domain', () => ({
+  ...jest.requireActual('@repo/shared/domain'),
   CompaniesService: {
     getInstance: jest.fn(),
   },

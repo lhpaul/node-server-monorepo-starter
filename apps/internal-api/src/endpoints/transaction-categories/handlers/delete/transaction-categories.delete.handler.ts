@@ -1,5 +1,5 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { TransactionCategoriesService } from '@repo/shared/services';
+import { TransactionCategoriesService } from '@repo/shared/domain';
 import { DomainModelServiceError, DomainModelServiceErrorCode } from '@repo/shared/utils';
 import { FastifyReply, FastifyRequest } from 'fastify';
 

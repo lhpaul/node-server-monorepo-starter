@@ -1,5 +1,5 @@
 import { FORBIDDEN_ERROR, mapDateQueryParams, STATUS_CODES, transformQueryParams } from '@repo/fastify';
-import { SubscriptionsService } from '@repo/shared/services';
+import { SubscriptionsService } from '@repo/shared/domain';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../../../definitions/auth.interfaces';
@@ -20,7 +20,7 @@ jest.mock('@repo/fastify', () => ({
   transformQueryParams: jest.fn(),
 }));
 
-jest.mock('@repo/shared/services');
+jest.mock('@repo/shared/domain');
 jest.mock('../../../../../../../utils/auth/auth.utils');
 
 describe(listSubscriptionsHandler.name, () => {

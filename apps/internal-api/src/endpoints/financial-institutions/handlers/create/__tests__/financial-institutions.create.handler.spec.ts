@@ -1,11 +1,11 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { FinancialInstitutionsService } from '@repo/shared/services';
+import { FinancialInstitutionsService } from '@repo/shared/domain';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { createFinancialInstitutionHandler } from '../financial-institutions.create.handler';
 import { STEPS } from '../financial-institutions.create.handler.constants';
 
-jest.mock('@repo/shared/services');
+jest.mock('@repo/shared/domain');
 
 describe(createFinancialInstitutionHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;

@@ -1,10 +1,10 @@
-import { FinancialInstitutionsService } from '@repo/shared/services';
+import { FinancialInstitutionsService } from '@repo/shared/domain';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { getFinancialInstitutionHandler } from '../financial-institutions.get.handler';
 import { STEPS } from '../financial-institutions.get.handler.constants';
 
-jest.mock('@repo/shared/services');
+jest.mock('@repo/shared/domain');
 
 describe(getFinancialInstitutionHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;

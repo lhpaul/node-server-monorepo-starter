@@ -1,4 +1,4 @@
-import { TransactionCategoriesService } from '@repo/shared/services';
+import { TransactionCategoriesService } from '@repo/shared/domain';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { updateTransactionCategoryHandler } from '../transaction-categories.update.handler';
@@ -7,7 +7,7 @@ import {
   UpdateTransactionCategoryParams 
 } from '../transaction-categories.update.handler.interfaces';
 
-jest.mock('@repo/shared/services');
+jest.mock('@repo/shared/domain');
 
 describe(updateTransactionCategoryHandler.name, () => {
   let mockRequest: jest.Mocked<FastifyRequest>;

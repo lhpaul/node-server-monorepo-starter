@@ -1,4 +1,4 @@
-import { FinancialInstitutionsService } from '@repo/shared/services';
+import { FinancialInstitutionsService } from '@repo/shared/domain';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { STEPS } from './financial-institutions.update.handler.constants';

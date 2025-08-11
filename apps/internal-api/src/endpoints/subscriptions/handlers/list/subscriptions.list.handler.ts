@@ -1,5 +1,5 @@
 import { STATUS_CODES, transformQueryParams } from '@repo/fastify';
-import { SubscriptionsService } from '@repo/shared/services';
+import { SubscriptionsService } from '@repo/shared/domain';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { STEPS } from './subscriptions.list.handler.constants';

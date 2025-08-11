@@ -1,5 +1,5 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { CompaniesService } from '@repo/shared/services';
+import { CompaniesService } from '@repo/shared/domain';
 import { maskFields } from '@repo/shared/utils';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
@@ -8,7 +8,7 @@ import { listCompanyFinancialInstitutionsHandler } from '../list-company-financi
 import { STEPS } from '../list-company-financial-institutions.handler.constants';
 
 
-jest.mock('@repo/shared/services');
+jest.mock('@repo/shared/domain');
 jest.mock('@repo/shared/utils', () => ({
   maskFields: jest.fn(),
 }));

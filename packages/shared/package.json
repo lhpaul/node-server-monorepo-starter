@@ -20,10 +20,6 @@
       "types": "./src/domain/index.ts",
       "default": "./dist/domain/index.js"
     },
-    "./services": {
-      "types": "./src/services/index.ts",
-      "default": "./dist/services/index.js"
-    },
     "./utils": {
       "types": "./src/utils/index.ts",
       "default": "./dist/utils/index.js"

@@ -1,7 +1,7 @@
 import { FORBIDDEN_ERROR, RESOURCE_NOT_FOUND_ERROR, STATUS_CODES } from '@repo/fastify';
 import { Transaction, TransactionSourceType, TransactionType } from '@repo/shared/domain';
-import { TransactionsService } from '@repo/shared/services';
-import { UserPermissions } from '@repo/shared/services';
+import { TransactionsService } from '@repo/shared/domain';
+import { UserPermissions } from '@repo/shared/domain';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
 import { hasCompanyTransactionsReadPermission } from '../../../../../../../utils/auth/auth.utils';
@@ -24,7 +24,7 @@ jest.mock('@repo/fastify', () => ({
   }
 }));
 
-jest.mock('@repo/shared/services');
+jest.mock('@repo/shared/domain');
 
 jest.mock('../../../../../../../utils/auth/auth.utils', () => ({
   hasCompanyTransactionsReadPermission: jest.fn(),

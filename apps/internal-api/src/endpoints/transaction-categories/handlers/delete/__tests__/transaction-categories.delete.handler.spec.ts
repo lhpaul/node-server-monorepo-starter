@@ -1,5 +1,5 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { TransactionCategoriesService } from '@repo/shared/services';
+import { TransactionCategoriesService } from '@repo/shared/domain';
 import { DomainModelServiceError, DomainModelServiceErrorCode } from '@repo/shared/utils';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
@@ -7,7 +7,7 @@ import { ERROR_RESPONSES } from '../../../transaction-categories.endpoints.const
 import { STEPS } from '../transaction-categories.delete.handler.constants';
 import { deleteTransactionCategoryHandler } from '../transaction-categories.delete.handler';
 
-jest.mock('@repo/shared/services');
+jest.mock('@repo/shared/domain');
 jest.mock('@repo/shared/utils', () => ({
   ...jest.requireActual('@repo/shared/utils'),
   DomainModelServiceError: jest.fn(),

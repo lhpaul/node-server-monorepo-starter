@@ -1,13 +1,13 @@
 import { ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { RequestLogger } from '@repo/fastify';
-import { Transaction, TransactionSourceType, TransactionType } from '@repo/shared/domain';
-import { TransactionsService } from '@repo/shared/services';
+import { Transaction, TransactionSourceType, TransactionType, TransactionsService } from '@repo/shared/domain';
 import { FastifyBaseLogger } from 'fastify';
 
 import { transactionsResourceBuilder } from '../transactions.resource';
 import { RESOURCE_NAME, RESOURCE_PATH, STEPS } from '../transactions.resource.constants';
 
-jest.mock('@repo/shared/services', () => ({
+jest.mock('@repo/shared/domain', () => ({
+  ...jest.requireActual('@repo/shared/domain'),
   TransactionsService: {
     getInstance: jest.fn().mockReturnValue({
       getResourcesList: jest.fn(),

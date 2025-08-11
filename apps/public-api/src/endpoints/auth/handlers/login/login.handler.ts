@@ -1,5 +1,5 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { AuthService } from '@repo/shared/services';
+import { AuthService } from '@repo/shared/domain';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { ERROR_RESPONSES, STEPS } from './login.handler.constants';

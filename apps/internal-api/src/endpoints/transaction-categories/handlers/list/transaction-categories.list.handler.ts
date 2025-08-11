@@ -1,5 +1,5 @@
 import { STATUS_CODES, transformQueryParams } from '@repo/fastify';
-import { TransactionCategoriesService } from '@repo/shared/services';
+import { TransactionCategoriesService } from '@repo/shared/domain';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { parseTransactionCategoryToResource } from '../../transaction-categories.endpoint.utils';

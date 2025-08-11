@@ -1,12 +1,12 @@
 import { STATUS_CODES } from '@repo/fastify';
 import { Transaction, TransactionSourceType, TransactionType } from '@repo/shared/domain';
-import { TransactionsService } from '@repo/shared/services';
+import { TransactionsService } from '@repo/shared/domain';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
 import { listTransactionsHandler } from '../transactions.list.handler';
 import { STEPS } from '../transactions.list.handler.constants';
 
-jest.mock('@repo/shared/services');
+jest.mock('@repo/shared/domain');
 
 describe(listTransactionsHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;

@@ -1,5 +1,5 @@
 import { FORBIDDEN_ERROR, STATUS_CODES, RESOURCE_NOT_FOUND_ERROR } from '@repo/fastify';
-import { SubscriptionsService } from '@repo/shared/services';
+import { SubscriptionsService } from '@repo/shared/domain';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../../definitions/auth.interfaces';

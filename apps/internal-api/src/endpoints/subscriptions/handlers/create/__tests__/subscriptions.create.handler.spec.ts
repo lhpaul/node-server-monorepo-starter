@@ -1,5 +1,5 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { SubscriptionsService } from '@repo/shared/services';
+import { SubscriptionsService } from '@repo/shared/domain';
 import { DomainModelServiceError, DomainModelServiceErrorCode } from '@repo/shared/utils';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
@@ -7,7 +7,7 @@ import { ERROR_RESPONSES } from '../../../subscriptions.endpoints.constants';
 import { STEPS } from '../subscriptions.create.handler.constants';
 import { createSubscriptionHandler } from '../subscriptions.create.handler';
 
-jest.mock('@repo/shared/services');
+jest.mock('@repo/shared/domain');
 
 describe(createSubscriptionHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;

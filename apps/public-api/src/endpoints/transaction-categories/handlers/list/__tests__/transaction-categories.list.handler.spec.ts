@@ -1,14 +1,13 @@
 import { ACCEPT_LANGUAGE_HEADER_NAME, STATUS_CODES, transformQueryParams } from '@repo/fastify';
-import { TransactionCategoriesService } from '@repo/shared/services';
+import { FilterInput } from '@repo/shared/definitions';
+import { TransactionCategoriesService, TransactionCategory, TransactionCategoryType } from '@repo/shared/domain';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { STEPS } from '../transaction-categories.list.handler.constants';
 import { ListTransactionCategoriesQuery } from '../transaction-categories.list.handler.interfaces';
 import { listTransactionCategoriesHandler } from '../transaction-categories.list.handler';
 import { parseTransactionCategoryToResponseResource } from '../../../transaction-categories.endpoint.utils';
-import { TransactionCategory, TransactionCategoryType } from '@repo/shared/domain';
-import { LanguageCode } from '@repo/shared/constants';
-import { FilterInput } from '@repo/shared/definitions';
+
 
 // Mock dependencies
 jest.mock('@repo/fastify', () => ({
@@ -16,7 +15,8 @@ jest.mock('@repo/fastify', () => ({
   transformQueryParams: jest.fn(),
 }));
 
-jest.mock('@repo/shared/services', () => ({
+jest.mock('@repo/shared/domain', () => ({
+  ...jest.requireActual('@repo/shared/domain'),
   TransactionCategoriesService: {
     getInstance: jest.fn(),
   },

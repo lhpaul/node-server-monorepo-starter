@@ -1,5 +1,5 @@
 import { STATUS_CODES, transformQueryParams } from '@repo/fastify';
-import { FinancialInstitutionsService } from '@repo/shared/services';
+import { FinancialInstitutionsService } from '@repo/shared/domain';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
 import { listFinancialInstitutionsHandler } from '../financial-institutions.list.handler';
@@ -13,7 +13,7 @@ jest.mock('@repo/fastify', () => ({
   transformQueryParams: jest.fn(),
 }));
 
-jest.mock('@repo/shared/services');
+jest.mock('@repo/shared/domain');
 
 describe(listFinancialInstitutionsHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;

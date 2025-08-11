@@ -1,4 +1,4 @@
-import { UserPermissions } from '@repo/shared/services';
+import { UserPermissions } from '@repo/shared/domain';
 import {
   hasCompanyReadPermission,
   hasCompanyUpdatePermission,

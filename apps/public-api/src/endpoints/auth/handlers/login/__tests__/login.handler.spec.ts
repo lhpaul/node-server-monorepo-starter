@@ -1,11 +1,11 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { AuthService, UserPermissions } from '@repo/shared/services';
+import { AuthService, UserPermissions } from '@repo/shared/domain';
 import { FastifyReply, FastifyRequest, FastifyInstance } from 'fastify';
 
 import { loginHandler } from '../login.handler';
 import { ERROR_RESPONSES, STEPS } from '../login.handler.constants';
 
-jest.mock('@repo/shared/services');
+jest.mock('@repo/shared/domain');
 
 describe(loginHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;

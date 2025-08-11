@@ -1,12 +1,12 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { TransactionsService } from '@repo/shared/services';
+import { TransactionsService } from '@repo/shared/domain';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { syncTransactionsHandler } from '../sync-transactions.handler';
 import { STEPS } from '../sync-transactions.handler.constants';
 import { SyncTransactionsBody, SyncTransactionsParams } from '../sync-transactions.handler.interfaces';
 
-jest.mock('@repo/shared/services');
+jest.mock('@repo/shared/domain');
 jest.mock('@repo/fastify', () => ({
   STATUS_CODES: {
     NO_CONTENT: 204,

@@ -1,11 +1,11 @@
 import { transformQueryParams } from '@repo/fastify';
-import { FinancialInstitutionsService } from '@repo/shared/services';
+import { FinancialInstitutionsService } from '@repo/shared/domain';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { listFinancialInstitutionsHandler } from '../financial-institutions.list.handler';
 import { STEPS } from '../financial-institutions.list.handler.constants';
 
-jest.mock('@repo/shared/services');
+jest.mock('@repo/shared/domain');
 jest.mock('@repo/fastify', () => ({
   ...jest.requireActual('@repo/fastify'),
   transformQueryParams: jest.fn(),

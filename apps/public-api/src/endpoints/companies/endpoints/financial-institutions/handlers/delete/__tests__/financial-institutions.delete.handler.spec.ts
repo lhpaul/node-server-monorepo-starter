@@ -1,5 +1,5 @@
 import { FORBIDDEN_ERROR, STATUS_CODES } from '@repo/fastify';
-import { CompaniesService, RemoveFinancialInstitutionError, RemoveFinancialInstitutionErrorCode } from '@repo/shared/services';
+import { CompaniesService, RemoveFinancialInstitutionError, RemoveFinancialInstitutionErrorCode } from '@repo/shared/domain';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { hasCompanyFinancialInstitutionsDeletePermission } from '../../../../../../../utils/auth/auth.utils';
@@ -7,7 +7,7 @@ import { STEPS } from '../financial-institutions.delete.handler.constants';
 import { deleteFinancialInstitutionHandler } from '../financial-institutions.delete.handler';
 import { DeleteCompanyFinancialInstitutionParams } from '../financial-institutions.delete.handler.interfaces';
 
-jest.mock('@repo/shared/services');
+jest.mock('@repo/shared/domain');
 jest.mock('../../../../../../../utils/auth/auth.utils', () => ({
   hasCompanyFinancialInstitutionsDeletePermission: jest.fn(),
 }));
