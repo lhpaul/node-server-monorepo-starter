@@ -46,6 +46,7 @@ describe(updateCompanyHandler.name, () => {
     name: 'Updated Company',
   };
   const mockUser: AuthUser = {
+    userId: 'user123',
     companies: {
       '123': ['company:update'],
     },

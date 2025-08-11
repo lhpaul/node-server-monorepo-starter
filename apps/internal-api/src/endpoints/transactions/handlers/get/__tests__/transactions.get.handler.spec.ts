@@ -1,5 +1,5 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { TransactionType } from '@repo/shared/domain';
+import { Transaction, TransactionSourceType, TransactionType } from '@repo/shared/domain';
 import { TransactionsService } from '@repo/shared/services';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
@@ -48,12 +48,17 @@ describe(getTransactionHandler.name, () => {
   });
 
   it('should successfully retrieve a transaction', async () => {
-    const mockTransaction = {
+    const mockTransaction: Transaction = {
       id: mockParams.id,
       amount: 100,
+      categoryId: '1',
+      description: 'description1',
+      sourceType: TransactionSourceType.FINANCIAL_INSTITUTION,
+      sourceId: '1',
+      sourceTransactionId: '1',
+      companyId: '1',
       date: '2024-01-01',
       type: TransactionType.CREDIT,
-      companyId: '123',
       createdAt: new Date(),
       updatedAt: new Date(),
     };

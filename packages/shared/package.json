@@ -8,6 +8,10 @@
     "test:watch": "jest --watch"
   },
   "exports": {
+    "./constants": {
+      "types": "./src/constants/index.ts",
+      "default": "./dist/constants/index.js"
+    },
     "./definitions": {
       "types": "./src/definitions/index.ts",
       "default": "./dist/definitions/index.js"

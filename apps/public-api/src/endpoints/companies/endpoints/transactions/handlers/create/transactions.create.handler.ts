@@ -1,4 +1,5 @@
 import { FORBIDDEN_ERROR, STATUS_CODES } from '@repo/fastify';
+import { TransactionSourceType } from '@repo/shared/domain';
 import { TransactionsService } from '@repo/shared/services';
 import { DomainModelServiceError, DomainModelServiceErrorCode } from '@repo/shared/utils';
 import { FastifyReply, FastifyRequest } from 'fastify';
@@ -28,7 +29,12 @@ export const createTransactionHandler = async (
     logger.startStep(STEPS.CREATE_TRANSACTION.id, logGroup);
     const id = await service
       .createResource({
+        categoryId: null,
+        description: null,
         ...body,
+        sourceId: user.userId,
+        sourceTransactionId: new Date().getTime().toString(),
+        sourceType: TransactionSourceType.USER,
         companyId,
       }, logger)
       .finally(() => logger.endStep(STEPS.CREATE_TRANSACTION.id));

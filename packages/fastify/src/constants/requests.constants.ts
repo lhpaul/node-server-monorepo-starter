@@ -1,5 +1,6 @@
 import { FilterOperator } from '@repo/shared/definitions';
 
+export const ACCEPT_LANGUAGE_HEADER_NAME = 'accept-language';
 export const HTTP_METHODS_MAP = {
   OPTIONS: 'OPTIONS',
   LIST: 'GET',
@@ -33,3 +34,5 @@ export const QUERY_PARAMS_OPERATORS_MAP: Record<
   in: 'in',
   'not-in': 'not-in',
 };
+
+export const TRACE_CONTEXT_HEADER_NAME = 'x-cloud-trace-context';

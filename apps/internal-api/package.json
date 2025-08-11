@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@fastify/cors": "11.0.1",
+    "@fastify/env": "5.0.2",
     "@fastify/helmet": "13.0.1",
     "@modelcontextprotocol/sdk": "1.11.2",
     "@repo/shared": "workspace:*",

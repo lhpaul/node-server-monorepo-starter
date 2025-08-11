@@ -1,0 +1,1 @@
+export { listFinancialInstitutionsHandler } from './list/financial-institutions.list.handler'; 

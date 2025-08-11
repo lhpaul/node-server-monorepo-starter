@@ -4,6 +4,20 @@ export const COR_CONFIG = {
   origin: ['*'],
 };
 
+export const FASTIFY_ENV_SCHEMA = {
+  type: 'object',
+  properties: {
+    APP_ENV: { type: 'string' },
+    ENCRYPTION_KEY: { type: 'string' },
+    MOCK_API_PROJECT_SECRET: { type: 'string' },
+  },
+  required: ['APP_ENV', 'ENCRYPTION_KEY', 'MOCK_API_PROJECT_SECRET'],
+} as const;
+export const FASTIFY_ENV_CONFIG = {
+  dotenv: true,
+  schema: FASTIFY_ENV_SCHEMA,
+};
+
 export const SERVER_START_VALUES = {
   port: Number(process.env.PORT) || 4001,
   host: '0.0.0.0',

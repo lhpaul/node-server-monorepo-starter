@@ -1,4 +1,5 @@
 import cors from '@fastify/cors';
+import fastifyEnv from '@fastify/env';
 import helmet from '@fastify/helmet';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
@@ -16,6 +17,7 @@ import { Sessions, streamableHttp } from 'fastify-mcp';
 import packageJson from '../package.json';
 import {
   COR_CONFIG,
+  FASTIFY_ENV_CONFIG,
   MCP_SERVER_CONFIG,
   SERVER_START_VALUES,
 } from './constants/server.constants';
@@ -29,6 +31,9 @@ export const init = async function (): Promise<FastifyInstance> {
   server = fastify({
     logger: SERVER_LOGGER_CONFIG,
   });
+
+  // Load environment variables so they can be accessed through the server and the request instance
+  await server.register(fastifyEnv, FASTIFY_ENV_CONFIG);
 
   await server.register(cors, COR_CONFIG);
 

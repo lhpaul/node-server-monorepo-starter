@@ -10,6 +10,10 @@ export enum UserCompanyPermission {
   COMPANY_UPDATE = 'company:update',
   COMPANY_DELETE = 'company:delete',
   COMPANY_WRITE = 'company:write',
+  COMPANY_FINANCIAL_INSTITUTIONS_READ = 'financial-institutions:read',
+  COMPANY_FINANCIAL_INSTITUTIONS_UPDATE = 'financial-institutions:update',
+  COMPANY_FINANCIAL_INSTITUTIONS_DELETE = 'financial-institutions:delete',
+  COMPANY_FINANCIAL_INSTITUTIONS_WRITE = 'financial-institutions:write',
   COMPANY_SUBSCRIPTIONS_READ = 'subscriptions:read',
   COMPANY_TRANSACTIONS_READ = 'transactions:read',
   COMPANY_TRANSACTIONS_UPDATE = 'transactions:update',
@@ -22,6 +26,7 @@ export const PERMISSIONS_BY_ROLE: Record<UserCompanyRole, UserCompanyPermission[
     UserCompanyPermission.COMPANY_WRITE,
     UserCompanyPermission.COMPANY_SUBSCRIPTIONS_READ,
     UserCompanyPermission.COMPANY_TRANSACTIONS_WRITE,
+    UserCompanyPermission.COMPANY_FINANCIAL_INSTITUTIONS_WRITE,
   ],
   [UserCompanyRole.MEMBER]: [
     UserCompanyPermission.COMPANY_READ,
@@ -33,9 +38,9 @@ export class UserCompanyRelation implements ResourceModel {
   public readonly companyId: string; // Company id
   public readonly createdAt: Date; // Created at date
   public readonly id: string; // User company relation id
+  public readonly role: UserCompanyRole; // User company role
   public readonly updatedAt: Date; // Updated at date
   public readonly userId: string; // User id
-  public readonly role: UserCompanyRole; // User company role
 
   constructor(userCompanyRelation: Required<UserCompanyRelation>) {
     Object.assign(this, userCompanyRelation);

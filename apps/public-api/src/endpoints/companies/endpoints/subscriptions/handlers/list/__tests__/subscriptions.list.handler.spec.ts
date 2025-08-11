@@ -39,6 +39,7 @@ describe(listSubscriptionsHandler.name, () => {
   const mockMappedQuery = { startsAt: new Date(mockQuery.startsAt), endsAt: new Date(mockQuery.endsAt) };
   const transformedQuery = { companyId: mockParams.companyId, ...mockMappedQuery };
   const mockUser: AuthUser = {
+    userId: 'user123',
     companies: {
       [mockParams.companyId]: ['subscriptions:read'],
     },

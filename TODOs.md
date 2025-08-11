@@ -2,7 +2,15 @@
 
 This document is to keep track of the technical debt in this repository.
 
-- IaC
-- CI/CD
-- Add "critical" severity to logs
-- Improve step logging to include group and lapsed time in end step
+- Implement text search
+- Automatic openapi documentation
+- Functional tests
+- Add rules for method orders and private methods to be prefixed
+- Refactor unit tests rules and make the corresponding changes to the existing unit tests
+- Add rules to always ad jsdoc documentation (don't forget to include Throws)
+- Fix al unnecessary "as const"
+- Add explanation about repositories and value types
+- Change "models" to "entities"
+- Check how to admin oauth clients and private keys
+- Apply cache to transactions category in public api
+- Check that all methods have JSdoc

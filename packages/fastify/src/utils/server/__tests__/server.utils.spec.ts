@@ -1,4 +1,5 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
+import { TRACE_CONTEXT_HEADER_NAME } from '../../../constants/requests.constants';
 import {
   INTERNAL_ERROR_VALUES,
   RESOURCE_NOT_FOUND_ERROR,
@@ -190,7 +191,7 @@ describe(setServerHooks.name, () => {
     const traceId = '1234567890';
     beforeEach(() => {
       mockRequest.headers = {
-        'x-cloud-trace-context': `${traceId}/1234567890;o=1`,
+        [TRACE_CONTEXT_HEADER_NAME]: `${traceId}/1234567890;o=1`,
       };
     });
     it('should set up onRequest hook correctly', () => {
