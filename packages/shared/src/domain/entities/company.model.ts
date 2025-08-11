@@ -6,7 +6,11 @@ export class Company implements EntityModel {
   public readonly id: string; // id of the company
   public readonly name: string; // name of the company
   public readonly updatedAt: Date; // date of last update
-  constructor(company: Required<Company>) {
-    Object.assign(this, company);
+  constructor(data: Required<Company>) {
+    this.countryCode = data.countryCode;
+    this.createdAt = data.createdAt;
+    this.id = data.id;
+    this.name = data.name;
+    this.updatedAt = data.updatedAt;
   }
 }

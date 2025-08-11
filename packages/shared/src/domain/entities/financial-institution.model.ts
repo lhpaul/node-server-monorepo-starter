@@ -7,7 +7,11 @@ export class FinancialInstitution implements EntityModel {
   public readonly name: string; // name of the financial institution
   public readonly updatedAt: Date; // date of last update
 
-  constructor(financialInstitution: Required<FinancialInstitution>) {
-    Object.assign(this, financialInstitution);
+  constructor(data: Required<FinancialInstitution>) {
+    this.countryCode = data.countryCode;
+    this.createdAt = data.createdAt;
+    this.id = data.id;
+    this.name = data.name;
+    this.updatedAt = data.updatedAt;
   }
 }

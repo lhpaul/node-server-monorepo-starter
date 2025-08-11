@@ -6,7 +6,12 @@ export class PrivateKey implements EntityModel {
   public readonly label: string; // label of the api key
   public readonly oauthClientId: string; // id of the oauth client
   public readonly updatedAt: Date; // date of last update
-  constructor(apiKey: Required<PrivateKey>) {
-    Object.assign(this, apiKey);
+  constructor(data: Required<PrivateKey>) {
+    this.createdAt = data.createdAt;
+    this.hash = data.hash;
+    this.id = data.id;
+    this.label = data.label;
+    this.oauthClientId = data.oauthClientId;
+    this.updatedAt = data.updatedAt;
   }
 }

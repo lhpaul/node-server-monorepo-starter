@@ -42,7 +42,12 @@ export class UserCompanyRelation implements EntityModel {
   public readonly updatedAt: Date; // Updated at date
   public readonly userId: string; // User id
 
-  constructor(userCompanyRelation: Required<UserCompanyRelation>) {
-    Object.assign(this, userCompanyRelation);
+  constructor(data: Required<UserCompanyRelation>) {
+    this.companyId = data.companyId;
+    this.createdAt = data.createdAt;
+    this.id = data.id;
+    this.role = data.role;
+    this.updatedAt = data.updatedAt;
+    this.userId = data.userId;
   }
 }

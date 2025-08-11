@@ -5,7 +5,10 @@ export class OAuthClient implements EntityModel {
   public readonly id: string; // id of the oauth client
   public readonly name: string; // name of the oauth client
   public readonly updatedAt: Date; // date of last update
-  constructor(oauthClient: Required<OAuthClient>) {
-    Object.assign(this, oauthClient);
+  constructor(data: Required<OAuthClient>) {
+    this.createdAt = data.createdAt;
+    this.id = data.id;
+    this.name = data.name;
+    this.updatedAt = data.updatedAt;
   }
 }

@@ -24,7 +24,18 @@ export class Transaction implements EntityModel {
   public readonly type: TransactionType; // type of the transaction
   public readonly updatedAt: Date; // date of last update
 
-  constructor(transaction: Required<Transaction>) {
-    Object.assign(this, transaction);
+  constructor(data: Required<Transaction>) {
+    this.amount = data.amount;
+    this.categoryId = data.categoryId;
+    this.companyId = data.companyId;
+    this.createdAt = data.createdAt;
+    this.date = data.date;
+    this.description = data.description;
+    this.id = data.id;
+    this.sourceId = data.sourceId;
+    this.sourceTransactionId = data.sourceTransactionId;
+    this.sourceType = data.sourceType;
+    this.type = data.type;
+    this.updatedAt = data.updatedAt;
   }
 }

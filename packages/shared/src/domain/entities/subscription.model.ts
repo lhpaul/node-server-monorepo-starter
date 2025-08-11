@@ -7,7 +7,12 @@ export class Subscription implements EntityModel {
   public readonly id: string; // id of the subscription
   public readonly startsAt: Date; // start date of the subscription
   public readonly updatedAt: Date; // date of last update
-  constructor(subscription: Required<Subscription>) {
-    Object.assign(this, subscription);
+  constructor(data: Required<Subscription>) {
+    this.companyId = data.companyId;
+    this.createdAt = data.createdAt;
+    this.endsAt = data.endsAt;
+    this.id = data.id;
+    this.startsAt = data.startsAt;
+    this.updatedAt = data.updatedAt;
   }
 }
