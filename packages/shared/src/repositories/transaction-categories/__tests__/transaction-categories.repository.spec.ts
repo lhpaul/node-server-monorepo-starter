@@ -1,5 +1,5 @@
 import { ExecutionLogger } from '../../../definitions';
-import { TransactionCategoryType } from '../../../domain/models/transaction-category.model';
+import { TransactionCategoryType } from '../../../domain/entities/transaction-category.model';
 import { InMemoryRepository } from '../../../utils/repositories';
 import { TransactionCategoriesRepository } from '../transaction-categories.repository';
 import {

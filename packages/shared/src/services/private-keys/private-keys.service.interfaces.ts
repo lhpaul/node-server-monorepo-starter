@@ -1,4 +1,4 @@
-import { PrivateKey } from '../../domain/models/private-key.model';
+import { PrivateKey } from '../../domain/entities/private-key.model';
 
 export interface ClientCache {
   privateKeys: PrivateKey[];

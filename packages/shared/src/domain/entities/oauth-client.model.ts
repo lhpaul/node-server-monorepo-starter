@@ -1,6 +1,6 @@
-import { ResourceModel } from '../../definitions/domain.interfaces';
+import { EntityModel } from '../../definitions/domain.interfaces';
 
-export class OAuthClient implements ResourceModel {
+export class OAuthClient implements EntityModel {
   public readonly createdAt: Date; // date of creation
   public readonly id: string; // id of the oauth client
   public readonly name: string; // name of the oauth client

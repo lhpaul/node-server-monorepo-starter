@@ -1,5 +1,5 @@
 import { LanguageCode, DEFAULT_LANGUAGE } from '../../constants/languages.constants';
-import { ResourceModel } from '../../definitions';
+import { EntityModel } from '../../definitions';
 
 export enum TransactionCategoryType {
   INCOME = 'income',
@@ -14,7 +14,7 @@ export interface TransactionCategoryData {
   updatedAt: Date;
 }
 
-export class TransactionCategory implements ResourceModel {
+export class TransactionCategory implements EntityModel {
   public readonly createdAt: Date; // date of creation
   public readonly id: string;
   public readonly name: Record<LanguageCode, string>; // name of the category in multiple languages

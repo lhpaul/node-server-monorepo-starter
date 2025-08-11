@@ -1,6 +1,6 @@
-import { ResourceModel } from '../../definitions/domain.interfaces';
+import { EntityModel } from '../../definitions/domain.interfaces';
 
-export class CompanyFinancialInstitutionRelation implements ResourceModel {
+export class CompanyFinancialInstitutionRelation implements EntityModel {
   public readonly companyId: string; // id of the company
   public readonly createdAt: Date; // date of creation
   public readonly encryptedCredentials: string; // encrypted credentials of the company for the financial institution

@@ -1,6 +1,6 @@
-import { ResourceModel } from '../../definitions/domain.interfaces';
+import { EntityModel } from '../../definitions/domain.interfaces';
 
-export class FinancialInstitution implements ResourceModel {
+export class FinancialInstitution implements EntityModel {
   public readonly countryCode: string; // ISO 3166-1 alpha-2 country code (e.g., US, CA, MX)
   public readonly createdAt: Date; // date of creation
   public readonly id: string; // id of the financial institution

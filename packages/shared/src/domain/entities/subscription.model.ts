@@ -1,6 +1,6 @@
-import { ResourceModel } from '../../definitions/domain.interfaces';
+import { EntityModel } from '../../definitions/domain.interfaces';
 
-export class Subscription implements ResourceModel {
+export class Subscription implements EntityModel {
   public readonly companyId: string; // id of the company
   public readonly createdAt: Date; // date of creation
   public readonly endsAt: Date; // end date of the subscription

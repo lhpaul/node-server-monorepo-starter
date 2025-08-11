@@ -1,6 +1,6 @@
-import { ResourceModel } from '../../definitions/domain.interfaces';
+import { EntityModel } from '../../definitions/domain.interfaces';
 
-export class User implements ResourceModel {
+export class User implements EntityModel {
   public readonly createdAt: Date; // Created at date
   public readonly email: string; // Email
   public readonly id: string; // User id

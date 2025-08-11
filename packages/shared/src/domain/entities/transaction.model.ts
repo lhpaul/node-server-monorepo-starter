@@ -1,4 +1,4 @@
-import { ResourceModel } from '../../definitions/domain.interfaces';
+import { EntityModel } from '../../definitions/domain.interfaces';
 
 export enum TransactionType {
   CREDIT = 'credit',
@@ -10,7 +10,7 @@ export enum TransactionSourceType {
   FINANCIAL_INSTITUTION = 'financial-institution',
 }
 
-export class Transaction implements ResourceModel {
+export class Transaction implements EntityModel {
   public readonly amount: number; // amount of the transaction
   public readonly categoryId: string | null; // id of the category of the transaction
   public readonly companyId: string; // id of the company

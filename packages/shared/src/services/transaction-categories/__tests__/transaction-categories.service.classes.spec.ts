@@ -1,4 +1,4 @@
-import { TransactionCategory, TransactionCategoryType } from '../../../domain/models/transaction-category.model';
+import { TransactionCategory, TransactionCategoryType } from '../../../domain/entities/transaction-category.model';
 import { TransactionCategoryDocument } from '../../../repositories/transaction-categories/transaction-categories.repository.interfaces';
 import { TransactionCategoryDocumentToModelParser } from '../transaction-categories.service.classes';
 import { ERRORS_MESSAGES } from '../transaction-categories.service.constants';

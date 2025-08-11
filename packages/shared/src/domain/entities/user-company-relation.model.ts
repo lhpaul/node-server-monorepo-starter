@@ -1,4 +1,4 @@
-import { ResourceModel } from '../../definitions/domain.interfaces';
+import { EntityModel } from '../../definitions/domain.interfaces';
 
 export enum UserCompanyRole {
   ADMIN = 'admin',
@@ -34,7 +34,7 @@ export const PERMISSIONS_BY_ROLE: Record<UserCompanyRole, UserCompanyPermission[
   ],
 };
 
-export class UserCompanyRelation implements ResourceModel {
+export class UserCompanyRelation implements EntityModel {
   public readonly companyId: string; // Company id
   public readonly createdAt: Date; // Created at date
   public readonly id: string; // User company relation id

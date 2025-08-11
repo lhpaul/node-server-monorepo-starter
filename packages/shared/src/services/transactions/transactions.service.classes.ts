@@ -1,4 +1,4 @@
-import { Transaction, TransactionSourceType, TransactionType } from '../../domain/models/transaction.model';
+import { Transaction, TransactionSourceType, TransactionType } from '../../domain/entities/transaction.model';
 import { TransactionDocument } from '../../repositories/transactions/transactions.repository.interfaces';
 import { ERRORS_MESSAGES } from './transactions.service.constants';
 

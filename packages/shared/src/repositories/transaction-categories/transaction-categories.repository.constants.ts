@@ -1,4 +1,4 @@
-import { TransactionCategoryType } from '../../domain/models/transaction-category.model';
+import { TransactionCategoryType } from '../../domain/entities/transaction-category.model';
 import { TransactionCategoryDocument } from './transaction-categories.repository.interfaces';
 
 export const MOCK_TRANSACTION_CATEGORIES: TransactionCategoryDocument[] = [
