@@ -12,8 +12,8 @@
     "test": "turbo test"
   },
   "devDependencies": {
-    "lint-staged": "^16.0.0",
-    "prettier": "^3.5.3",
+    "lint-staged": "^16.1.5",
+    "prettier": "^3.6.2",
     "turbo": "^2.5.5",
     "typescript": "5.8.2"
   },
