@@ -2,6 +2,10 @@
 
 This document is to keep track of the technical debt in this repository.
 
+Global:
+
+- Create endpoint for users in Internal API
+- Add update validations when updating transaction's categoryId
 - Implement text search
 - Automatic openapi documentation
 - Functional tests
@@ -13,4 +17,8 @@ This document is to keep track of the technical debt in this repository.
 - Change "models" to "entities"
 - Check how to admin oauth clients and private keys
 - Apply cache to transactions category in public api
-- Check that all methods have JSdoc
+- Be able to create documents with defined id
+
+Google:
+
+- Rethink repositories inside functions
