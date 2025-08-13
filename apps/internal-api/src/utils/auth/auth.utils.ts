@@ -4,7 +4,7 @@ import {
   FORBIDDEN_ERROR,
   STATUS_CODES,
 } from '@repo/fastify';
-import { PrivateKeysService } from '@repo/shared/services';
+import { PrivateKeysService } from '@repo/shared/domain';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 export async function authenticateApiKey(request: FastifyRequest, reply: FastifyReply) {

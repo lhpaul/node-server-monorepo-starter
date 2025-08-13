@@ -1,5 +1,4 @@
-import { Transaction } from '@repo/shared/domain';
-import { TransactionsService } from '@repo/shared/services';
+import { Transaction, TransactionsService } from '@repo/shared/domain';
 import { DomainModelServiceError, DomainModelServiceErrorCode, printError } from '@repo/shared/utils';
 
 import { ProcessStatus } from '../../../../../definitions';

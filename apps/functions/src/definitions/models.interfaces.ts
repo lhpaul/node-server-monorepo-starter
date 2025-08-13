@@ -6,7 +6,7 @@ export enum ProcessStatus {
   FAILED = 'failed',
 }
 
-export interface ProcessResource extends DocumentModel {
+export interface ProcessDocument extends DocumentModel {
   status: ProcessStatus;
   error: any;
 }

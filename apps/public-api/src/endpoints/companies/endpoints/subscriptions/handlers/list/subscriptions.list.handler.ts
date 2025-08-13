@@ -1,5 +1,5 @@
 import { FORBIDDEN_ERROR, STATUS_CODES, transformQueryParams } from '@repo/fastify';
-import { SubscriptionsService } from '@repo/shared/services';
+import { SubscriptionsService } from '@repo/shared/domain';
 import { mapDateQueryParams } from '@repo/fastify';
 import { FastifyReply, FastifyRequest } from 'fastify';
 

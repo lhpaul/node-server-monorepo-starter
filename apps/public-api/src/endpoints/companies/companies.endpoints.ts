@@ -6,8 +6,9 @@ import {
   URL_V1,
   URL_WITH_ID_V1,
 } from './companies.endpoints.constants';
-import { transactionsEndpointsBuilder } from './endpoints/transactions/transactions.endpoints';
+import { financialInstitutionsEndpointsBuilder } from './endpoints/financial-institutions/financial-institutions.endpoints';
 import { subscriptionsEndpointsBuilder } from './endpoints/subscriptions/subscriptions.endpoints';
+import { transactionsEndpointsBuilder } from './endpoints/transactions/transactions.endpoints';
 import {
   getCompanyHandler,
   updateCompanyHandler,
@@ -41,5 +42,6 @@ export function companiesEndpointsBuilder(server: FastifyInstance): RouteOptions
     }),
     ...subscriptionsEndpointsBuilder(server),
     ...transactionsEndpointsBuilder(server),
+    ...financialInstitutionsEndpointsBuilder(server),
   ];
 }

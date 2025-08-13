@@ -1,5 +1,5 @@
 import { NotifySubscriptionAboutToExpireMessage } from '@repo/shared/domain';
-import { SubscriptionsService } from '@repo/shared/services';
+import { SubscriptionsService } from '@repo/shared/domain';
 import { publishMessage } from '@repo/shared/utils';
 
 import { FunctionLogger } from '../../../utils/logging/function-logger.class';

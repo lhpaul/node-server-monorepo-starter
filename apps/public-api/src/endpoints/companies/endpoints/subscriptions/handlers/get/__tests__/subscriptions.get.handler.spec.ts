@@ -1,6 +1,5 @@
 import { FORBIDDEN_ERROR, RESOURCE_NOT_FOUND_ERROR, STATUS_CODES } from '@repo/fastify';
-import { SubscriptionsService } from '@repo/shared/services';
-import { UserPermissions } from '@repo/shared/services';
+import { SubscriptionsService } from '@repo/shared/domain';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../../../definitions/auth.interfaces';
@@ -24,12 +23,10 @@ jest.mock('@repo/fastify', () => ({
   }
 }));
 
-jest.mock('@repo/shared/services', () => ({
-  ...jest.requireActual('@repo/shared/services'),
+jest.mock('@repo/shared/domain', () => ({
+  ...jest.requireActual('@repo/shared/domain'),
   SubscriptionsService: {
-    getInstance: jest.fn().mockImplementation(() => ({
-      getResource: jest.fn(),
-    })),
+    getInstance: jest.fn(),
   },
 }));
 
@@ -47,11 +44,12 @@ describe(getSubscriptionHandler.name, () => {
   let mockService: Partial<SubscriptionsService>;
 
   const mockParams = { companyId: 'company123', id: 'subscription123' };
-  const mockUser: UserPermissions = {
+  const mockUser = {
+    userId: 'user123',
     companies: {
       'company123': ['subscription:read'],
     },
-  };
+  } as unknown as AuthUser;
   const mockSubscription = {
     id: mockParams.id,
     companyId: mockParams.companyId,

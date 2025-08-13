@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { PrivateKeysService } from '@repo/shared/services';
+import { PrivateKeysService } from '@repo/shared/domain';
 import {
   API_KEY_HEADER,
   UNAUTHORIZED_ERROR,
@@ -27,7 +27,7 @@ jest.mock('@repo/fastify', () => ({
     FORBIDDEN: 403,
   },
 }));
-jest.mock('@repo/shared/services');
+jest.mock('@repo/shared/domain');
 
 describe(authenticateApiKey.name, () => {
   let mockRequest: Partial<FastifyRequest>;

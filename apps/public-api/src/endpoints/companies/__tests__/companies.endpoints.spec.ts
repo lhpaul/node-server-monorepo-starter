@@ -11,21 +11,30 @@ import {
   updateCompanyHandler,
 } from '../handlers';
 import { companiesEndpointsBuilder } from '../companies.endpoints';
-import { transactionsEndpointsBuilder } from '../endpoints/transactions/transactions.endpoints';
-import { listCompaniesHandler } from '../handlers/list/companies.list.handler';
+import { financialInstitutionsEndpointsBuilder } from '../endpoints/financial-institutions/financial-institutions.endpoints';
 import { subscriptionsEndpointsBuilder } from '../endpoints/subscriptions/subscriptions.endpoints';
+import { listCompaniesHandler } from '../handlers/list/companies.list.handler';
+import { transactionsEndpointsBuilder } from '../endpoints/transactions/transactions.endpoints';
 
 jest.mock('@repo/fastify', () => ({
   ...jest.requireActual('@repo/fastify'),
   createEndpoint: jest.fn(),
 }));
 
+jest.mock('../endpoints/financial-institutions/financial-institutions.endpoints');
 jest.mock('../endpoints/subscriptions/subscriptions.endpoints');
 jest.mock('../endpoints/transactions/transactions.endpoints');
 
 describe(companiesEndpointsBuilder.name, () => {
   let companiesEndpoints: ReturnType<typeof companiesEndpointsBuilder>;
   let mockServer: FastifyInstance;
+  const financialInstitutionsEndpointsMock = [
+    {
+      method: [HTTP_METHODS_MAP.CREATE],
+      url: '/v1/companies/:companyId/financial-institutions',
+      handler: jest.fn(),
+    },
+  ];
   const subscriptionsEndpointsMock = [
     {
       method: [HTTP_METHODS_MAP.CREATE],
@@ -46,6 +55,7 @@ describe(companiesEndpointsBuilder.name, () => {
       authenticate: jest.fn(),
     } as unknown as FastifyInstance;
     
+    (financialInstitutionsEndpointsBuilder as jest.Mock).mockReturnValue(financialInstitutionsEndpointsMock);
     (subscriptionsEndpointsBuilder as jest.Mock).mockReturnValue(subscriptionsEndpointsMock);
     (transactionsEndpointsBuilder as jest.Mock).mockReturnValue(transactionsEndpointsMock);
     companiesEndpoints = companiesEndpointsBuilder(mockServer);
@@ -53,7 +63,7 @@ describe(companiesEndpointsBuilder.name, () => {
 
   it('should create all endpoints with correct configuration', () => {
     expect(createEndpoint).toHaveBeenCalledTimes(3);
-    expect(companiesEndpoints).toHaveLength(3 + subscriptionsEndpointsMock.length + transactionsEndpointsMock.length);
+    expect(companiesEndpoints).toHaveLength(3 + financialInstitutionsEndpointsMock.length + subscriptionsEndpointsMock.length + transactionsEndpointsMock.length);
   });
 
   it('should create GET companies endpoint with correct configuration', () => {

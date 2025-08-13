@@ -1,12 +1,12 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { CompaniesService } from '@repo/shared/services';
+import { CompaniesService } from '@repo/shared/domain';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
 import { ERROR_RESPONSES } from '../../../companies.endpoints.constants';
 import { STEPS } from '../companies.get.handler.constants';
 import { getCompanyHandler } from '../companies.get.handler';
 
-jest.mock('@repo/shared/services');
+jest.mock('@repo/shared/domain');
 
 describe(getCompanyHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;
@@ -50,6 +50,7 @@ describe(getCompanyHandler.name, () => {
     const mockCompany = {
       id: mockParams.id,
       name: 'Test Company',
+      countryCode: 'US',
       createdAt: new Date(),
       updatedAt: new Date(),
     };

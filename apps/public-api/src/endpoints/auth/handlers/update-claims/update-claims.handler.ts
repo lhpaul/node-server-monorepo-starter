@@ -1,5 +1,5 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { AuthService, UsersService } from '@repo/shared/services';
+import { AuthService, UsersService } from '@repo/shared/domain';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { ERROR_RESPONSES, STEPS } from './update-claims.handler.constants';

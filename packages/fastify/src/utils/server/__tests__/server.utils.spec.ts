@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import * as admin from 'firebase-admin';
 
+import { TRACE_CONTEXT_HEADER_NAME } from '../../../constants/requests.constants';
 import {
   AUTHENTICATE_DECORATOR_NAME,
   FORBIDDEN_ERROR,
@@ -201,7 +202,7 @@ describe(setServerHooks.name, () => {
     const traceId = '1234567890';
     beforeEach(() => {
       mockRequest.headers = {
-        'x-cloud-trace-context': `${traceId}/1234567890;o=1`,
+        [TRACE_CONTEXT_HEADER_NAME]: `${traceId}/1234567890;o=1`,
       };
     });
     it('should set up onRequest hook correctly', () => {

@@ -30,7 +30,12 @@ service cloud.firestore {
           return validDefaultCreationFields()
           && validRequestsCreationFields(incomingData)
           && incomingData.amount is number
+          && (!('categoryId' in incomingData) || incomingData.categoryId is string )
           && incomingData.date is string
+          && incomingData.description is string
+          && incomingData.sourceType in ['financial-institution', 'user']
+          && incomingData.sourceId is string && (incomingData.sourceType != 'user' || isOwner(incomingData.sourceId)) // second condition is to assure that the id is the user's id when the transaction is from the user
+          && (!('sourceTransactionId' in incomingData) || incomingData.sourceTransactionId is string )
           && incomingData.type in ['credit', 'debit']
           && transactionId == null;
         }
@@ -48,7 +53,9 @@ service cloud.firestore {
           return validDefaultCreationFields(incomingData)
           && validRequestsCreationFields(incomingData)
           && (!('amount' in incomingData) || incomingData.amount is number )
+          && (!('categoryId' in incomingData) || incomingData.categoryId is string )
           && (!('date' in incomingData) || incomingData.date is string )
+          && (!('description' in incomingData) || incomingData.description is string )
           && (!('type' in incomingData) || incomingData.type in ['credit', 'debit'] );
         }
       }

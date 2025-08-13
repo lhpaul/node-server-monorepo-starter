@@ -73,6 +73,12 @@ If you encounter this error:
 Credential implementation provided to initializeApp() via the "credential" property failed to fetch a valid Google OAuth2 access token with the following error: "PERMISSION_DENIED: unable to impersonate: Permission 'iam.serviceAccounts.getAccessToken' denied on resource (or it may not exist)."
 ```
 
+or
+
+```bash
+Permission 'iam.serviceAccounts.signBlob' denied on resource (or it may not exist).; Please refer to https://firebase.google.com/docs/auth/admin/create-custom-tokens for more details on how to use and troubleshoot this feature.
+```
+
 **Solution:**
 
 1. Ensure your IAM user has the `roles/iam.serviceAccountTokenCreator` permission

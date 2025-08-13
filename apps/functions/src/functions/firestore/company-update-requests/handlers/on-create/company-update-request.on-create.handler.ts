@@ -1,5 +1,4 @@
-import { Company } from '@repo/shared/domain';
-import { CompaniesService } from '@repo/shared/services';
+import { Company, CompaniesService } from '@repo/shared/domain';
 import { DomainModelServiceError, DomainModelServiceErrorCode, printError } from '@repo/shared/utils';
 
 import { ProcessStatus } from '../../../../../definitions';

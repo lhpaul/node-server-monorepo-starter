@@ -1,14 +1,15 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { TransactionType } from '@repo/shared/domain';
-import { TransactionsService } from '@repo/shared/services';
+import { TransactionSourceType, TransactionType } from '@repo/shared/domain';
+import { TransactionsService } from '@repo/shared/domain';
 import { DomainModelServiceError, DomainModelServiceErrorCode } from '@repo/shared/utils';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
 import { ERROR_RESPONSES } from '../../../transactions.endpoints.constants';
 import { createTransactionHandler } from '../transactions.create.handler';
 import { STEPS } from '../transactions.create.handler.constants';
+import { CreateTransactionBody } from '../transactions.create.handler.interfaces';
 
-jest.mock('@repo/shared/services');
+jest.mock('@repo/shared/domain');
 
 describe(createTransactionHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;
@@ -30,6 +31,9 @@ describe(createTransactionHandler.name, () => {
         amount: 100,
         date: '2024-03-20',
         type: TransactionType.CREDIT,
+        sourceId: 'sourceId',
+        sourceTransactionId: 'sourceTransactionId',
+        sourceType: TransactionSourceType.USER,
       },
     };
 
@@ -65,7 +69,11 @@ describe(createTransactionHandler.name, () => {
     });
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_TRANSACTION.id, logGroup);
     expect(mockService.createResource).toHaveBeenCalledWith(
-      mockRequest.body,
+      {
+        description: null,
+        categoryId: null,
+        ...(mockRequest.body as CreateTransactionBody),
+      },
       mockLogger,
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(
@@ -116,7 +124,11 @@ describe(createTransactionHandler.name, () => {
 
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_TRANSACTION.id, logGroup);
     expect(mockService.createResource).toHaveBeenCalledWith(
-      mockRequest.body,
+      {
+        description: null,
+        categoryId: null,
+        ...(mockRequest.body as CreateTransactionBody),
+      },
       mockLogger,
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(

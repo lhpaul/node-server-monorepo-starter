@@ -1,11 +1,11 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { CompaniesService } from '@repo/shared/services';
+import { CompaniesService } from '@repo/shared/domain';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { listCompaniesHandler } from '../companies.list.handler';
 import { STEPS } from '../companies.list.handler.constants';
 
-jest.mock('@repo/shared/services');
+jest.mock('@repo/shared/domain');
 
 describe(listCompaniesHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;
@@ -13,9 +13,9 @@ describe(listCompaniesHandler.name, () => {
   let mockService: Partial<CompaniesService>;
   let mockLogger: any;
   const mockCompanies = [
-    { id: '1', name: 'Company 1', createdAt: new Date(), updatedAt: new Date() },
-    { id: '2', name: 'Company 2', createdAt: new Date(), updatedAt: new Date() },
-    { id: '3', name: 'Company 3', createdAt: new Date(), updatedAt: new Date() },
+    { id: '1', name: 'Company 1', countryCode: 'US', createdAt: new Date(), updatedAt: new Date() },
+    { id: '2', name: 'Company 2', countryCode: 'CA', createdAt: new Date(), updatedAt: new Date() },
+    { id: '3', name: 'Company 3', countryCode: 'GB', createdAt: new Date(), updatedAt: new Date() },
   ];
   const logGroup = listCompaniesHandler.name;
   beforeEach(() => {

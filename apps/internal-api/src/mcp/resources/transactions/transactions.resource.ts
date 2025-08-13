@@ -1,7 +1,7 @@
 import { ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { RequestLogger } from '@repo/fastify';
 import { FilterItem } from '@repo/shared/definitions';
-import { TransactionsService } from '@repo/shared/services';
+import { TransactionsService } from '@repo/shared/domain';
 import { FastifyBaseLogger } from 'fastify';
 
 import { McpResourceConfig } from '../../../definitions/mcp.interfaces';

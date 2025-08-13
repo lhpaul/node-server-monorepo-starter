@@ -1,12 +1,13 @@
 import { QueryInput, QueryItem } from '@repo/shared/definitions';
 import { TransactionType } from '@repo/shared/domain';
 
-import { ProcessResource, ProcessStatus } from '../../definitions';
+import { ProcessDocument, ProcessStatus } from '../../definitions';
 
-export interface TransactionUpdateRequestDocument extends ProcessResource {
+export interface TransactionUpdateRequestDocument extends ProcessDocument {
   amount?: number;
   date?: string;
   type?: TransactionType;
+  description?: string;
   transactionId: string;
 }
 

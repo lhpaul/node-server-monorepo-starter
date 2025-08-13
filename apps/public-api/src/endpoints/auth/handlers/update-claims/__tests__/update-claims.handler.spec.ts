@@ -1,12 +1,12 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { User } from '@repo/shared/domain';
-import { AuthService, DecodeEmailTokenError, DecodeEmailTokenErrorCode, UsersService } from '@repo/shared/services';
+import { AuthService, User, UsersService } from '@repo/shared/domain';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { ERROR_RESPONSES, STEPS } from '../update-claims.handler.constants';
 import { updateClaimsHandler } from '../update-claims.handler';
 
-jest.mock('@repo/shared/services', () => ({
+jest.mock('@repo/shared/domain', () => ({
+  ...jest.requireActual('@repo/shared/domain'),
   AuthService: {
     getInstance: jest.fn(),
   },

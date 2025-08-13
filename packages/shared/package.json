@@ -10,6 +10,10 @@
     "test:watch": "jest --watch"
   },
   "exports": {
+    "./constants": {
+      "types": "./src/constants/index.ts",
+      "default": "./dist/constants/index.js"
+    },
     "./definitions": {
       "types": "./src/definitions/index.ts",
       "default": "./dist/definitions/index.js"
@@ -17,14 +21,6 @@
     "./domain": {
       "types": "./src/domain/index.ts",
       "default": "./dist/domain/index.js"
-    },
-    "./repositories": {
-      "types": "./src/repositories/index.ts",
-      "default": "./dist/repositories/index.js"
-    },
-    "./services": {
-      "types": "./src/services/index.ts",
-      "default": "./dist/services/index.js"
     },
     "./utils": {
       "types": "./src/utils/index.ts",
