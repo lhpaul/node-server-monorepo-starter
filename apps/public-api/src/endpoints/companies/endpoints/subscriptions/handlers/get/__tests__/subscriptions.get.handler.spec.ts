@@ -3,9 +3,9 @@ import { SubscriptionsService } from '@repo/shared/domain';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../../../definitions/auth.interfaces';
+import { hasCompanySubscriptionsReadPermission } from '../../../../../../../utils/permissions';
 import { STEPS } from '../subscriptions.get.handler.constants';
 import { getSubscriptionHandler } from '../subscriptions.get.handler';
-import { hasCompanySubscriptionsReadPermission } from '../../../../../../../utils/auth/auth.utils';
 
 
 jest.mock('@repo/fastify', () => ({
@@ -33,7 +33,7 @@ jest.mock('@repo/shared/domain', () => ({
   },
 }));
 
-jest.mock('../../../../../../../utils/auth/auth.utils', () => ({
+jest.mock('../../../../../../../utils/permissions', () => ({
   hasCompanySubscriptionsReadPermission: jest.fn(),
 }));
 
@@ -47,12 +47,7 @@ describe(getSubscriptionHandler.name, () => {
   let mockService: Partial<SubscriptionsService>;
 
   const mockParams = { companyId: 'company123', id: 'subscription123' };
-  const mockUser: AuthUser = {
-    userId: 'user123',
-    companies: {
-      'company123': ['subscription:read'],
-    },
-  };
+  const mockUser = { app_user_id: 'user123' } as AuthUser;
   const mockSubscription = {
     id: mockParams.id,
     companyId: mockParams.companyId,

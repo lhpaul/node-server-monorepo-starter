@@ -2,13 +2,14 @@ import { FORBIDDEN_ERROR, STATUS_CODES } from '@repo/fastify';
 import { CompaniesService, RemoveFinancialInstitutionError, RemoveFinancialInstitutionErrorCode } from '@repo/shared/domain';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
-import { hasCompanyFinancialInstitutionsDeletePermission } from '../../../../../../../utils/auth/auth.utils';
+import { AuthUser } from '../../../../../../../definitions/auth.interfaces';
+import { hasCompanyFinancialInstitutionsDeletePermission } from '../../../../../../../utils/permissions';
 import { STEPS } from '../financial-institutions.delete.handler.constants';
 import { deleteFinancialInstitutionHandler } from '../financial-institutions.delete.handler';
 import { DeleteCompanyFinancialInstitutionParams } from '../financial-institutions.delete.handler.interfaces';
 
 jest.mock('@repo/shared/domain');
-jest.mock('../../../../../../../utils/auth/auth.utils', () => ({
+jest.mock('../../../../../../../utils/permissions', () => ({
   hasCompanyFinancialInstitutionsDeletePermission: jest.fn(),
 }));
 
@@ -22,7 +23,7 @@ describe(deleteFinancialInstitutionHandler.name, () => {
     companyId: 'company123', 
     id: 'fi-relation-123' 
   };
-  const mockUser = { userId: 'user123' };
+  const mockUser = { app_user_id: 'user123' } as AuthUser;
 
   beforeEach(() => {
     jest.useFakeTimers();

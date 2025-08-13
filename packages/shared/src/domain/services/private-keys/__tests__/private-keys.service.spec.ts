@@ -7,7 +7,7 @@ import { API_KEYS_CACHE_EXPIRATION } from '../private-keys.service.constants';
 import { PrivateKeysService } from '../private-keys.service';
 
 jest.mock('bcrypt');
-jest.mock('../../../repositories/private-keys/private-keys.repository');
+jest.mock('../../../../repositories/private-keys/private-keys.repository');
 
 describe(PrivateKeysService.name, () => {
   let service: PrivateKeysService;

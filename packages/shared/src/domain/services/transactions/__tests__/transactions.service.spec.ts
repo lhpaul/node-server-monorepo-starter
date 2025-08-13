@@ -9,7 +9,7 @@ import { FinancialInstitutionService } from '../../financial-institution';
 import { TransactionsService } from '../transactions.service';
 import { ERRORS_MESSAGES, SYNC_WITH_FINANCIAL_INSTITUTION_STEPS } from '../transactions.service.constants';
 
-jest.mock('../../../repositories');
+jest.mock('../../../../repositories');
 jest.mock('../../financial-institution');
 
 describe(TransactionsService.name, () => {

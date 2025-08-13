@@ -3,7 +3,7 @@ import { CompaniesService } from '@repo/shared/domain';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../definitions/auth.interfaces';
-import { hasCompanyReadPermission } from '../../../../utils/auth/auth.utils';
+import { hasCompanyReadPermission } from '../../../../utils/permissions';
 import { COMPANY_NOT_FOUND_ERROR } from '../../companies.endpoints.constants';
 import { STEPS } from './companies.get.handler.constants';
 import { GetCompanyParams } from './companies.get.handler.interfaces';

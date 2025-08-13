@@ -1,10 +1,10 @@
 import { FORBIDDEN_ERROR, RESOURCE_NOT_FOUND_ERROR, STATUS_CODES } from '@repo/fastify';
 import { Transaction, TransactionSourceType, TransactionType } from '@repo/shared/domain';
 import { TransactionsService } from '@repo/shared/domain';
-import { UserPermissions } from '@repo/shared/domain';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
-import { hasCompanyTransactionsReadPermission } from '../../../../../../../utils/auth/auth.utils';
+import { AuthUser } from '../../../../../../../definitions/auth.interfaces';
+import { hasCompanyTransactionsReadPermission } from '../../../../../../../utils/permissions';
 import { STEPS } from '../transactions.get.handler.constants';
 import { getTransactionHandler } from '../transactions.get.handler';
 
@@ -26,7 +26,7 @@ jest.mock('@repo/fastify', () => ({
 
 jest.mock('@repo/shared/domain');
 
-jest.mock('../../../../../../../utils/auth/auth.utils', () => ({
+jest.mock('../../../../../../../utils/permissions', () => ({
   hasCompanyTransactionsReadPermission: jest.fn(),
 }));
 
@@ -40,11 +40,7 @@ describe(getTransactionHandler.name, () => {
   let mockService: Partial<TransactionsService>;
   const logGroup = getTransactionHandler.name;
   const mockParams = { companyId: 'company123', id: 'transaction123' };
-  const mockUser: UserPermissions = {
-    companies: {
-      'company123': ['transaction:read'],
-    },
-  };
+  const mockUser = { app_user_id: 'user123' } as AuthUser;
   const mockTransaction: Transaction = {
     id: mockParams.id,
     amount: 100,

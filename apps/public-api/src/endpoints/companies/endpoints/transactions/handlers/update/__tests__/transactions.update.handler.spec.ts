@@ -1,16 +1,17 @@
 import { FORBIDDEN_ERROR, STATUS_CODES } from '@repo/fastify';
-import { TransactionsService, UserPermissions } from '@repo/shared/domain';
+import { TransactionsService } from '@repo/shared/domain';
 import { DomainModelServiceError, DomainModelServiceErrorCode } from '@repo/shared/utils';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
-import { hasCompanyTransactionsUpdatePermission } from '../../../../../../../utils/auth/auth.utils';
+import { AuthUser } from '../../../../../../../definitions/auth.interfaces';
+import { hasCompanyTransactionsUpdatePermission } from '../../../../../../../utils/permissions';
 import { ERROR_RESPONSES } from '../../../transactions.endpoints.constants';
 import { STEPS } from '../transactions.update.handler.constants';
 import { updateTransactionHandler } from '../transactions.update.handler';
 
 jest.mock('@repo/shared/domain');
 
-jest.mock('../../../../../../../utils/auth/auth.utils', () => ({
+jest.mock('../../../../../../../utils/permissions', () => ({
   hasCompanyTransactionsUpdatePermission: jest.fn(),
 }));
 
@@ -25,11 +26,7 @@ describe(updateTransactionHandler.name, () => {
   const logGroup = updateTransactionHandler.name;
   const mockParams = { companyId: 'company123', id: 'transaction123' };
   const mockBody = { amount: 100, date: '2024-03-20', type: 'INCOME' };
-  const mockUser: UserPermissions = {
-    companies: {
-      'company123': ['transaction:update'],
-    },
-  };
+  const mockUser = { app_user_id: 'user123' } as AuthUser;
 
   beforeEach(() => {
     mockLogger = {

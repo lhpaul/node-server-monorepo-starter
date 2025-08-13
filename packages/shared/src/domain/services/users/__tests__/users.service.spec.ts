@@ -1,7 +1,7 @@
 import { UsersRepository } from '../../../../repositories';
 import { UsersService } from '../users.service';
 
-jest.mock('../../../repositories');
+jest.mock('../../../../repositories');
 
 describe(UsersService.name, () => {
   let mockUsersRepository: jest.Mocked<UsersRepository>;

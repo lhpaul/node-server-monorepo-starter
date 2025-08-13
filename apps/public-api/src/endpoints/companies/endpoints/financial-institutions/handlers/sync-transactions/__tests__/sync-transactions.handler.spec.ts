@@ -2,7 +2,8 @@ import { FORBIDDEN_ERROR, STATUS_CODES } from '@repo/fastify';
 import { TransactionsService } from '@repo/shared/domain';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
-import { hasCompanyFinancialInstitutionsCreatePermission, hasCompanyFinancialInstitutionsReadPermission } from '../../../../../../../utils/auth/auth.utils';
+import { AuthUser } from '../../../../../../../definitions/auth.interfaces';
+import { hasCompanyFinancialInstitutionsCreatePermission, hasCompanyFinancialInstitutionsReadPermission } from '../../../../../../../utils/permissions';
 import { STEPS } from '../sync-transactions.handler.constants';
 import { syncTransactionsHandler } from '../sync-transactions.handler';
 import { SyncTransactionsBody, SyncTransactionsParams } from '../sync-transactions.handler.interfaces';
@@ -13,7 +14,7 @@ jest.mock('@repo/shared/domain', () => ({
     getInstance: jest.fn(),
   },
 }));
-jest.mock('../../../../../../../utils/auth/auth.utils', () => ({
+jest.mock('../../../../../../../utils/permissions', () => ({
   hasCompanyFinancialInstitutionsCreatePermission: jest.fn(),
   hasCompanyFinancialInstitutionsReadPermission: jest.fn(),
 }));
@@ -28,7 +29,7 @@ describe(syncTransactionsHandler.name, () => {
     companyId: 'company123', 
     financialInstitutionId: 'fi123' 
   };
-  const mockUser = { userId: 'user123' };
+  const mockUser = { app_user_id: 'user123' } as AuthUser;
   const mockBody: SyncTransactionsBody = {
     fromDate: '2024-01-01',
     toDate: '2024-01-31',

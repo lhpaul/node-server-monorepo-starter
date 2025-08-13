@@ -3,7 +3,7 @@ import { SubscriptionsService } from '@repo/shared/domain';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../../../definitions/auth.interfaces';
-import { hasCompanySubscriptionsReadPermission } from '../../../../../../../utils/auth/auth.utils';
+import { hasCompanySubscriptionsReadPermission } from '../../../../../../../utils/permissions';
 import { STEPS } from '../subscriptions.list.handler.constants';
 import { listSubscriptionsHandler } from '../subscriptions.list.handler';
 
@@ -20,8 +20,13 @@ jest.mock('@repo/fastify', () => ({
   transformQueryParams: jest.fn(),
 }));
 
-jest.mock('@repo/shared/domain');
-jest.mock('../../../../../../../utils/auth/auth.utils');
+jest.mock('@repo/shared/domain', () => ({
+  ...jest.requireActual('@repo/shared/domain'),
+  SubscriptionsService: {
+    getInstance: jest.fn(),
+  },
+}));
+jest.mock('../../../../../../../utils/permissions');
 
 describe(listSubscriptionsHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;
@@ -38,12 +43,7 @@ describe(listSubscriptionsHandler.name, () => {
   const mockQuery = { startsAt: '2024-03-20', endsAt: '2024-03-20' };
   const mockMappedQuery = { startsAt: new Date(mockQuery.startsAt), endsAt: new Date(mockQuery.endsAt) };
   const transformedQuery = { companyId: mockParams.companyId, ...mockMappedQuery };
-  const mockUser: AuthUser = {
-    userId: 'user123',
-    companies: {
-      [mockParams.companyId]: ['subscriptions:read'],
-    },
-  };
+  const mockUser = { app_user_id: 'user123' } as AuthUser;
 
   beforeEach(() => {
     mockLogger = {

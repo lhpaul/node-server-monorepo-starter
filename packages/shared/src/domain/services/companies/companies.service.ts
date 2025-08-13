@@ -1,5 +1,5 @@
 // Internal modules (farthest path first, then alphabetical)
-import { Company, FinancialInstitution } from '../..';
+import { Company, FinancialInstitution, Subscription, SubscriptionsService } from '../..';
 import { ExecutionLogger } from '../../../definitions';
 import {
   CompaniesRepository,
@@ -101,6 +101,21 @@ export class CompaniesService extends DomainModelService<Company, CompanyDocumen
     }, logger).finally(() => logger.endStep(ADD_FINANCIAL_INSTITUTION_STEPS.CREATE_RELATION));
 
     return relationId;
+  }
+
+  /**
+   * Gets all active subscriptions for a company
+   * @param companyId - The ID of the company
+   * @param logger - Logger instance for tracking execution
+   * @returns Promise resolving to an array of Subscription objects
+   */
+  public async getActiveSubscriptions(companyId: string, logger: ExecutionLogger): Promise<Subscription[]> {
+    const now = new Date();
+    return SubscriptionsService.getInstance().getResourcesList({
+      companyId: [{ operator: '==', value: companyId }],
+      startsAt: [{ operator: '<=', value: now }],
+      endsAt: [{ operator: '>=', value: now }],
+    }, logger);
   }
 
   /**

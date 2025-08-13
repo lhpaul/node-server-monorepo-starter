@@ -4,7 +4,7 @@ import { mapDateQueryParams } from '@repo/fastify';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../../definitions/auth.interfaces';
-import { hasCompanySubscriptionsReadPermission } from '../../../../../../utils/auth/auth.utils';
+import { hasCompanySubscriptionsReadPermission } from '../../../../../../utils/permissions';
 import { STEPS } from './subscriptions.list.handler.constants';
 import { GetSubscriptionsQueryParams, ListSubscriptionsParams } from './subscriptions.list.handler.interfaces';
 

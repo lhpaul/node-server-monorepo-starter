@@ -17,7 +17,7 @@ import {
 import { FinancialInstitutionsService } from '../financial-institutions.service';
 
 // Mock the repository
-jest.mock('../../../repositories/financial-institutions/financial-institutions.repository');
+jest.mock('../../../../repositories/financial-institutions/financial-institutions.repository');
 
 describe(FinancialInstitutionsService.name, () => {
   let service: FinancialInstitutionsService;

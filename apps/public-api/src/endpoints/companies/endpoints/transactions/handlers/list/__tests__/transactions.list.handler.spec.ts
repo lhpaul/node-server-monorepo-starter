@@ -4,7 +4,7 @@ import { TransactionsService } from '@repo/shared/domain';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../../../definitions/auth.interfaces';
-import { hasCompanyTransactionsReadPermission } from '../../../../../../../utils/auth/auth.utils';
+import { hasCompanyTransactionsReadPermission } from '../../../../../../../utils/permissions';
 import { STEPS } from '../transactions.list.handler.constants';
 import { listTransactionsHandler } from '../transactions.list.handler';
 
@@ -22,7 +22,7 @@ jest.mock('@repo/fastify', () => ({
 
 jest.mock('@repo/shared/domain');
 
-jest.mock('../../../../../../../utils/auth/auth.utils', () => ({
+jest.mock('../../../../../../../utils/permissions', () => ({
   hasCompanyTransactionsReadPermission: jest.fn(),
 }));
 
@@ -38,12 +38,7 @@ describe(listTransactionsHandler.name, () => {
   const logGroup = listTransactionsHandler.name;
   const mockParams = { companyId: 'company123' };
   const mockQuery = { amount: { eq: 100 } };
-  const mockUser: AuthUser = {
-    userId: 'user123',
-    companies: {
-      [mockParams.companyId]: ['transaction:read'],
-    },
-  };
+  const mockUser = { app_user_id: 'user123' } as AuthUser;
 
   beforeEach(() => {
     mockLogger = {

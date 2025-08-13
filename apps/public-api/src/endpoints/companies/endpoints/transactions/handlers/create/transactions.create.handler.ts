@@ -5,7 +5,7 @@ import { DomainModelServiceError, DomainModelServiceErrorCode } from '@repo/shar
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../../definitions/auth.interfaces';
-import { hasCompanyTransactionsCreatePermission } from '../../../../../../utils/auth/auth.utils';
+import { hasCompanyTransactionsCreatePermission } from '../../../../../../utils/permissions';
 import { STEPS } from './transactions.create.handler.constants';
 import { CreateCompanyTransactionBody, CreateCompanyTransactionParams } from './transactions.create.handler.interfaces';
 
@@ -32,7 +32,7 @@ export const createTransactionHandler = async (
         categoryId: null,
         description: null,
         ...body,
-        sourceId: user.userId,
+        sourceId: user.app_user_id as string,
         sourceTransactionId: new Date().getTime().toString(),
         sourceType: TransactionSourceType.USER,
         companyId,

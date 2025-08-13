@@ -3,7 +3,8 @@ import { CompaniesService } from '@repo/shared/domain';
 import { maskFields } from '@repo/shared/utils';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
-import { hasCompanyFinancialInstitutionsListPermission } from '../../../../../../../utils/auth/auth.utils';
+import { AuthUser } from '../../../../../../../definitions/auth.interfaces';
+import { hasCompanyFinancialInstitutionsListPermission } from '../../../../../../../utils/permissions';
 import { CREDENTIALS_FIELDS_TO_MASK } from '../../../financial-institutions.endpoints.constants';
 import { STEPS } from '../financial-institutions.list.handler.constants';
 import { listFinancialInstitutionsHandler } from '../financial-institutions.list.handler';
@@ -14,7 +15,7 @@ jest.mock('@repo/shared/utils', () => ({
   ...jest.requireActual('@repo/shared/utils'),
   maskFields: jest.fn(),
 }));
-jest.mock('../../../../../../../utils/auth/auth.utils', () => ({
+jest.mock('../../../../../../../utils/permissions', () => ({
   hasCompanyFinancialInstitutionsListPermission: jest.fn(),
 }));
 
@@ -25,7 +26,7 @@ describe(listFinancialInstitutionsHandler.name, () => {
   let mockService: Partial<CompaniesService>;
   const logGroup = listFinancialInstitutionsHandler.name;
   const mockParams: ListCompanyFinancialInstitutionsParams = { companyId: 'company123' };
-  const mockUser = { userId: 'user123' };
+  const mockUser = { app_user_id: 'user123' } as AuthUser;
   const mockFinancialInstitutions = [
     {
       id: 'fi-relation-1',

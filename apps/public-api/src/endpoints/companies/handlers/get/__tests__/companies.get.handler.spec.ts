@@ -2,7 +2,8 @@ import { FORBIDDEN_ERROR, STATUS_CODES } from '@repo/fastify';
 import { CompaniesService } from '@repo/shared/domain';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
-import { hasCompanyReadPermission } from '../../../../../utils/auth/auth.utils';
+import { AuthUser } from '../../../../../definitions/auth.interfaces';
+import { hasCompanyReadPermission } from '../../../../../utils/permissions';
 import { COMPANY_NOT_FOUND_ERROR } from '../../../companies.endpoints.constants';
 import { STEPS } from '../companies.get.handler.constants';
 import { getCompanyHandler } from '../companies.get.handler';
@@ -20,7 +21,7 @@ jest.mock('@repo/fastify', () => ({
 
 jest.mock('@repo/shared/domain');
 
-jest.mock('../../../../../utils/auth/auth.utils', () => ({
+jest.mock('../../../../../utils/permissions', () => ({
   hasCompanyReadPermission: jest.fn(),
 }));
 
@@ -35,7 +36,7 @@ describe(getCompanyHandler.name, () => {
 
   const logGroup = getCompanyHandler.name;
   const mockParams = { id: '123' };
-  const mockUser = { id: 'user123' };
+  const mockUser = { app_user_id: 'user123' } as AuthUser;
 
   beforeEach(() => {
     mockLogger = {

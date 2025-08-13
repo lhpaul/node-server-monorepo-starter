@@ -15,8 +15,8 @@ import {
 } from '../financial-institution.service.constants';
 import { GetTransactionsInput } from '../financial-institution.service.interfaces';
 
-jest.mock('../../../repositories');
-jest.mock('../../../utils');
+jest.mock('../../../../repositories');
+jest.mock('../../../../utils');
 
 describe(FinancialInstitutionService.name, () => {
   let mockLogger: jest.Mocked<ExecutionLogger>;

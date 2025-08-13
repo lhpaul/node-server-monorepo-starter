@@ -6,7 +6,7 @@ import { AuthUser } from '../../../../../../definitions/auth.interfaces';
 import { 
   hasCompanyFinancialInstitutionsCreatePermission, 
   hasCompanyFinancialInstitutionsReadPermission 
-} from '../../../../../../utils/auth/auth.utils';
+} from '../../../../../../utils/permissions';
 import { STEPS } from './sync-transactions.handler.constants';
 import { SyncTransactionsBody, SyncTransactionsParams } from './sync-transactions.handler.interfaces';
 

@@ -4,7 +4,7 @@ import { maskFields } from '@repo/shared/utils';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../../definitions/auth.interfaces';
-import { hasCompanyFinancialInstitutionsListPermission } from '../../../../../../utils/auth/auth.utils';
+import { hasCompanyFinancialInstitutionsListPermission } from '../../../../../../utils/permissions';
 import { CREDENTIALS_FIELDS_TO_MASK } from '../../financial-institutions.endpoints.constants';
 import { STEPS } from './financial-institutions.list.handler.constants';
 import { ListCompanyFinancialInstitutionsParams } from './financial-institutions.list.handler.interfaces';

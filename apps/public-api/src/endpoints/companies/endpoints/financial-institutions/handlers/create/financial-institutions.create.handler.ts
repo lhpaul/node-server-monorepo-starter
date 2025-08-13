@@ -3,7 +3,7 @@ import { AddFinancialInstitutionError, CompaniesService } from '@repo/shared/dom
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../../definitions/auth.interfaces';
-import { hasCompanyFinancialInstitutionsCreatePermission } from '../../../../../../utils/auth/auth.utils';
+import { hasCompanyFinancialInstitutionsCreatePermission } from '../../../../../../utils/permissions';
 import { STEPS } from './financial-institutions.create.handler.constants';
 import { CreateCompanyFinancialInstitutionBody, CreateCompanyFinancialInstitutionParams } from './financial-institutions.create.handler.interfaces';
 

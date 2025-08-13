@@ -4,7 +4,7 @@ import { DomainModelServiceError, DomainModelServiceErrorCode } from '@repo/shar
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../definitions/auth.interfaces';
-import { hasCompanyUpdatePermission } from '../../../../utils/auth/auth.utils';
+import { hasCompanyUpdatePermission } from '../../../../utils/permissions';
 import { COMPANY_NOT_FOUND_ERROR } from '../../companies.endpoints.constants';
 import { STEPS } from './companies.update.handler.constants';
 import { UpdateCompanyBody, UpdateCompanyParams } from './companies.update.handler.interfaces';

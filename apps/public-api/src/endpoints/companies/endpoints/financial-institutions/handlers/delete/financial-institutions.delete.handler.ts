@@ -1,11 +1,9 @@
 import { FORBIDDEN_ERROR, STATUS_CODES } from '@repo/fastify';
 import { CompaniesService, RemoveFinancialInstitutionError } from '@repo/shared/domain';
-import { DomainModelServiceError, DomainModelServiceErrorCode } from '@repo/shared/utils';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../../definitions/auth.interfaces';
-import { hasCompanyFinancialInstitutionsDeletePermission } from '../../../../../../utils/auth/auth.utils';
-import { ERROR_RESPONSES } from '../../financial-institutions.endpoints.constants';
+import { hasCompanyFinancialInstitutionsDeletePermission } from '../../../../../../utils/permissions';
 import { STEPS } from './financial-institutions.delete.handler.constants';
 import { DeleteCompanyFinancialInstitutionParams } from './financial-institutions.delete.handler.interfaces';
 

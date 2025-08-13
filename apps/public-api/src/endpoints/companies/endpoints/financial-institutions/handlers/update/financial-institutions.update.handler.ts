@@ -3,7 +3,7 @@ import { CompaniesService, UpdateFinancialInstitutionError, UpdateFinancialInsti
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../../definitions/auth.interfaces';
-import { hasCompanyFinancialInstitutionsUpdatePermission } from '../../../../../../utils/auth/auth.utils';
+import { hasCompanyFinancialInstitutionsUpdatePermission } from '../../../../../../utils/permissions';
 import { STEPS } from './financial-institutions.update.handler.constants';
 import { UpdateCompanyFinancialInstitutionBody, UpdateCompanyFinancialInstitutionParams } from './financial-institutions.update.handler.interfaces';
 

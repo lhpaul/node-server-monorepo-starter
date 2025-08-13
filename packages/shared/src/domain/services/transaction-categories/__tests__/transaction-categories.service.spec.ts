@@ -4,7 +4,7 @@ import { TransactionCategoriesRepository } from '../../../../repositories';
 // Local imports (alphabetical)
 import { TransactionCategoriesService } from '../transaction-categories.service';
 
-jest.mock('../../../repositories');
+jest.mock('../../../../repositories');
 
 describe(TransactionCategoriesService.name, () => {
   let mockTransactionCategoriesRepository: jest.Mocked<TransactionCategoriesRepository>;

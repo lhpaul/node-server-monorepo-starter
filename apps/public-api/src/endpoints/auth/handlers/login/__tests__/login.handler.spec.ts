@@ -1,11 +1,14 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { AuthService, UserPermissions } from '@repo/shared/domain';
+import { AuthService } from '@repo/shared/domain';
 import { FastifyReply, FastifyRequest, FastifyInstance } from 'fastify';
 
+import { UserPermissions } from '../../../../../definitions/auth.interfaces';
+import { getUserPermissions } from '../../../../../utils/auth';
 import { loginHandler } from '../login.handler';
 import { ERROR_RESPONSES, STEPS } from '../login.handler.constants';
 
 jest.mock('@repo/shared/domain');
+jest.mock('../../../../../utils/auth');
 
 describe(loginHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;
@@ -51,7 +54,6 @@ describe(loginHandler.name, () => {
 
     mockAuthService = {
       validateCredentials: jest.fn(),
-      getUserPermissions: jest.fn(),
     };
 
     (AuthService.getInstance as jest.Mock).mockReturnValue(mockAuthService);
@@ -76,7 +78,7 @@ describe(loginHandler.name, () => {
     };
 
     jest.spyOn(mockAuthService, 'validateCredentials').mockResolvedValue(mockUser);
-    jest.spyOn(mockAuthService, 'getUserPermissions').mockResolvedValue(mockPermissions);
+    (getUserPermissions as jest.Mock).mockResolvedValue(mockPermissions);
 
     await loginHandler(mockRequest as FastifyRequest, mockReply as FastifyReply);
 
@@ -85,12 +87,12 @@ describe(loginHandler.name, () => {
       password: 'password123',
     }, mockLogger);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.VALIDATE_CREDENTIALS.id, logGroup);
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.VALIDATE_CREDENTIALS.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.VALIDATE_CREDENTIALS, logGroup);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.VALIDATE_CREDENTIALS);
 
-    expect(mockAuthService.getUserPermissions).toHaveBeenCalledWith('user-123', mockLogger);
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_PERMISSIONS.id, logGroup);
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_PERMISSIONS.id);
+    expect(getUserPermissions).toHaveBeenCalledWith('user-123', mockLogger);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_PERMISSIONS, logGroup);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_PERMISSIONS);
 
     expect(mockRequest.server?.jwt.sign).toHaveBeenCalledWith({
       userId: 'user-123',
@@ -111,10 +113,10 @@ describe(loginHandler.name, () => {
       password: 'password123',
     }, mockLogger);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.VALIDATE_CREDENTIALS.id, logGroup);
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.VALIDATE_CREDENTIALS.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.VALIDATE_CREDENTIALS, logGroup);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.VALIDATE_CREDENTIALS);
 
-    expect(mockAuthService.getUserPermissions).not.toHaveBeenCalled();
+    expect(getUserPermissions).not.toHaveBeenCalled();
     expect(mockRequest.server?.jwt.sign).not.toHaveBeenCalled();
 
     expect(mockReply.status).toHaveBeenCalledWith(STATUS_CODES.UNAUTHORIZED);

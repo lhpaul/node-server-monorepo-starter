@@ -31,8 +31,8 @@ import {
 } from '../companies.service.interfaces';
 import { CompaniesService } from '../companies.service';
 
-jest.mock('../../../repositories');
-jest.mock('../../../utils/encryption');
+jest.mock('../../../../repositories');
+jest.mock('../../../../utils/encryption');
 
 describe(CompaniesService.name, () => {
   let mockCompaniesRepository: jest.Mocked<CompaniesRepository>;

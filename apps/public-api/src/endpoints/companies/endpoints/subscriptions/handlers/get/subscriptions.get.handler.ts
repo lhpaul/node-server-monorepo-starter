@@ -3,7 +3,7 @@ import { SubscriptionsService } from '@repo/shared/domain';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../../definitions/auth.interfaces';
-import { hasCompanySubscriptionsReadPermission } from '../../../../../../utils/auth/auth.utils';
+import { hasCompanySubscriptionsReadPermission } from '../../../../../../utils/permissions';
 import { STEPS } from './subscriptions.get.handler.constants';
 import { GetSubscriptionParams } from './subscriptions.get.handler.interfaces';
 

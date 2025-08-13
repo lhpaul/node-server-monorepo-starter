@@ -1,7 +1,7 @@
 import { SubscriptionsRepository } from '../../../../repositories';
 import { SubscriptionsService } from '../subscriptions.service';
 
-jest.mock('../../../repositories');
+jest.mock('../../../../repositories');
 
 
 describe(SubscriptionsService.name, () => {

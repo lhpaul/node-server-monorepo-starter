@@ -4,14 +4,15 @@ import { TransactionsService } from '@repo/shared/domain';
 import { DomainModelServiceError, DomainModelServiceErrorCode } from '@repo/shared/utils';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
-import { hasCompanyTransactionsCreatePermission } from '../../../../../../../utils/auth/auth.utils';
+import { AuthUser } from '../../../../../../../definitions/auth.interfaces';
+import { hasCompanyTransactionsCreatePermission } from '../../../../../../../utils/permissions';
 import { STEPS } from '../transactions.create.handler.constants';
 import { createTransactionHandler } from '../transactions.create.handler';
 import { CreateCompanyTransactionBody } from '../transactions.create.handler.interfaces';
 
 
 jest.mock('@repo/shared/domain');
-jest.mock('../../../../../../../utils/auth/auth.utils', () => ({
+jest.mock('../../../../../../../utils/permissions', () => ({
   hasCompanyTransactionsCreatePermission: jest.fn()
 }));
 
@@ -22,7 +23,7 @@ describe(createTransactionHandler.name, () => {
   let mockService: Partial<TransactionsService>;
   const logGroup = createTransactionHandler.name;
   const mockParams = { companyId: '123' };
-  const mockUser = { userId: 'user123' };
+  const mockUser = { app_user_id: 'user123' } as AuthUser;
   const mockBody = {
     amount: 100,
     date: '2024-03-20',
@@ -116,7 +117,7 @@ describe(createTransactionHandler.name, () => {
             description: null,
             ...mockBody,
             companyId: mockParams.companyId,
-            sourceId: mockUser.userId,
+            sourceId: mockUser.app_user_id,
             sourceTransactionId: now.getTime().toString(),
             sourceType: TransactionSourceType.USER,
           } as CreateCompanyTransactionBody,
@@ -147,7 +148,7 @@ describe(createTransactionHandler.name, () => {
           {
             ...body,
             companyId: mockParams.companyId,
-            sourceId: mockUser.userId,
+            sourceId: mockUser.app_user_id,
             sourceTransactionId: now.getTime().toString(),
             sourceType: TransactionSourceType.USER,
           },
@@ -194,7 +195,7 @@ describe(createTransactionHandler.name, () => {
           categoryId: null,
           description: null,
           companyId: mockParams.companyId,
-          sourceId: mockUser.userId,
+          sourceId: mockUser.app_user_id,
           sourceTransactionId: new Date().getTime().toString(),
           sourceType: TransactionSourceType.USER,
         },

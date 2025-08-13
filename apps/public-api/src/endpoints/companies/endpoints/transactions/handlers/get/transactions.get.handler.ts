@@ -3,7 +3,7 @@ import { TransactionsService } from '@repo/shared/domain';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../../definitions/auth.interfaces';
-import { hasCompanyTransactionsReadPermission } from '../../../../../../utils/auth/auth.utils';
+import { hasCompanyTransactionsReadPermission } from '../../../../../../utils/permissions';
 import { STEPS } from './transactions.get.handler.constants';
 import { GetTransactionParams } from './transactions.get.handler.interfaces';
 export const getTransactionHandler = async (

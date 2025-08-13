@@ -2,7 +2,8 @@ import { FORBIDDEN_ERROR, STATUS_CODES } from '@repo/fastify';
 import { CompaniesService, UpdateFinancialInstitutionError, UpdateFinancialInstitutionErrorCode } from '@repo/shared/domain';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
-import { hasCompanyFinancialInstitutionsUpdatePermission } from '../../../../../../../utils/auth/auth.utils';
+import { AuthUser } from '../../../../../../../definitions/auth.interfaces';
+import { hasCompanyFinancialInstitutionsUpdatePermission } from '../../../../../../../utils/permissions';
 import { STEPS } from '../financial-institutions.update.handler.constants';
 import { updateFinancialInstitutionHandler } from '../financial-institutions.update.handler';
 import { UpdateCompanyFinancialInstitutionBody, UpdateCompanyFinancialInstitutionParams } from '../financial-institutions.update.handler.interfaces';
@@ -13,7 +14,7 @@ jest.mock('@repo/shared/domain', () => ({
     getInstance: jest.fn(),
   },
 }));
-jest.mock('../../../../../../../utils/auth/auth.utils', () => ({
+jest.mock('../../../../../../../utils/permissions', () => ({
   hasCompanyFinancialInstitutionsUpdatePermission: jest.fn(),
 }));
 
@@ -27,7 +28,7 @@ describe(updateFinancialInstitutionHandler.name, () => {
     companyId: 'company123', 
     id: 'fi-relation-123' 
   };
-  const mockUser = { userId: 'user123' };
+  const mockUser = { app_user_id: 'user123' } as AuthUser;
   const mockBody: UpdateCompanyFinancialInstitutionBody = {
     credentials: { username: 'updated', password: 'newsecret' },
   };
