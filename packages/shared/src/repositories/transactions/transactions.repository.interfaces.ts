@@ -17,7 +17,7 @@ export interface CreateTransactionDocumentInput {
   amount: number;
   companyId: string;
   date: string;
-  description: string;
+  description: string | null;
   sourceId: string;
   sourceTransactionId: string;
   sourceType: string;

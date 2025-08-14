@@ -8,7 +8,7 @@ import { FinancialInstitutionTransaction } from '../financial-institution.servic
 import {
   GET_TRANSACTIONS_ERROR,
   GET_TRANSACTIONS_ERROR_MESSAGE,
-  HOST_BY_INSTITUTION_ID,
+  MOCK_API_HOST,
   MOCK_API_PROJECT_SECRET_KEY,
   MOCK_TRANSACTIONS_ENDPOINT_ENV_VARIABLE_KEY,
   STEPS,
@@ -93,7 +93,7 @@ describe(FinancialInstitutionService.name, () => {
 
       expect(apiRequest).toHaveBeenCalledWith(
         expect.objectContaining({
-          url: expect.stringContaining(HOST_BY_INSTITUTION_ID['2']),
+          url: expect.stringContaining(MOCK_API_HOST),
         }),
         mockLogger
       );
@@ -152,7 +152,7 @@ describe(FinancialInstitutionService.name, () => {
       expect(apiRequest).toHaveBeenCalledWith(
         {
           method: 'GET',
-          url: `https://${projectSecret}.${HOST_BY_INSTITUTION_ID[financialInstitutionId]}/transactions?sortBy=createdAt&order=desc`,
+          url: `https://${projectSecret}.${MOCK_API_HOST}/transactions?sortBy=createdAt&order=desc`,
         },
         mockLogger
       );
@@ -175,7 +175,7 @@ describe(FinancialInstitutionService.name, () => {
       expect(apiRequest).toHaveBeenCalledWith(
         {
           method: 'GET',
-          url: `https://${projectSecret}.${HOST_BY_INSTITUTION_ID[financialInstitutionId]}/transactions?sortBy=createdAt&order=desc`,
+          url: `https://${projectSecret}.${MOCK_API_HOST}/transactions?sortBy=createdAt&order=desc`,
         },
         mockLogger
       );
@@ -305,7 +305,7 @@ describe(FinancialInstitutionService.name, () => {
       expect(apiRequest).toHaveBeenCalledWith(
         {
           method: 'GET',
-          url: `https://${projectSecret}.${HOST_BY_INSTITUTION_ID[financialInstitutionId]}/transactions?sortBy=createdAt&order=desc`,
+          url: `https://${projectSecret}.${MOCK_API_HOST}/transactions?sortBy=createdAt&order=desc`,
         },
         mockLogger
       );
@@ -324,7 +324,7 @@ describe(FinancialInstitutionService.name, () => {
       expect(apiRequest).toHaveBeenCalledWith(
         {
           method: 'GET',
-          url: `https://${projectSecret}.${HOST_BY_INSTITUTION_ID[financialInstitutionId]}/transactions?sortBy=createdAt&order=desc`,
+          url: `https://${projectSecret}.${MOCK_API_HOST}/transactions?sortBy=createdAt&order=desc`,
         },
         mockLogger
       );
@@ -402,7 +402,7 @@ describe(FinancialInstitutionService.name, () => {
       expect(apiRequest).toHaveBeenCalledWith(
         {
           method: 'GET',
-          url: `https://${projectSecret}.${HOST_BY_INSTITUTION_ID[financialInstitutionId]}/transactions?sortBy=createdAt&order=desc`,
+          url: `https://${projectSecret}.${MOCK_API_HOST}/transactions?sortBy=createdAt&order=desc`,
         },
         mockLogger
       );
