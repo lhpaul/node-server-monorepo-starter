@@ -36,6 +36,10 @@ export function usersEndpointsBuilder(server: FastifyInstance): RouteOptions[] {
       schema: {
         querystring: QUERY_STRING_JSON_SCHEMA,
       },
+    }, {
+      maskOptions: {
+        responsePayloadFields: ['email'],
+      }
     }),
     createEndpoint(server, {
       method: [HTTP_METHODS_MAP.GET],
@@ -44,6 +48,10 @@ export function usersEndpointsBuilder(server: FastifyInstance): RouteOptions[] {
       schema: {
         params: USER_ENDPOINTS_PARAMS_JSON_SCHEMA,
       },
+    }, {
+      maskOptions: {
+        responsePayloadFields: ['email'],
+      }
     }),
     createEndpoint(server, {
       method: [HTTP_METHODS_MAP.UPDATE],
@@ -53,6 +61,10 @@ export function usersEndpointsBuilder(server: FastifyInstance): RouteOptions[] {
         body: UPDATE_USER_BODY_JSON_SCHEMA,
         params: USER_ENDPOINTS_PARAMS_JSON_SCHEMA,
       },
+    }, {
+      maskOptions: {
+        requestPayloadFields: ['email'],
+      }
     }),
   ];
 }
