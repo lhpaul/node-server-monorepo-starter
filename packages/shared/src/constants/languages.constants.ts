@@ -24,6 +24,6 @@ export const COMMON_LANGUAGES = {
   pl: 'Polski',
   tr: 'Türkçe',
   he: 'עברית',
-} as const;
+};
 
 export type CommonLanguageCode = keyof typeof COMMON_LANGUAGES; 

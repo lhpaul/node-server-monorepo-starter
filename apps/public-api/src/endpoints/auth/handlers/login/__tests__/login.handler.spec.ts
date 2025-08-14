@@ -26,7 +26,7 @@ describe(loginHandler.name, () => {
 
     const mockServer = {
       jwt: {
-        sign: jest.fn().mockResolvedValue('mock-jwt-token'),
+        sign: jest.fn().mockReturnValue('mock-jwt-token'),
         options: {
           decode: {},
           sign: {},

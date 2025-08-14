@@ -10,7 +10,7 @@ export const ERROR_RESPONSES = {
     code: 'SUBSCRIPTION_NOT_FOUND',
     message: 'Subscription not found',
   }
-} as const;
+};
 
 export const SUBSCRIPTION_ENDPOINTS_PARAMS_JSON_SCHEMA = {
   type: 'object',

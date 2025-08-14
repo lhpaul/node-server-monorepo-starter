@@ -180,6 +180,8 @@ export const QUERY_STRING_JSON_SCHEMA = {
 } as const;
 ```
 
+**Important** The "as const" at the end of the constant declarations should only be used for schema constants since it is needed for method `FromSchema` from `json-schema-to-ts` to compile.
+
 ## Update Action
 
 For the read action, the http method should be PATCH and it should specify the schema for the body (with the fields that can be updated) and the params. Normally the params should include the "id" field and optionally the fields for the nested ids (eg: /company/:companyId/transactions).
