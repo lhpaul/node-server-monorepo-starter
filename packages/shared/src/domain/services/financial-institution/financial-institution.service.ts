@@ -6,7 +6,7 @@ import { apiRequest, getEnvironmentVariable, getSecret } from '../../../utils';
 import {
   GET_TRANSACTIONS_ERROR,
   GET_TRANSACTIONS_ERROR_MESSAGE,
-  HOST_BY_INSTITUTION_ID,
+  MOCK_API_HOST,
   MOCK_API_PROJECT_SECRET_KEY,
   MOCK_TRANSACTIONS_ENDPOINT_ENV_VARIABLE_KEY,
   STEPS,
@@ -50,9 +50,8 @@ export class FinancialInstitutionService {
     const projectSecret = getSecret(MOCK_API_PROJECT_SECRET_KEY);
     const result = await apiRequest<FinancialInstitutionTransaction[]>({
       method: 'GET',
-      url: `https://${projectSecret}.${HOST_BY_INSTITUTION_ID[this._config.financialInstitutionId]}/${transactionsEndpoint}?sortBy=createdAt&order=desc`,
-    }, logger);
-    logger.endStep(STEPS.GET_TRANSACTIONS);
+      url: `https://${projectSecret}.${MOCK_API_HOST}/${transactionsEndpoint}?sortBy=createdAt&order=desc`,
+    }, logger).finally(() => logger.endStep(STEPS.GET_TRANSACTIONS));
 
     if (result.error) {
       logger.warn({

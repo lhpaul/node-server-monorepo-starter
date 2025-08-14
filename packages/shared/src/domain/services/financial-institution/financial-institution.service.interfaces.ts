@@ -1,5 +1,3 @@
-import { FilterInput, FilterItem } from '../../../definitions/domain.interfaces';
-
 export interface FinancialInstitutionConfig {
   financialInstitutionId: string;
 }
