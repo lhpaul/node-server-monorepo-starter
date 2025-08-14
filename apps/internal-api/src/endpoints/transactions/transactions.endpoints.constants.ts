@@ -18,16 +18,16 @@ export const CREATE_TRANSACTION_BODY_JSON_SCHEMA = {
   type: 'object',
   properties: {
     amount: { type: 'number' },
+    categoryId: { type: 'string' },
     companyId: { type: 'string' },
     description: { type: 'string' },
-    categoryId: { type: 'string' },
     date: { type: 'string', format: 'date' },
     sourceId: { type: 'string' },
     sourceTransactionId: { type: 'string' },
     sourceType: { enum: Object.values(TransactionSourceType) },
     type: { enum: Object.values(TransactionType) },
   },
-  required: ['amount', 'companyId', 'date', 'type', 'sourceId', 'sourceTransactionId', 'sourceType'],
+  required: ['amount', 'companyId', 'date', 'sourceId', 'sourceTransactionId', 'sourceType', 'type'],
 } as const;
 
 export const TRANSACTION_ENDPOINTS_PARAMS_JSON_SCHEMA = {
