@@ -23,12 +23,12 @@ export const listTransactionsHandler = async (
     });
   }
   const query = request.query as GetTransactionsQueryParams;
-  logger.startStep(STEPS.GET_TRANSACTIONS.id, logGroup);
+  logger.startStep(STEPS.GET_TRANSACTIONS, logGroup);
   const transactions = await service
     .getResourcesList(transformQueryParams({
       companyId,
       ...query
     }), logger)
-    .finally(() => logger.endStep(STEPS.GET_TRANSACTIONS.id));
+    .finally(() => logger.endStep(STEPS.GET_TRANSACTIONS));
   return reply.code(STATUS_CODES.OK).send(transactions);
 };

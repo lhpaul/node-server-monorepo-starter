@@ -143,8 +143,8 @@ describe(FinancialInstitutionService.name, () => {
     it('should successfully get and filter transactions', async () => {
       const result = await service.getTransactions(input, mockLogger);
 
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id, logGroup);
-      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS, logGroup);
+      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS);
 
       expect(getSecret).toHaveBeenCalledWith(MOCK_API_PROJECT_SECRET_KEY);
       expect(getEnvironmentVariable).toHaveBeenCalledWith(MOCK_TRANSACTIONS_ENDPOINT_ENV_VARIABLE_KEY);
@@ -417,8 +417,8 @@ describe(FinancialInstitutionService.name, () => {
       const result = await service.getTransactions(input, mockLogger);
 
       expect(result).toEqual([]);
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id, logGroup);
-      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS, logGroup);
+      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS);
     });
 
     it('should handle null data from API correctly', async () => {
@@ -430,8 +430,8 @@ describe(FinancialInstitutionService.name, () => {
       const result = await service.getTransactions(input, mockLogger);
 
       expect(result).toEqual([]);
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id, logGroup);
-      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS, logGroup);
+      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS);
     });
   });
 }); 

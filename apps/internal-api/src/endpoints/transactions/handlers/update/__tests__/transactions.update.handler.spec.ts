@@ -56,14 +56,14 @@ describe(updateTransactionHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION, logGroup);
     expect(mockService.updateResource).toHaveBeenCalledWith(
       id,
       mockRequest.body,
       mockLogger,
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(
-      STEPS.UPDATE_TRANSACTION.id,
+      STEPS.UPDATE_TRANSACTION,
     );
     expect(mockReply.code).toHaveBeenCalledWith(204);
     expect(mockReply.send).toHaveBeenCalled();
@@ -82,14 +82,14 @@ describe(updateTransactionHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION, logGroup);
     expect(mockService.updateResource).toHaveBeenCalledWith(
       id,
       mockRequest.body,
       mockLogger,
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(
-      STEPS.UPDATE_TRANSACTION.id,
+      STEPS.UPDATE_TRANSACTION,
     );
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.NOT_FOUND);
     expect(mockReply.send).toHaveBeenCalledWith(
@@ -118,14 +118,14 @@ describe(updateTransactionHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION, logGroup);
     expect(mockService.updateResource).toHaveBeenCalledWith(
       id,
       mockRequest.body,
       mockLogger,
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(
-      STEPS.UPDATE_TRANSACTION.id,
+      STEPS.UPDATE_TRANSACTION,
     );
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.BAD_REQUEST);
     expect(mockReply.send).toHaveBeenCalledWith({
@@ -146,14 +146,14 @@ describe(updateTransactionHandler.name, () => {
       ),
     ).rejects.toThrow(unexpectedError);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION, logGroup);
     expect(mockService.updateResource).toHaveBeenCalledWith(
       id,
       mockRequest.body,
       mockLogger,
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(
-      STEPS.UPDATE_TRANSACTION.id,
+      STEPS.UPDATE_TRANSACTION,
     );
     expect(mockReply.code).not.toHaveBeenCalled();
     expect(mockReply.send).not.toHaveBeenCalled();

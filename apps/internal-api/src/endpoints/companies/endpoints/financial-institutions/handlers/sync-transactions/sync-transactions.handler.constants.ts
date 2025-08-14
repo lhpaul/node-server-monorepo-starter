@@ -1,3 +1,3 @@
 export const STEPS = {
-  SYNC_TRANSACTIONS: { id: 'sync-transactions' },
+  SYNC_TRANSACTIONS: 'sync-transactions',
 } as const; 

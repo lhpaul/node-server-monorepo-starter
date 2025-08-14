@@ -15,11 +15,11 @@ export const deleteTransactionHandler = async (
   const logGroup = deleteTransactionHandler.name;
   const service = TransactionsService.getInstance();
   const { id } = request.params as DeleteTransactionParams;
-  logger.startStep(STEPS.DELETE_TRANSACTION.id, logGroup);
+  logger.startStep(STEPS.DELETE_TRANSACTION, logGroup);
   try {
     await service
       .deleteResource(id, logger)
-      .finally(() => logger.endStep(STEPS.DELETE_TRANSACTION.id));
+      .finally(() => logger.endStep(STEPS.DELETE_TRANSACTION));
   } catch (error) {
     if (
       error instanceof DomainModelServiceError &&

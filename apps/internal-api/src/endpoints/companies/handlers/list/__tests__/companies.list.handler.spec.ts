@@ -56,12 +56,12 @@ describe(listCompaniesHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES, logGroup);
     expect(mockService.getResourcesList).toHaveBeenCalledWith(
       {},
       mockLogger,
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
     expect(mockReply.send).toHaveBeenCalledWith(mockCompanies);
   });
@@ -79,14 +79,14 @@ describe(listCompaniesHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES, logGroup);
     expect(mockService.getResourcesList).toHaveBeenCalledWith(
       {
         name: [{ operator: '==', value: 'Company 1' }],
       },
       mockLogger,
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
     expect(mockReply.send).toHaveBeenCalledWith(filteredCompanies);
   });
@@ -99,12 +99,12 @@ describe(listCompaniesHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES, logGroup);
     expect(mockService.getResourcesList).toHaveBeenCalledWith(
       {},
       mockLogger,
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES);
     expect(mockReply.code).toHaveBeenCalledWith(200);
     expect(mockReply.send).toHaveBeenCalledWith([]);
   });
@@ -120,8 +120,8 @@ describe(listCompaniesHandler.name, () => {
       ),
     ).rejects.toThrow(error);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id, logGroup);
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES, logGroup);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES);
     expect(mockReply.code).not.toHaveBeenCalled();
     expect(mockReply.send).not.toHaveBeenCalled();
   });

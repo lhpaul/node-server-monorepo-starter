@@ -67,7 +67,7 @@ describe(createTransactionHandler.name, () => {
     expect(mockLogger.child).toHaveBeenCalledWith({
       handler: createTransactionHandler.name,
     });
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_TRANSACTION.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_TRANSACTION, logGroup);
     expect(mockService.createResource).toHaveBeenCalledWith(
       {
         description: null,
@@ -77,7 +77,7 @@ describe(createTransactionHandler.name, () => {
       mockLogger,
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(
-      STEPS.CREATE_TRANSACTION.id,
+      STEPS.CREATE_TRANSACTION,
     );
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.CREATED);
     expect(mockReply.send).toHaveBeenCalledWith({ id: mockTransactionId });
@@ -122,7 +122,7 @@ describe(createTransactionHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_TRANSACTION.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_TRANSACTION, logGroup);
     expect(mockService.createResource).toHaveBeenCalledWith(
       {
         description: null,
@@ -132,7 +132,7 @@ describe(createTransactionHandler.name, () => {
       mockLogger,
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(
-      STEPS.CREATE_TRANSACTION.id,
+      STEPS.CREATE_TRANSACTION,
     );
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.BAD_REQUEST);
     expect(mockReply.send).toHaveBeenCalledWith({
@@ -153,9 +153,9 @@ describe(createTransactionHandler.name, () => {
       ),
     ).rejects.toThrow(mockError);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_TRANSACTION.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_TRANSACTION, logGroup);
     expect(mockLogger.endStep).toHaveBeenCalledWith(
-      STEPS.CREATE_TRANSACTION.id,
+      STEPS.CREATE_TRANSACTION,
     );
     expect(mockReply.code).not.toHaveBeenCalled();
     expect(mockReply.send).not.toHaveBeenCalled();

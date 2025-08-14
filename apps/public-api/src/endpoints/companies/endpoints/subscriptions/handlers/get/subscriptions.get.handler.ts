@@ -23,11 +23,11 @@ export const getSubscriptionHandler = async (
     });
   }
 
-  logger.startStep(STEPS.GET_SUBSCRIPTION.id, logGroup);
+  logger.startStep(STEPS.GET_SUBSCRIPTION, logGroup);
   const service = SubscriptionsService.getInstance();
   const subscription = await service
     .getResource(id, logger)
-    .finally(() => logger.endStep(STEPS.GET_SUBSCRIPTION.id));
+    .finally(() => logger.endStep(STEPS.GET_SUBSCRIPTION));
 
   if (!subscription || subscription.companyId !== companyId) {
     return reply.code(STATUS_CODES.NOT_FOUND).send({

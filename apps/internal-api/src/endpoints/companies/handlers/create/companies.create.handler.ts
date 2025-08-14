@@ -13,9 +13,9 @@ export const createCompanyHandler = async (
   const logGroup = createCompanyHandler.name;
   const service = CompaniesService.getInstance();
   const body = request.body as CreateCompanyBody;
-  logger.startStep(STEPS.CREATE_COMPANY.id, logGroup);
+  logger.startStep(STEPS.CREATE_COMPANY, logGroup);
   const id = await service
     .createResource(body, logger)
-    .finally(() => logger.endStep(STEPS.CREATE_COMPANY.id));
+    .finally(() => logger.endStep(STEPS.CREATE_COMPANY));
   return reply.code(STATUS_CODES.CREATED).send({ id });
 };

@@ -13,10 +13,10 @@ export const getFinancialInstitutionHandler = async (
   const service = FinancialInstitutionsService.getInstance();
   const params = request.params as GetFinancialInstitutionParams;
   
-  logger.startStep(STEPS.GET_FINANCIAL_INSTITUTION.id, logGroup);
+  logger.startStep(STEPS.GET_FINANCIAL_INSTITUTION, logGroup);
   const result = await service
     .getResource(params.id, logger)
-    .finally(() => logger.endStep(STEPS.GET_FINANCIAL_INSTITUTION.id));
+    .finally(() => logger.endStep(STEPS.GET_FINANCIAL_INSTITUTION));
   
   return reply.send(result);
 }; 

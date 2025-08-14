@@ -59,12 +59,12 @@ describe(createCompanyHandler.name, () => {
     expect(mockLogger.child).toHaveBeenCalledWith({
       handler: createCompanyHandler.name,
     });
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_COMPANY.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_COMPANY, logGroup);
     expect(mockService.createResource).toHaveBeenCalledWith(
       mockRequest.body,
       mockLogger,
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.CREATE_COMPANY.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.CREATE_COMPANY);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.CREATED);
     expect(mockReply.send).toHaveBeenCalledWith({ id: mockCompanyId });
   });
@@ -80,8 +80,8 @@ describe(createCompanyHandler.name, () => {
       ),
     ).rejects.toThrow(mockError);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_COMPANY.id, logGroup);
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.CREATE_COMPANY.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_COMPANY, logGroup);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.CREATE_COMPANY);
     expect(mockReply.code).not.toHaveBeenCalled();
     expect(mockReply.send).not.toHaveBeenCalled();
   });

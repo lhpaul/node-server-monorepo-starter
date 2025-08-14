@@ -13,9 +13,9 @@ export const createTransactionCategoryHandler = async (
   const logGroup = createTransactionCategoryHandler.name;
   const service = TransactionCategoriesService.getInstance();
   const body = request.body as CreateTransactionCategoryBody;
-  logger.startStep(STEPS.CREATE_TRANSACTION_CATEGORY.id, logGroup);
+  logger.startStep(STEPS.CREATE_TRANSACTION_CATEGORY, logGroup);
   const id = await service
     .createResource(body, logger)
-    .finally(() => logger.endStep(STEPS.CREATE_TRANSACTION_CATEGORY.id));
+    .finally(() => logger.endStep(STEPS.CREATE_TRANSACTION_CATEGORY));
   return reply.code(STATUS_CODES.CREATED).send({ id });
 }; 

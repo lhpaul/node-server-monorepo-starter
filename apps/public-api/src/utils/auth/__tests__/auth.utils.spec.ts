@@ -93,18 +93,18 @@ describe(getUserPermissions.name, () => {
 
     // Verify logger calls
     expect(mockLogger.startStep).toHaveBeenCalledWith(
-      GET_USER_PERMISSIONS_STEPS.GET_USER_COMPANY_RELATIONS.id,
+      GET_USER_PERMISSIONS_STEPS.GET_USER_COMPANY_RELATIONS,
       `${LOG_GROUP_NAME}.${getUserPermissions.name}`
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(
-      GET_USER_PERMISSIONS_STEPS.GET_USER_COMPANY_RELATIONS.id
+      GET_USER_PERMISSIONS_STEPS.GET_USER_COMPANY_RELATIONS
     );
     expect(mockLogger.startStep).toHaveBeenCalledWith(
-      GET_USER_PERMISSIONS_STEPS.GET_SUBSCRIPTIONS.id,
+      GET_USER_PERMISSIONS_STEPS.GET_SUBSCRIPTIONS,
       `${LOG_GROUP_NAME}.${getUserPermissions.name}`
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(
-      GET_USER_PERMISSIONS_STEPS.GET_SUBSCRIPTIONS.id
+      GET_USER_PERMISSIONS_STEPS.GET_SUBSCRIPTIONS
     );
 
     // Verify service calls
@@ -189,7 +189,7 @@ describe(getUserPermissions.name, () => {
     await expect(getUserPermissions(userId, mockLogger)).rejects.toThrow('Service error');
 
     expect(mockLogger.startStep).toHaveBeenCalledWith(
-      GET_USER_PERMISSIONS_STEPS.GET_USER_COMPANY_RELATIONS.id,
+      GET_USER_PERMISSIONS_STEPS.GET_USER_COMPANY_RELATIONS,
       `${LOG_GROUP_NAME}.${getUserPermissions.name}`
     );
     expect(mockLogger.endStep).not.toHaveBeenCalled();
@@ -205,11 +205,11 @@ describe(getUserPermissions.name, () => {
     await expect(getUserPermissions(userId, mockLogger)).rejects.toThrow('Subscription service error');
 
     expect(mockLogger.startStep).toHaveBeenCalledWith(
-      GET_USER_PERMISSIONS_STEPS.GET_SUBSCRIPTIONS.id,
+      GET_USER_PERMISSIONS_STEPS.GET_SUBSCRIPTIONS,
       `${LOG_GROUP_NAME}.${getUserPermissions.name}`
     );
     expect(mockLogger.endStep).not.toHaveBeenCalledWith(
-      GET_USER_PERMISSIONS_STEPS.GET_SUBSCRIPTIONS.id
+      GET_USER_PERMISSIONS_STEPS.GET_SUBSCRIPTIONS
     );
   });
 

@@ -80,8 +80,8 @@ describe(InMemoryRepository.name, () => {
       const createInput: TestCreateInput = { name: 'Alice', age: 28 };
       const id = await repository.createDocument(createInput, mockLogger);
 
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_DOCUMENT.id, logGroup);
-      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.CREATE_DOCUMENT.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_DOCUMENT, logGroup);
+      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.CREATE_DOCUMENT);
       expect(id).toBe('2');
     });
   });
@@ -91,8 +91,8 @@ describe(InMemoryRepository.name, () => {
     it('should delete an existing document', async () => {
       await repository.deleteDocument('0', mockLogger);
 
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DELETE_DOCUMENT.id, logGroup);
-      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.DELETE_DOCUMENT.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DELETE_DOCUMENT, logGroup);
+      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.DELETE_DOCUMENT);
       const documents = await repository.getDocumentsList({}, mockLogger);
       expect(documents).toHaveLength(1);
       expect(documents[0].id).toBe('1');
@@ -111,8 +111,8 @@ describe(InMemoryRepository.name, () => {
     it('should return document when found', async () => {
       const document = await repository.getDocument('0', mockLogger);
 
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_DOCUMENT.id, logGroup);
-      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_DOCUMENT.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_DOCUMENT, logGroup);
+      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_DOCUMENT);
       expect(document).toEqual(initialDocuments[0]);
     });
 
@@ -133,8 +133,8 @@ describe(InMemoryRepository.name, () => {
     it('should return all documents when no query provided', async () => {
       const documents = await repository.getDocumentsList({}, mockLogger);
 
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_DOCUMENTS.id, logGroup);
-      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_DOCUMENTS.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_DOCUMENTS, logGroup);
+      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_DOCUMENTS);
       expect(filterList).not.toHaveBeenCalled();
       expect(documents).toEqual(initialDocuments);
     });
@@ -145,8 +145,8 @@ describe(InMemoryRepository.name, () => {
       };
       await repository.getDocumentsList(query, mockLogger);
 
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_DOCUMENTS.id, logGroup);
-      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_DOCUMENTS.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_DOCUMENTS, logGroup);
+      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_DOCUMENTS);
       expect(filterList).toHaveBeenCalledTimes(1);
       expect(filterList).toHaveBeenCalledWith(expect.arrayContaining(initialDocuments) , 'age', { value: 27, operator: '>' });
     });
@@ -272,8 +272,8 @@ describe(InMemoryRepository.name, () => {
       const updateInput: TestUpdateInput = { name: 'John Updated' };
       await repository.updateDocument('0', updateInput, mockLogger);
 
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_DOCUMENT.id, logGroup);
-      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_DOCUMENT.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_DOCUMENT, logGroup);
+      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_DOCUMENT);
       const document = await repository.getDocument('0', mockLogger);
       expect(document?.name).toBe('John Updated');
     });

@@ -63,13 +63,13 @@ describe(updateCompanyHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_COMPANY.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_COMPANY, logGroup);
     expect(mockService.updateResource).toHaveBeenCalledWith(
       mockParams.id,
       mockBody,
       mockLogger,
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_COMPANY.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_COMPANY);
     expect(mockReply.code).toHaveBeenCalledWith(204);
     expect(mockReply.send).toHaveBeenCalled();
   });
@@ -87,13 +87,13 @@ describe(updateCompanyHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_COMPANY.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_COMPANY, logGroup);
     expect(mockService.updateResource).toHaveBeenCalledWith(
       mockParams.id,
       mockBody,
       mockLogger,
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_COMPANY.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_COMPANY);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.NOT_FOUND);
     expect(mockReply.send).toHaveBeenCalledWith(
       ERROR_RESPONSES.COMPANY_NOT_FOUND,
@@ -111,13 +111,13 @@ describe(updateCompanyHandler.name, () => {
       ),
     ).rejects.toThrow(error);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_COMPANY.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_COMPANY, logGroup);
     expect(mockService.updateResource).toHaveBeenCalledWith(
       mockParams.id,
       mockBody,
       mockLogger,
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_COMPANY.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_COMPANY);
     expect(mockReply.code).not.toHaveBeenCalled();
     expect(mockReply.send).not.toHaveBeenCalled();
   });

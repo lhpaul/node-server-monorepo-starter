@@ -123,8 +123,8 @@ describe(listFinancialInstitutionsHandler.name, () => {
       expect(mockLogger.child).toHaveBeenCalledWith({
         handler: listFinancialInstitutionsHandler.name,
       });
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_FINANCIAL_INSTITUTIONS.id, logGroup);
-      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_FINANCIAL_INSTITUTIONS.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_FINANCIAL_INSTITUTIONS, logGroup);
+      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_FINANCIAL_INSTITUTIONS);
 
       expect(mockService.listFinancialInstitutions).toHaveBeenCalledWith(mockParams.companyId, mockLogger);
 
@@ -172,8 +172,8 @@ describe(listFinancialInstitutionsHandler.name, () => {
         ),
       ).rejects.toThrow(error);
 
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_FINANCIAL_INSTITUTIONS.id, logGroup);
-      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_FINANCIAL_INSTITUTIONS.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_FINANCIAL_INSTITUTIONS, logGroup);
+      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_FINANCIAL_INSTITUTIONS);
       expect(mockReply.code).not.toHaveBeenCalled();
       expect(mockReply.send).not.toHaveBeenCalled();
     });

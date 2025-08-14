@@ -101,8 +101,8 @@ describe(createFinancialInstitutionHandler.name, () => {
       expect(mockLogger.child).toHaveBeenCalledWith({
         handler: createFinancialInstitutionHandler.name,
       });
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.ADD_FINANCIAL_INSTITUTION.id, logGroup);
-      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.ADD_FINANCIAL_INSTITUTION.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.ADD_FINANCIAL_INSTITUTION, logGroup);
+      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.ADD_FINANCIAL_INSTITUTION);
 
       expect(mockService.addFinancialInstitution).toHaveBeenCalledWith(
         mockParams.companyId,
@@ -154,8 +154,8 @@ describe(createFinancialInstitutionHandler.name, () => {
         ),
       ).rejects.toThrow(error);
 
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.ADD_FINANCIAL_INSTITUTION.id, logGroup);
-      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.ADD_FINANCIAL_INSTITUTION.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.ADD_FINANCIAL_INSTITUTION, logGroup);
+      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.ADD_FINANCIAL_INSTITUTION);
       expect(mockReply.code).not.toHaveBeenCalled();
       expect(mockReply.send).not.toHaveBeenCalled();
     });

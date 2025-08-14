@@ -28,7 +28,7 @@ export class InMemoryRepository<RepositoryDocumentModel extends DocumentModel, C
    */
   public async createDocument(data: CreateDocumentInput, logger: ExecutionLogger): Promise<string> {
     const logGroup = `${this.constructor.name}.${this.createDocument.name}`;
-    logger.startStep(STEPS.CREATE_DOCUMENT.id, logGroup);
+    logger.startStep(STEPS.CREATE_DOCUMENT, logGroup);
     await wait(IN_MEMORY_REPOSITORY_WAIT_TIME);
     const id = this._documents.length.toString();
     this._documents.push({
@@ -37,7 +37,7 @@ export class InMemoryRepository<RepositoryDocumentModel extends DocumentModel, C
       createdAt: new Date(),
       updatedAt: new Date(),
     } as unknown as RepositoryDocumentModel);
-    logger.endStep(STEPS.CREATE_DOCUMENT.id);
+    logger.endStep(STEPS.CREATE_DOCUMENT);
     return Promise.resolve(id);
   }
 
@@ -50,7 +50,7 @@ export class InMemoryRepository<RepositoryDocumentModel extends DocumentModel, C
    */
   public async deleteDocument(id: string, logger: ExecutionLogger): Promise<void> {
     const logGroup = `${this.constructor.name}.${this.deleteDocument.name}`;
-    logger.startStep(STEPS.DELETE_DOCUMENT.id, logGroup);
+    logger.startStep(STEPS.DELETE_DOCUMENT, logGroup);
     await wait(IN_MEMORY_REPOSITORY_WAIT_TIME);
     const index = this._documents.findIndex((d) => d.id === id);
     if (index !== -1) {
@@ -61,7 +61,7 @@ export class InMemoryRepository<RepositoryDocumentModel extends DocumentModel, C
         message: REPOSITORY_ERROR_MESSAGES.DOCUMENT_NOT_FOUND(id),
       });
     }
-    logger.endStep(STEPS.DELETE_DOCUMENT.id);
+    logger.endStep(STEPS.DELETE_DOCUMENT);
     return Promise.resolve();
   }
 
@@ -73,10 +73,10 @@ export class InMemoryRepository<RepositoryDocumentModel extends DocumentModel, C
    */
   public async getDocument(id: string, logger: ExecutionLogger): Promise<RepositoryDocumentModel | null> {
     const logGroup = `${this.constructor.name}.${this.getDocument.name}`;
-    logger.startStep(STEPS.GET_DOCUMENT.id, logGroup);
+    logger.startStep(STEPS.GET_DOCUMENT, logGroup);
     await wait(IN_MEMORY_REPOSITORY_WAIT_TIME);
     const document = this._documents.find((d) => d.id === id) ?? null;
-    logger.endStep(STEPS.GET_DOCUMENT.id);
+    logger.endStep(STEPS.GET_DOCUMENT);
     return Promise.resolve(document);
   }
 
@@ -88,9 +88,9 @@ export class InMemoryRepository<RepositoryDocumentModel extends DocumentModel, C
    */
   public async getDocumentsList(query: DocumentsQueryInput, logger: ExecutionLogger): Promise<RepositoryDocumentModel[]> {
     const logGroup = `${this.constructor.name}.${this.getDocumentsList.name}`;
-    logger.startStep(STEPS.GET_DOCUMENTS.id, logGroup);
+    logger.startStep(STEPS.GET_DOCUMENTS, logGroup);
     await wait(IN_MEMORY_REPOSITORY_WAIT_TIME);
-    logger.endStep(STEPS.GET_DOCUMENTS.id);
+    logger.endStep(STEPS.GET_DOCUMENTS);
     let filteredItems = [...this._documents];
     for (const key in query) {
       const queryItem = query[key];
@@ -116,7 +116,7 @@ export class InMemoryRepository<RepositoryDocumentModel extends DocumentModel, C
    */
   public async updateDocument(id: string, data: UpdateDocumentInput, logger: ExecutionLogger): Promise<void> {
     const logGroup = `${this.constructor.name}.${this.updateDocument.name}`;
-    logger.startStep(STEPS.UPDATE_DOCUMENT.id, logGroup);
+    logger.startStep(STEPS.UPDATE_DOCUMENT, logGroup);
     await wait(IN_MEMORY_REPOSITORY_WAIT_TIME);
     const index = this._documents.findIndex((d) => d.id === id);
     if (index !== -1) {
@@ -127,7 +127,7 @@ export class InMemoryRepository<RepositoryDocumentModel extends DocumentModel, C
         message: REPOSITORY_ERROR_MESSAGES.DOCUMENT_NOT_FOUND(id),
       });
     }
-    logger.endStep(STEPS.UPDATE_DOCUMENT.id);
+    logger.endStep(STEPS.UPDATE_DOCUMENT);
     return Promise.resolve();
   }
 }

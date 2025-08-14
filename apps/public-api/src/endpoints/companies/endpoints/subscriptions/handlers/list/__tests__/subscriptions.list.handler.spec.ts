@@ -112,14 +112,14 @@ describe(listSubscriptionsHandler.name, () => {
     );
 
     expect(hasCompanySubscriptionsReadPermission).toHaveBeenCalledWith(mockParams.companyId, mockUser);
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.LIST_SUBSCRIPTIONS.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.LIST_SUBSCRIPTIONS, logGroup);
     expect(mapDateQueryParams).toHaveBeenCalledWith(mockQuery, ['startsAt', 'endsAt']);
     expect(transformQueryParams).toHaveBeenCalledWith({ companyId: mockParams.companyId, ...mockMappedQuery });
     expect(mockService.getResourcesList).toHaveBeenCalledWith(
       transformedQuery,
       mockLogger,
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.LIST_SUBSCRIPTIONS.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.LIST_SUBSCRIPTIONS);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
     expect(mockReply.send).toHaveBeenCalledWith(mockSubscriptions);
   });
@@ -136,14 +136,14 @@ describe(listSubscriptionsHandler.name, () => {
     ).rejects.toThrow(error);
 
     expect(hasCompanySubscriptionsReadPermission).toHaveBeenCalledWith(mockParams.companyId, mockUser);
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.LIST_SUBSCRIPTIONS.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.LIST_SUBSCRIPTIONS, logGroup);
     expect(mapDateQueryParams).toHaveBeenCalledWith(mockQuery, ['startsAt', 'endsAt']);
     expect(transformQueryParams).toHaveBeenCalledWith({ companyId: mockParams.companyId, ...mockMappedQuery });
     expect(mockService.getResourcesList).toHaveBeenCalledWith(
       transformedQuery,
       mockLogger,
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.LIST_SUBSCRIPTIONS.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.LIST_SUBSCRIPTIONS);
     expect(mockReply.code).not.toHaveBeenCalled();
     expect(mockReply.send).not.toHaveBeenCalled();
   });

@@ -22,19 +22,19 @@ export const deleteTransactionHandler = async (
       message: FORBIDDEN_ERROR.responseMessage,
     });
   }
-  logger.startStep(STEPS.GET_TRANSACTION.id, logGroup);
+  logger.startStep(STEPS.GET_TRANSACTION, logGroup);
   const transaction = await service
     .getResource(id, logger)
-    .finally(() => logger.endStep(STEPS.GET_TRANSACTION.id));
+    .finally(() => logger.endStep(STEPS.GET_TRANSACTION));
   if (!transaction || transaction.companyId !== companyId) {
     return reply.code(STATUS_CODES.NOT_FOUND).send({
       code: RESOURCE_NOT_FOUND_ERROR.responseCode,
       message: RESOURCE_NOT_FOUND_ERROR.responseMessage,
     });
   }
-  logger.startStep(STEPS.DELETE_TRANSACTION.id, logGroup);
+  logger.startStep(STEPS.DELETE_TRANSACTION, logGroup);
   await service
     .deleteResource(id, logger)
-    .finally(() => logger.endStep(STEPS.DELETE_TRANSACTION.id));
+    .finally(() => logger.endStep(STEPS.DELETE_TRANSACTION));
   return reply.code(STATUS_CODES.NO_CONTENT).send();
 };

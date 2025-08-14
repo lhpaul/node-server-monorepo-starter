@@ -13,9 +13,9 @@ export const listSubscriptionsHandler = async (
   const logGroup = listSubscriptionsHandler.name;
   const service = SubscriptionsService.getInstance();
   const query = request.query as GetSubscriptionsQueryParams;
-  logger.startStep(STEPS.GET_SUBSCRIPTIONS.id, logGroup);
+  logger.startStep(STEPS.GET_SUBSCRIPTIONS, logGroup);
   const subscriptions = await service
     .getResourcesList(transformQueryParams(query), logger)
-    .finally(() => logger.endStep(STEPS.GET_SUBSCRIPTIONS.id));
+    .finally(() => logger.endStep(STEPS.GET_SUBSCRIPTIONS));
   return reply.code(STATUS_CODES.OK).send(subscriptions);
 }; 

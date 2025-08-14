@@ -14,10 +14,10 @@ export const createFinancialInstitutionHandler = async (
   const service = FinancialInstitutionsService.getInstance();
   const body = request.body as CreateFinancialInstitutionBody;
   
-  logger.startStep(STEPS.CREATE_FINANCIAL_INSTITUTION.id, logGroup);
+  logger.startStep(STEPS.CREATE_FINANCIAL_INSTITUTION, logGroup);
   const id = await service
     .createResource(body, logger)
-    .finally(() => logger.endStep(STEPS.CREATE_FINANCIAL_INSTITUTION.id));
+    .finally(() => logger.endStep(STEPS.CREATE_FINANCIAL_INSTITUTION));
   
   return reply.code(STATUS_CODES.CREATED).send({ id });
 }; 

@@ -26,12 +26,12 @@ export const deleteFinancialInstitutionHandler = async (
   const service = CompaniesService.getInstance();
   
   try {
-    logger.startStep(STEPS.REMOVE_FINANCIAL_INSTITUTION.id, logGroup);
+    logger.startStep(STEPS.REMOVE_FINANCIAL_INSTITUTION, logGroup);
     await service
       .removeFinancialInstitution(companyId, {
         financialInstitutionRelationId,
       }, logger)
-      .finally(() => logger.endStep(STEPS.REMOVE_FINANCIAL_INSTITUTION.id));
+      .finally(() => logger.endStep(STEPS.REMOVE_FINANCIAL_INSTITUTION));
     
     return reply.code(STATUS_CODES.NO_CONTENT).send();
   } catch (error) {

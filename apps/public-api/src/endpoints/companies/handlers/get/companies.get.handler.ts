@@ -22,10 +22,10 @@ export const getCompanyHandler = async (
       message: FORBIDDEN_ERROR.responseMessage,
     });
   }
-  logger.startStep(STEPS.GET_COMPANY.id, logGroup);
+  logger.startStep(STEPS.GET_COMPANY, logGroup);
   const company = await CompaniesService.getInstance()
     .getResource(id, logger)
-    .finally(() => logger.endStep(STEPS.GET_COMPANY.id));
+    .finally(() => logger.endStep(STEPS.GET_COMPANY));
   if (!company) { // this should never happen since the user has permission to read the company so it should exist
     throw new Error(COMPANY_NOT_FOUND_ERROR(id));
   }

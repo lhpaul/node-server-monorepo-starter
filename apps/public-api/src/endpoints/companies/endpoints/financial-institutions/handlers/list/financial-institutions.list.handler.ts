@@ -27,10 +27,10 @@ export const listFinancialInstitutionsHandler = async (
   
   const service = CompaniesService.getInstance();
   
-  logger.startStep(STEPS.GET_FINANCIAL_INSTITUTIONS.id, logGroup);
+  logger.startStep(STEPS.GET_FINANCIAL_INSTITUTIONS, logGroup);
   const financialInstitutions = await service
     .listFinancialInstitutions(companyId, logger)
-    .finally(() => logger.endStep(STEPS.GET_FINANCIAL_INSTITUTIONS.id));
+    .finally(() => logger.endStep(STEPS.GET_FINANCIAL_INSTITUTIONS));
   
   const data = financialInstitutions.map(fi => ({
     ...fi,

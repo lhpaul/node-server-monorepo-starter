@@ -18,10 +18,10 @@ export const listCompaniesHandler = async (
   const companyIds = Object.keys(user.companies);
   
   // Get company information for each ID in parallel
-  logger.startStep(STEPS.GET_COMPANIES.id, logGroup);
+  logger.startStep(STEPS.GET_COMPANIES, logGroup);
   const companies = await Promise.all(
     companyIds.map((id) => service.getResource(id, logger)),
-  ).finally(() => logger.endStep(STEPS.GET_COMPANIES.id));
+  ).finally(() => logger.endStep(STEPS.GET_COMPANIES));
 
   // Filter out any null values (though this shouldn't happen if permissions are correct)
   const validCompanies = companies.filter((company): company is NonNullable<typeof company> => 

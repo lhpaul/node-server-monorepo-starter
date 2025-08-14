@@ -92,8 +92,8 @@ describe(deleteFinancialInstitutionHandler.name, () => {
       expect(mockLogger.child).toHaveBeenCalledWith({
         handler: deleteFinancialInstitutionHandler.name,
       });
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.REMOVE_FINANCIAL_INSTITUTION.id, logGroup);
-      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.REMOVE_FINANCIAL_INSTITUTION.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.REMOVE_FINANCIAL_INSTITUTION, logGroup);
+      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.REMOVE_FINANCIAL_INSTITUTION);
 
       expect(mockService.removeFinancialInstitution).toHaveBeenCalledWith(
         mockParams.companyId,
@@ -125,7 +125,7 @@ describe(deleteFinancialInstitutionHandler.name, () => {
         mockReply as FastifyReply,
       );
 
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.REMOVE_FINANCIAL_INSTITUTION.id, logGroup);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.REMOVE_FINANCIAL_INSTITUTION, logGroup);
       expect(mockService.removeFinancialInstitution).toHaveBeenCalledWith(
         mockParams.companyId,
         {
@@ -133,7 +133,7 @@ describe(deleteFinancialInstitutionHandler.name, () => {
         },
         mockLogger,
       );
-      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.REMOVE_FINANCIAL_INSTITUTION.id);
+      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.REMOVE_FINANCIAL_INSTITUTION);
       expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.NOT_FOUND);
       expect(mockReply.send).toHaveBeenCalledWith({
         code: error.code,
@@ -152,8 +152,8 @@ describe(deleteFinancialInstitutionHandler.name, () => {
         ),
       ).rejects.toThrow(error);
 
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.REMOVE_FINANCIAL_INSTITUTION.id, logGroup);
-      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.REMOVE_FINANCIAL_INSTITUTION.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.REMOVE_FINANCIAL_INSTITUTION, logGroup);
+      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.REMOVE_FINANCIAL_INSTITUTION);
       expect(mockReply.code).not.toHaveBeenCalled();
       expect(mockReply.send).not.toHaveBeenCalled();
     });

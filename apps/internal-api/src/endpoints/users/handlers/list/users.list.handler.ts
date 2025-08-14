@@ -15,8 +15,8 @@ export const listUsersHandler = async (
   
   logger.startStep(STEPS.LIST_USERS, logGroup);
   const users = await service
-    .getResourcesList(query, logger);
-  logger.endStep(STEPS.LIST_USERS);
+    .getResourcesList(query, logger)
+  .finally(() => logger.endStep(STEPS.LIST_USERS));
   
   return reply.code(STATUS_CODES.OK).send(users);
 };

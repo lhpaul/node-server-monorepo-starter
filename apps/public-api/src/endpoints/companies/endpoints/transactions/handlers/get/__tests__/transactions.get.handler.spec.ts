@@ -112,12 +112,12 @@ describe(getTransactionHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION, logGroup);
     expect(mockService.getResource).toHaveBeenCalledWith(
       mockParams.id,
       mockLogger,
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
     expect(mockReply.send).toHaveBeenCalledWith(mockTransaction);
   });
@@ -130,12 +130,12 @@ describe(getTransactionHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION, logGroup);
     expect(mockService.getResource).toHaveBeenCalledWith(
       mockParams.id,
       mockLogger,
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.NOT_FOUND);
     expect(mockReply.send).toHaveBeenCalledWith({
       code: RESOURCE_NOT_FOUND_ERROR.responseCode,
@@ -154,12 +154,12 @@ describe(getTransactionHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION, logGroup);
     expect(mockService.getResource).toHaveBeenCalledWith(
       mockParams.id,
       mockLogger,
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.NOT_FOUND);
     expect(mockReply.send).toHaveBeenCalledWith({
       code: RESOURCE_NOT_FOUND_ERROR.responseCode,

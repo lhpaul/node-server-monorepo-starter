@@ -1,6 +1,3 @@
 export const STEPS = {
-  CREATE_TRANSACTION_CATEGORY: {
-    id: 'create-transaction-category',
-    description: 'Create transaction category',
-  },
+  CREATE_TRANSACTION_CATEGORY: 'create-transaction-category',
 } as const; 

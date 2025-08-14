@@ -1,10 +1,7 @@
 import { CompanyFinancialInstitutionRelationDocument } from './company-financial-institution-relations.repository.interfaces';
 
 export const STEPS = {
-  GET_RELATED_DOCUMENTS: {
-    id: 'get-related-documents',
-    label: 'Get related documents',
-  },
+  GET_RELATED_DOCUMENTS: 'get-related-documents',
 }
 
 export const ERROR_MESSAGES = {

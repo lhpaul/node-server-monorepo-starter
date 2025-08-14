@@ -123,8 +123,8 @@ describe(CompanyFinancialInstitutionRelationsRepository.name, () => {
       expect(typeof result).toBe('string');
 
       // Verify logger calls
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_RELATED_DOCUMENTS.id, expect.stringContaining('createDocument'));
-      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_RELATED_DOCUMENTS.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_RELATED_DOCUMENTS, expect.stringContaining('createDocument'));
+      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_RELATED_DOCUMENTS);
 
       // Verify repository calls
       expect(mockCompaniesRepository.getDocument).toHaveBeenCalledWith(validCreateInput.companyId, mockLogger);
@@ -230,7 +230,7 @@ describe(CompanyFinancialInstitutionRelationsRepository.name, () => {
         // Error is expected
       }
 
-      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_RELATED_DOCUMENTS.id);
+      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_RELATED_DOCUMENTS);
     });
   });
 }); 

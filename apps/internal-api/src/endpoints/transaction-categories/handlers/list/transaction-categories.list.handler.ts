@@ -14,9 +14,9 @@ export const listTransactionCategoriesHandler = async (
   const logGroup = listTransactionCategoriesHandler.name;
   const service = TransactionCategoriesService.getInstance();
   const query = request.query as ListTransactionCategoriesQuery;
-  logger.startStep(STEPS.LIST_TRANSACTION_CATEGORIES.id, logGroup);
+  logger.startStep(STEPS.LIST_TRANSACTION_CATEGORIES, logGroup);
   const result = await service
     .getResourcesList(transformQueryParams(query), logger)
-    .finally(() => logger.endStep(STEPS.LIST_TRANSACTION_CATEGORIES.id));
+    .finally(() => logger.endStep(STEPS.LIST_TRANSACTION_CATEGORIES));
   return reply.code(STATUS_CODES.OK).send(result.map((transactionCategory) => parseTransactionCategoryToResource(transactionCategory)));
 }; 

@@ -88,9 +88,9 @@ describe(getCompanyHandler.name, () => {
     );
 
     expect(hasCompanyReadPermission).toHaveBeenCalledWith(mockParams.id, mockUser);
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANY.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANY, logGroup);
     expect(mockService.getResource).toHaveBeenCalledWith(mockParams.id, mockLogger);
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANY.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANY);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
     expect(mockReply.send).toHaveBeenCalledWith(mockCompany);
   });
@@ -123,9 +123,9 @@ describe(getCompanyHandler.name, () => {
     ).rejects.toThrow(COMPANY_NOT_FOUND_ERROR(mockParams.id));
 
     expect(hasCompanyReadPermission).toHaveBeenCalledWith(mockParams.id, mockUser);
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANY.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANY, logGroup);
     expect(mockService.getResource).toHaveBeenCalledWith(mockParams.id, mockLogger);
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANY.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANY);
     expect(mockReply.code).not.toHaveBeenCalled();
     expect(mockReply.send).not.toHaveBeenCalled();
   });
@@ -142,7 +142,7 @@ describe(getCompanyHandler.name, () => {
     ).rejects.toThrow(error);
 
     expect(hasCompanyReadPermission).toHaveBeenCalledWith(mockParams.id, mockUser);
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANY.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANY, logGroup);
     expect(mockService.getResource).toHaveBeenCalledWith(mockParams.id, mockLogger);
     expect(mockReply.code).not.toHaveBeenCalled();
     expect(mockReply.send).not.toHaveBeenCalled();

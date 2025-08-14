@@ -14,10 +14,10 @@ export const getCompanyHandler = async (
   const logGroup = getCompanyHandler.name;
   const service = CompaniesService.getInstance();
   const { id } = request.params as GetCompanyParams;
-  logger.startStep(STEPS.GET_COMPANY.id, logGroup);
+  logger.startStep(STEPS.GET_COMPANY, logGroup);
   const company = await service
     .getResource(id, logger)
-    .finally(() => logger.endStep(STEPS.GET_COMPANY.id));
+    .finally(() => logger.endStep(STEPS.GET_COMPANY));
   if (!company) {
     return reply.code(STATUS_CODES.NOT_FOUND).send(ERROR_RESPONSES.COMPANY_NOT_FOUND);
   }

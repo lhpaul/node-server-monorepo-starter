@@ -1,3 +1,3 @@
 export const STEPS = {
-  UPDATE_TRANSACTION: { id: 'update-transaction' },
+  UPDATE_TRANSACTION: 'update-transaction',
 };

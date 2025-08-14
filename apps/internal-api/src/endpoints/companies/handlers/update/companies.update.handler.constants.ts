@@ -1,3 +1,3 @@
 export const STEPS = {
-  UPDATE_COMPANY: { id: 'update-company' },
+  UPDATE_COMPANY: 'update-company',
 };

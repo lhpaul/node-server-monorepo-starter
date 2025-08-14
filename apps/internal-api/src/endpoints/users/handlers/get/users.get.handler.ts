@@ -15,8 +15,8 @@ export const getUserHandler = async (
   
   logger.startStep(STEPS.GET_USER, logGroup);
   const user = await service
-    .getResource(params.id, logger);
-  logger.endStep(STEPS.GET_USER);
+    .getResource(params.id, logger)
+  .finally(() => logger.endStep(STEPS.GET_USER));
     
   if (!user) {
     return reply.code(STATUS_CODES.NOT_FOUND).send({

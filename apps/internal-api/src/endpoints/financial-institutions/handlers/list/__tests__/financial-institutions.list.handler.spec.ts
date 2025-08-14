@@ -68,14 +68,14 @@ describe(listFinancialInstitutionsHandler.name, () => {
     expect(mockLogger.child).toHaveBeenCalledWith({
       handler: listFinancialInstitutionsHandler.name,
     });
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.LIST_FINANCIAL_INSTITUTIONS.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.LIST_FINANCIAL_INSTITUTIONS, logGroup);
     expect(FinancialInstitutionsService.getInstance).toHaveBeenCalled();
     expect(transformQueryParams).toHaveBeenCalledWith(mockRequest.query);
     expect(mockService.getResourcesList).toHaveBeenCalledWith(
       { name: { eq: 'Test Bank' } },
       mockLogger,
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.LIST_FINANCIAL_INSTITUTIONS.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.LIST_FINANCIAL_INSTITUTIONS);
     expect(mockReply.send).toHaveBeenCalledWith(mockResult);
   });
 
@@ -106,8 +106,8 @@ describe(listFinancialInstitutionsHandler.name, () => {
       ),
     ).rejects.toThrow(mockError);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.LIST_FINANCIAL_INSTITUTIONS.id, logGroup);
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.LIST_FINANCIAL_INSTITUTIONS.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.LIST_FINANCIAL_INSTITUTIONS, logGroup);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.LIST_FINANCIAL_INSTITUTIONS);
     expect(mockReply.send).not.toHaveBeenCalled();
   });
 }); 

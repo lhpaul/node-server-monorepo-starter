@@ -1,3 +1,3 @@
 export const STEPS = {
-  DELETE_TRANSACTION: { id: 'delete-transaction' },
+  DELETE_TRANSACTION: 'delete-transaction',
 };

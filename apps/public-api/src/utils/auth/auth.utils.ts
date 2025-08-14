@@ -11,17 +11,17 @@ import { GET_USER_PERMISSIONS_STEPS, LOG_GROUP_NAME, PERMISSIONS_SUFFIXES } from
 
 export async function getUserPermissions(userId: string, logger: ExecutionLogger): Promise<UserPermissions> {
   const logGroup = `${LOG_GROUP_NAME}.${getUserPermissions.name}`;
-  logger.startStep(GET_USER_PERMISSIONS_STEPS.GET_USER_COMPANY_RELATIONS.id, logGroup);
+  logger.startStep(GET_USER_PERMISSIONS_STEPS.GET_USER_COMPANY_RELATIONS, logGroup);
   const userCompanyRelations = await UserCompanyRelationsService.getInstance().getUserCompanyRelations(userId, logger);
-  logger.endStep(GET_USER_PERMISSIONS_STEPS.GET_USER_COMPANY_RELATIONS.id);
+  logger.endStep(GET_USER_PERMISSIONS_STEPS.GET_USER_COMPANY_RELATIONS);
   const response: { companies: { [key: string]: string[] } } = { companies: {} };
   // get subscriptions of this companies
-  logger.startStep(GET_USER_PERMISSIONS_STEPS.GET_SUBSCRIPTIONS.id, logGroup);
+  logger.startStep(GET_USER_PERMISSIONS_STEPS.GET_SUBSCRIPTIONS, logGroup);
   const companySubscriptions = await Promise.all(userCompanyRelations.map(async (relation) => {
     const subscriptions = await CompaniesService.getInstance().getActiveSubscriptions(relation.companyId, logger);
     return subscriptions;
   }));
-  logger.endStep(GET_USER_PERMISSIONS_STEPS.GET_SUBSCRIPTIONS.id);
+  logger.endStep(GET_USER_PERMISSIONS_STEPS.GET_SUBSCRIPTIONS);
   for (const index in userCompanyRelations) {
     const userCompanyRelation = userCompanyRelations[index];
     const subscriptions = companySubscriptions[index];

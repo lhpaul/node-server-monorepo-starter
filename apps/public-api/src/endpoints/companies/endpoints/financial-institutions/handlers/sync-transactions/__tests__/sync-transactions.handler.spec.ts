@@ -131,8 +131,8 @@ describe(syncTransactionsHandler.name, () => {
       expect(mockLogger.child).toHaveBeenCalledWith({
         handler: syncTransactionsHandler.name,
       });
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.SYNC_TRANSACTIONS.id, logGroup);
-      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.SYNC_TRANSACTIONS.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.SYNC_TRANSACTIONS, logGroup);
+      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.SYNC_TRANSACTIONS);
 
       expect(mockService.syncWithFinancialInstitution).toHaveBeenCalledWith({
         companyId: mockParams.companyId,
@@ -156,8 +156,8 @@ describe(syncTransactionsHandler.name, () => {
         ),
       ).rejects.toThrow(error);
 
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.SYNC_TRANSACTIONS.id, logGroup);
-      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.SYNC_TRANSACTIONS.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.SYNC_TRANSACTIONS, logGroup);
+      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.SYNC_TRANSACTIONS);
       expect(mockReply.code).not.toHaveBeenCalled();
       expect(mockReply.send).not.toHaveBeenCalled();
     });

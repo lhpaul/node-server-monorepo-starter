@@ -15,11 +15,11 @@ export const deleteSubscriptionHandler = async (
   const logGroup = deleteSubscriptionHandler.name;
   const service = SubscriptionsService.getInstance();
   const { id } = request.params as DeleteSubscriptionParams;
-  logger.startStep(STEPS.DELETE_SUBSCRIPTION.id, logGroup);
+  logger.startStep(STEPS.DELETE_SUBSCRIPTION, logGroup);
   try {
     await service
       .deleteResource(id, logger)
-      .finally(() => logger.endStep(STEPS.DELETE_SUBSCRIPTION.id));
+      .finally(() => logger.endStep(STEPS.DELETE_SUBSCRIPTION));
   } catch (error) {
     if (
       error instanceof DomainModelServiceError &&

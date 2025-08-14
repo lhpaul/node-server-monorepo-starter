@@ -19,8 +19,8 @@ export const updateUserHandler = async (
   try {
     logger.startStep(STEPS.UPDATE_USER, logGroup);
     await service
-      .updateResource(params.id, body, logger);
-    logger.endStep(STEPS.UPDATE_USER);
+      .updateResource(params.id, body, logger)
+    .finally(() => logger.endStep(STEPS.UPDATE_USER));
     return reply.code(STATUS_CODES.NO_CONTENT).send();
   } catch (error) {
     if (error instanceof DomainModelServiceError) {

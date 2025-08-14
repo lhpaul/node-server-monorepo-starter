@@ -105,9 +105,9 @@ describe(createTransactionHandler.name, () => {
         expect(mockLogger.child).toHaveBeenCalledWith({
           handler: createTransactionHandler.name,
         });
-        expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_TRANSACTION.id, logGroup);
+        expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_TRANSACTION, logGroup);
         expect(mockLogger.endStep).toHaveBeenCalledWith(
-          STEPS.CREATE_TRANSACTION.id,
+          STEPS.CREATE_TRANSACTION,
         );
 
         // Verify service call
@@ -154,8 +154,8 @@ describe(createTransactionHandler.name, () => {
           },
           mockLogger,
         );
-        expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_TRANSACTION.id, logGroup);
-        expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.CREATE_TRANSACTION.id);
+        expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_TRANSACTION, logGroup);
+        expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.CREATE_TRANSACTION);
         expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.CREATED);
         expect(mockReply.send).toHaveBeenCalledWith({ id: mockTransactionId });
       });
@@ -188,7 +188,7 @@ describe(createTransactionHandler.name, () => {
         mockReply as FastifyReply,
       );
 
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_TRANSACTION.id, logGroup);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_TRANSACTION, logGroup);
       expect(mockService.createResource).toHaveBeenCalledWith(
         {
           ...mockBody,
@@ -201,7 +201,7 @@ describe(createTransactionHandler.name, () => {
         },
         mockLogger,
       );
-      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.CREATE_TRANSACTION.id);
+      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.CREATE_TRANSACTION);
       expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.BAD_REQUEST);
       expect(mockReply.send).toHaveBeenCalledWith({
         code: DomainModelServiceErrorCode.INVALID_INPUT,
@@ -222,9 +222,9 @@ describe(createTransactionHandler.name, () => {
       ).rejects.toThrow(error);
 
       // Verify logging still occurs
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_TRANSACTION.id, logGroup);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_TRANSACTION, logGroup);
       expect(mockLogger.endStep).toHaveBeenCalledWith(
-        STEPS.CREATE_TRANSACTION.id,
+        STEPS.CREATE_TRANSACTION,
       );
 
       // Verify no response is sent

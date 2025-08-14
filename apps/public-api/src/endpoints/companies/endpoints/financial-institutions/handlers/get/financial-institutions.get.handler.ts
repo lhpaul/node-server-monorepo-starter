@@ -27,10 +27,10 @@ export const getFinancialInstitutionHandler = async (
   
   const companiesService = CompaniesService.getInstance();
   
-  logger.startStep(STEPS.GET_FINANCIAL_INSTITUTION.id, logGroup);
+  logger.startStep(STEPS.GET_FINANCIAL_INSTITUTION, logGroup);
     const financialInstitution = await companiesService
       .getFinancialInstitution(companyId, { financialInstitutionRelationId }, logger)
-      .finally(() => logger.endStep(STEPS.GET_FINANCIAL_INSTITUTION.id));
+      .finally(() => logger.endStep(STEPS.GET_FINANCIAL_INSTITUTION));
     
     if (!financialInstitution) {
       return reply.code(STATUS_CODES.NOT_FOUND).send({

@@ -1,3 +1,3 @@
 export const STEPS = {
-  CREATE_TRANSACTION: { id: 'create-transaction' },
+  CREATE_TRANSACTION: 'create-transaction',
 };

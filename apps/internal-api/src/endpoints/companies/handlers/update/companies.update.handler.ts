@@ -20,9 +20,9 @@ export const updateCompanyHandler = async (
   const { id } = request.params as UpdateCompanyParams;
   const body = request.body as UpdateCompanyBody;
   try {
-    logger.startStep(STEPS.UPDATE_COMPANY.id, logGroup);
+    logger.startStep(STEPS.UPDATE_COMPANY, logGroup);
     await service.updateResource(id, body, logger)
-      .finally(() => logger.endStep(STEPS.UPDATE_COMPANY.id));
+      .finally(() => logger.endStep(STEPS.UPDATE_COMPANY));
     return reply.code(STATUS_CODES.NO_CONTENT).send();
   } catch (error) {
     if (

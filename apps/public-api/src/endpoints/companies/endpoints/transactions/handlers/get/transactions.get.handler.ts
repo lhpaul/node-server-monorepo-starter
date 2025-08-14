@@ -21,10 +21,10 @@ export const getTransactionHandler = async (
       message: FORBIDDEN_ERROR.responseMessage,
     });
   }
-  logger.startStep(STEPS.GET_TRANSACTION.id, logGroup);
+  logger.startStep(STEPS.GET_TRANSACTION, logGroup);
   const transaction = await service
     .getResource(id, logger)
-    .finally(() => logger.endStep(STEPS.GET_TRANSACTION.id));
+    .finally(() => logger.endStep(STEPS.GET_TRANSACTION));
   if (!transaction || transaction.companyId !== companyId) {
     return reply.code(STATUS_CODES.NOT_FOUND).send({
       code: RESOURCE_NOT_FOUND_ERROR.responseCode,

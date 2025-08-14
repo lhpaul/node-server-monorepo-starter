@@ -62,9 +62,9 @@ describe(getCompanyHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANY.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANY, logGroup);
     expect(mockService.getResource).toHaveBeenCalledWith(mockParams.id, mockLogger);
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANY.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANY);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
     expect(mockReply.send).toHaveBeenCalledWith(mockCompany);
   });
@@ -77,9 +77,9 @@ describe(getCompanyHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANY.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANY, logGroup);
     expect(mockService.getResource).toHaveBeenCalledWith(mockParams.id, mockLogger);
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANY.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANY);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.NOT_FOUND);
     expect(mockReply.send).toHaveBeenCalledWith(
       ERROR_RESPONSES.COMPANY_NOT_FOUND,
@@ -97,9 +97,9 @@ describe(getCompanyHandler.name, () => {
       ),
     ).rejects.toThrow(error);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANY.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANY, logGroup);
     expect(mockService.getResource).toHaveBeenCalledWith(mockParams.id, mockLogger);
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANY.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANY);
     expect(mockReply.code).not.toHaveBeenCalled();
     expect(mockReply.send).not.toHaveBeenCalled();
   });

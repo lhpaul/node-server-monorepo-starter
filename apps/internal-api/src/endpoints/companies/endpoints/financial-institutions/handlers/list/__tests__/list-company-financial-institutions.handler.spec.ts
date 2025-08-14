@@ -101,10 +101,10 @@ describe(listCompanyFinancialInstitutionsHandler.name, () => {
     expect(mockLogger.child).toHaveBeenCalledWith({
       handler: listCompanyFinancialInstitutionsHandler.name,
     });
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_FINANCIAL_INSTITUTIONS.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_FINANCIAL_INSTITUTIONS, logGroup);
     expect(CompaniesService.getInstance).toHaveBeenCalled();
     expect(mockService.listFinancialInstitutions).toHaveBeenCalledWith(mockCompanyId, mockLogger);
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_FINANCIAL_INSTITUTIONS.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_FINANCIAL_INSTITUTIONS);
 
     expect(maskFields).toHaveBeenCalledTimes(2);
     expect(maskFields).toHaveBeenNthCalledWith(1, mockFinancialInstitutions[0].credentials, CREDENTIALS_FIELDS_TO_MASK);
@@ -137,9 +137,9 @@ describe(listCompanyFinancialInstitutionsHandler.name, () => {
     );
 
     // Assert
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_FINANCIAL_INSTITUTIONS.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_FINANCIAL_INSTITUTIONS, logGroup);
     expect(mockService.listFinancialInstitutions).toHaveBeenCalledWith(mockCompanyId, mockLogger);
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_FINANCIAL_INSTITUTIONS.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_FINANCIAL_INSTITUTIONS);
     expect(maskFields).not.toHaveBeenCalled();
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
     expect(mockReply.send).toHaveBeenCalledWith([]);
@@ -158,8 +158,8 @@ describe(listCompanyFinancialInstitutionsHandler.name, () => {
       ),
     ).rejects.toThrow(mockError);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_FINANCIAL_INSTITUTIONS.id, logGroup);
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_FINANCIAL_INSTITUTIONS.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_FINANCIAL_INSTITUTIONS, logGroup);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_FINANCIAL_INSTITUTIONS);
     expect(mockReply.send).not.toHaveBeenCalled();
   });
 
@@ -177,7 +177,7 @@ describe(listCompanyFinancialInstitutionsHandler.name, () => {
     ).rejects.toThrow(mockError);
 
     // Verify that endStep is called even when the service throws an error
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_FINANCIAL_INSTITUTIONS.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_FINANCIAL_INSTITUTIONS);
   });
 
   it('should mask credentials correctly for each financial institution', async () => {

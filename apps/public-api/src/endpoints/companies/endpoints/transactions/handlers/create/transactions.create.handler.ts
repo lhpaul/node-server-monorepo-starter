@@ -26,7 +26,7 @@ export const createTransactionHandler = async (
   const service = TransactionsService.getInstance();
   const body = request.body as CreateCompanyTransactionBody;
   try {
-    logger.startStep(STEPS.CREATE_TRANSACTION.id, logGroup);
+    logger.startStep(STEPS.CREATE_TRANSACTION, logGroup);
     const id = await service
       .createResource({
         categoryId: null,
@@ -37,7 +37,7 @@ export const createTransactionHandler = async (
         sourceType: TransactionSourceType.USER,
         companyId,
       }, logger)
-      .finally(() => logger.endStep(STEPS.CREATE_TRANSACTION.id));
+      .finally(() => logger.endStep(STEPS.CREATE_TRANSACTION));
     return reply.code(STATUS_CODES.CREATED).send({ id });
   } catch (error) {
     if (error instanceof DomainModelServiceError) {

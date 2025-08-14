@@ -16,10 +16,10 @@ export const deleteTransactionCategoryHandler = async (
   const service = TransactionCategoriesService.getInstance();
   const params = request.params as DeleteTransactionCategoryParams;
   try {
-  logger.startStep(STEPS.DELETE_TRANSACTION_CATEGORY.id, logGroup);
+  logger.startStep(STEPS.DELETE_TRANSACTION_CATEGORY, logGroup);
   await service
     .deleteResource(params.id, logger)
-    .finally(() => logger.endStep(STEPS.DELETE_TRANSACTION_CATEGORY.id));
+    .finally(() => logger.endStep(STEPS.DELETE_TRANSACTION_CATEGORY));
   } catch (error) {
     if (error instanceof DomainModelServiceError && error.code === DomainModelServiceErrorCode.RESOURCE_NOT_FOUND) {
       return reply.code(STATUS_CODES.NOT_FOUND).send(ERROR_RESPONSES.TRANSACTION_CATEGORY_NOT_FOUND);
