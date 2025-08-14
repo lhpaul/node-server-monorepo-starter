@@ -3,4 +3,4 @@ export const STEPS = {
     id: 'get-financial-institutions',
     description: 'Get financial institutions for company',
   },
-} as const; 
+}; 
