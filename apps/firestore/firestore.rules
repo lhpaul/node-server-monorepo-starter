@@ -28,7 +28,7 @@ service cloud.firestore {
 
         function validCreateValues(incomingData) {
           return validDefaultCreationFields()
-          && validRequestsCreationFields(incomingData)
+          && validProcessDocumentCreationFields()
           && incomingData.amount is number
           && (!('categoryId' in incomingData) || incomingData.categoryId is string )
           && incomingData.date is string
@@ -37,7 +37,7 @@ service cloud.firestore {
           && incomingData.sourceId is string && (incomingData.sourceType != 'user' || isOwner(incomingData.sourceId)) // second condition is to assure that the id is the user's id when the transaction is from the user
           && (!('sourceTransactionId' in incomingData) || incomingData.sourceTransactionId is string )
           && incomingData.type in ['credit', 'debit']
-          && transactionId == null;
+          && incomingData.transactionId == null;
         }
       }
 
@@ -50,8 +50,8 @@ service cloud.firestore {
         && isOwner(existingData().userId) && hasAtLeastOnePrivilegeOnCompany(companyId, ['transactions:write']);
 
         function validCreateValues(incomingData) {
-          return validDefaultCreationFields(incomingData)
-          && validRequestsCreationFields(incomingData)
+          return validDefaultCreationFields()
+          && validProcessDocumentCreationFields()
           && (!('amount' in incomingData) || incomingData.amount is number )
           && (!('categoryId' in incomingData) || incomingData.categoryId is string )
           && (!('date' in incomingData) || incomingData.date is string )
@@ -69,8 +69,8 @@ service cloud.firestore {
         && isOwner(existingData().userId) && hasAtLeastOnePrivilegeOnCompany(companyId, ['company:write']);
 
         function validCreateValues(incomingData) {
-          return validDefaultCreationFields(incomingData)
-          && validRequestsCreationFields(incomingData)
+          return validDefaultCreationFields()
+          && validProcessDocumentCreationFields()
           && (!('name' in incomingData) || incomingData.name is string );
         }
       }
@@ -90,16 +90,16 @@ service cloud.firestore {
     function isSignedIn() {
       return request.auth.uid != null;
     }
-    function validDefaultCreationFields(incomingData) {
-      return incomingData.keys().hasAny(['_onCreateEventId', '_onCreateMaxRetries', '_onCreateMaxRetriesReached', '_onCreateEventRetries']) == false
-        && incomingData.createdAt == request.time && incomingData.updatedAt == request.time;
+    function validDefaultCreationFields() {
+      return incomingData().keys().hasAny(['_onCreateEventId', '_onCreateMaxRetries', '_onCreateMaxRetriesReached', '_onCreateEventRetries']) == false
+        && incomingData().createdAt == request.time && incomingData().updatedAt == request.time;
     }
-    function validRequestsCreationFields(incomingData) {
-      return incomingData.status == 'pending'
-      && incomingData.error == null;
+    function validProcessDocumentCreationFields() {
+      return incomingData().status == 'pending'
+      && incomingData().error == null;
     }
-    function validUpdateTimestamp(incomingData) {
-      return incomingData.updatedAt == request.time && incomingData.createdAt == existingData.createdAt;
+    function validUpdateTimestamps() {
+      return incomingData().updatedAt == request.time && incomingData().createdAt == existingData().createdAt;
     }
   }
 }

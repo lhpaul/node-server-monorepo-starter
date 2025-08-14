@@ -1,6 +1,6 @@
 // Internal modules (farthest path first, then alphabetical)
-import { ExecutionLogger, FilterInput, QueryInput, Repository } from '../../definitions';
-import { RepositoryError, RepositoryErrorCode } from '../repositories';
+import { ExecutionLogger, FilterInput, QueryInput } from '../../definitions';
+import { FirestoreCollectionRepository, RepositoryError, RepositoryErrorCode } from '../repositories';
 
 // Local imports (alphabetical)
 import { DomainModelServiceError, DomainModelServiceErrorCode } from './domain-model-service.class.errors';
@@ -8,10 +8,10 @@ import { DomainModelServiceError, DomainModelServiceErrorCode } from './domain-m
 export class DomainModelService<DomainModel, DocumentModel, CreateResourceInput, CreateDocumentInput, UpdateResourceInput, UpdateDocumentInput, FilterResourcesInput extends FilterInput, DocumentsQueryInput extends QueryInput> {
   protected DocumentToModelClass: new (data: DocumentModel) => DomainModel;
   
-  protected repository: Repository<DocumentModel, CreateDocumentInput, UpdateDocumentInput, DocumentsQueryInput>;
+  protected repository: FirestoreCollectionRepository<DocumentModel, CreateDocumentInput, UpdateDocumentInput, DocumentsQueryInput>;
 
   constructor(
-    repository: Repository<DocumentModel, CreateDocumentInput, UpdateDocumentInput, DocumentsQueryInput>,
+    repository: FirestoreCollectionRepository<DocumentModel, CreateDocumentInput, UpdateDocumentInput, DocumentsQueryInput>,
     documentToModelClass: new (data: DocumentModel) => DomainModel,
   ) {
     this.repository = repository;

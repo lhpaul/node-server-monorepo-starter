@@ -16,7 +16,12 @@ import { FinancialInstitutionService, FinancialInstitutionTransaction } from '..
 
 // Local imports (alphabetical)
 import { TransactionDocumentToModelParser } from './transactions.service.classes';
-import { DATE_FORMAT, ERRORS_MESSAGES, SYNC_WITH_FINANCIAL_INSTITUTION_STEPS } from './transactions.service.constants';
+import {
+  DATE_FORMAT,
+  ERRORS_MESSAGES,
+  SYNC_WITH_FINANCIAL_INSTITUTION_LOGS,
+  SYNC_WITH_FINANCIAL_INSTITUTION_STEPS,
+} from './transactions.service.constants';
 import {
   CreateTransactionInput,
   FilterTransactionsInput,
@@ -24,6 +29,8 @@ import {
   SyncWithFinancialInstitutionInput,
   UpdateTransactionInput,
 } from './transactions.service.interfaces';
+import { firestore } from 'firebase-admin';
+import { MAX_WRITE_BATCH_SIZE, WRITES_PER_CREATE_DOCUMENT, WRITES_PER_DELETE_DOCUMENT, WRITES_PER_UPDATE_DOCUMENT } from '../../../constants';
 
 export class TransactionsService extends DomainModelService<Transaction, TransactionDocument, CreateTransactionInput, CreateTransactionDocumentInput, UpdateTransactionInput, UpdateTransactionDocumentInput, FilterTransactionsInput, QueryTransactionsInput> {
   private static instance: TransactionsService;
@@ -74,30 +81,81 @@ export class TransactionsService extends DomainModelService<Transaction, Transac
       }, logger),
       this.getResourcesList({
         companyId: [{ value: companyId, operator: '==' }],
+        sourceType: [{ value: TransactionSourceType.FINANCIAL_INSTITUTION, operator: '==' }],
+        sourceId: [{ value: financialInstitutionId, operator: '==' }],
         date: [{ value: fromDate, operator: '>' }, { value: toDate, operator: '<=' }],
       }, logger),
-    ]);
-    logger.endStep(SYNC_WITH_FINANCIAL_INSTITUTION_STEPS.GET_TRANSACTIONS);
-    
+    ]).finally(() => logger.endStep(SYNC_WITH_FINANCIAL_INSTITUTION_STEPS.GET_TRANSACTIONS));
     const syncActions = this._getSyncActions(companyId, financialInstitutionId, financialInstitutionTransactions, internalTransactions);
+    logger.info({
+      logId: SYNC_WITH_FINANCIAL_INSTITUTION_LOGS.SYNC_ACTIONS.logId,
+      createTransactions: syncActions.createTransactions.length,
+      updateTransactions: syncActions.updateTransactions.length,
+      deleteTransactions: syncActions.deleteTransactions.length,
+    }, SYNC_WITH_FINANCIAL_INSTITUTION_LOGS.SYNC_ACTIONS.logMessage);
+    let writes = 0;
+    let batch = firestore().batch();
     if (syncActions.createTransactions.length > 0) {
       logger.startStep(SYNC_WITH_FINANCIAL_INSTITUTION_STEPS.CREATE_TRANSACTIONS, logGroup);
       for (const transaction of syncActions.createTransactions) {
-        await this.createResource(transaction, logger);
+        this.repository.createDocumentSync(transaction, batch, logger);
+        writes += WRITES_PER_CREATE_DOCUMENT;
+        if (writes % (MAX_WRITE_BATCH_SIZE - WRITES_PER_CREATE_DOCUMENT) === 0) {
+          logger.startStep(SYNC_WITH_FINANCIAL_INSTITUTION_STEPS.CREATE_TRANSACTIONS_PARTIAL_COMMIT, logGroup);
+          await batch.commit()
+          .finally(() => logger.endStep(SYNC_WITH_FINANCIAL_INSTITUTION_STEPS.CREATE_TRANSACTIONS_PARTIAL_COMMIT));
+          batch = firestore().batch();
+          writes = 0;
+        }
+      }
+      if (writes % (MAX_WRITE_BATCH_SIZE - WRITES_PER_CREATE_DOCUMENT) !== 0) {
+        logger.startStep(SYNC_WITH_FINANCIAL_INSTITUTION_STEPS.CREATE_TRANSACTIONS_FINAL_COMMIT, logGroup);
+        await batch.commit()
+        .finally(() => logger.endStep(SYNC_WITH_FINANCIAL_INSTITUTION_STEPS.CREATE_TRANSACTIONS_FINAL_COMMIT));
       }
       logger.endStep(SYNC_WITH_FINANCIAL_INSTITUTION_STEPS.CREATE_TRANSACTIONS);
     }
     if (syncActions.updateTransactions.length > 0) {
+      writes = 0;
+      batch = firestore().batch();
       logger.startStep(SYNC_WITH_FINANCIAL_INSTITUTION_STEPS.UPDATE_TRANSACTIONS, logGroup);
       for (const { id, data } of syncActions.updateTransactions) {
-        await this.updateResource(id, data, logger);
+        this.repository.updateDocumentSync(id, data, batch, logger);
+        writes += WRITES_PER_UPDATE_DOCUMENT;
+        if (writes % (MAX_WRITE_BATCH_SIZE - WRITES_PER_UPDATE_DOCUMENT) === 0) {
+          logger.startStep(SYNC_WITH_FINANCIAL_INSTITUTION_STEPS.UPDATE_TRANSACTIONS_PARTIAL_COMMIT, logGroup);
+          await batch.commit()
+          .finally(() => logger.endStep(SYNC_WITH_FINANCIAL_INSTITUTION_STEPS.UPDATE_TRANSACTIONS_PARTIAL_COMMIT));
+          batch = firestore().batch();
+          writes = 0;
+        }
+      }
+      if (writes % (MAX_WRITE_BATCH_SIZE - WRITES_PER_UPDATE_DOCUMENT) !== 0) {
+        logger.startStep(SYNC_WITH_FINANCIAL_INSTITUTION_STEPS.UPDATE_TRANSACTIONS_FINAL_COMMIT, logGroup);
+        await batch.commit()
+        .finally(() => logger.endStep(SYNC_WITH_FINANCIAL_INSTITUTION_STEPS.UPDATE_TRANSACTIONS_FINAL_COMMIT));
       }
       logger.endStep(SYNC_WITH_FINANCIAL_INSTITUTION_STEPS.UPDATE_TRANSACTIONS);
     }
     if (syncActions.deleteTransactions.length > 0) {
+      writes = 0;
+      batch = firestore().batch();
       logger.startStep(SYNC_WITH_FINANCIAL_INSTITUTION_STEPS.DELETE_TRANSACTIONS, logGroup);
       for (const id of syncActions.deleteTransactions) {
-        await this.deleteResource(id, logger);
+        this.repository.deleteDocumentSync(id, batch, logger);
+        writes += WRITES_PER_DELETE_DOCUMENT;
+        if (writes % (MAX_WRITE_BATCH_SIZE - WRITES_PER_DELETE_DOCUMENT) === 0) {
+          logger.startStep(SYNC_WITH_FINANCIAL_INSTITUTION_STEPS.DELETE_TRANSACTIONS_PARTIAL_COMMIT, logGroup);
+          await batch.commit()
+          .finally(() => logger.endStep(SYNC_WITH_FINANCIAL_INSTITUTION_STEPS.DELETE_TRANSACTIONS_PARTIAL_COMMIT));
+          batch = firestore().batch();
+          writes = 0;
+        }
+      }
+      if (writes % (MAX_WRITE_BATCH_SIZE - WRITES_PER_DELETE_DOCUMENT) !== 0) {
+        logger.startStep(SYNC_WITH_FINANCIAL_INSTITUTION_STEPS.DELETE_TRANSACTIONS_FINAL_COMMIT, logGroup);
+        await batch.commit()
+        .finally(() => logger.endStep(SYNC_WITH_FINANCIAL_INSTITUTION_STEPS.DELETE_TRANSACTIONS_FINAL_COMMIT));
       }
       logger.endStep(SYNC_WITH_FINANCIAL_INSTITUTION_STEPS.DELETE_TRANSACTIONS);
     }

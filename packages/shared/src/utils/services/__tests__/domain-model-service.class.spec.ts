@@ -1,5 +1,5 @@
 import { ExecutionLogger, FilterInput, FilterItem, QueryInput, QueryItem, Repository } from '../../../definitions';
-import { RepositoryError, RepositoryErrorCode } from '../../repositories';
+import { FirestoreCollectionRepository, RepositoryError, RepositoryErrorCode } from '../../repositories';
 import { DomainModelService } from '../domain-model-service.class';
 import { DomainModelServiceError, DomainModelServiceErrorCode } from '../domain-model-service.class.errors';
 
@@ -54,16 +54,19 @@ describe(DomainModelService.name, () => {
     TestFilterResourcesInput,
     TestDocumentsQueryInput
   >;
-  let mockRepository: jest.Mocked<Repository<TestDocumentModel, TestCreateDocumentInput, TestUpdateDocumentInput, TestDocumentsQueryInput>>;
+  let mockRepository: jest.Mocked<FirestoreCollectionRepository<TestDocumentModel, TestCreateDocumentInput, TestUpdateDocumentInput, TestDocumentsQueryInput>>;
   let mockLogger: jest.Mocked<ExecutionLogger>;
 
   beforeEach(() => {
     mockRepository = {
       createDocument: jest.fn(),
+      createDocumentSync: jest.fn(),
       deleteDocument: jest.fn(),
+      deleteDocumentSync: jest.fn(),
       getDocument: jest.fn(),
       getDocumentsList: jest.fn(),
       updateDocument: jest.fn(),
+      updateDocumentSync: jest.fn(),
     } as any;
 
     mockLogger = {
