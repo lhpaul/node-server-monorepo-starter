@@ -3,7 +3,7 @@ import { SubscriptionsService } from '@repo/shared/domain';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../../../definitions/auth.interfaces';
-import { hasCompanySubscriptionsReadPermission } from '../../../../../../../utils/auth/auth.utils';
+import { hasCompanySubscriptionsReadPermission } from '../../../../../../../utils/permissions';
 import { STEPS } from '../subscriptions.list.handler.constants';
 import { listSubscriptionsHandler } from '../subscriptions.list.handler';
 
@@ -26,7 +26,7 @@ jest.mock('@repo/shared/domain', () => ({
     getInstance: jest.fn(),
   },
 }));
-jest.mock('../../../../../../../utils/auth/auth.utils');
+jest.mock('../../../../../../../utils/permissions');
 
 describe(listSubscriptionsHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;
@@ -43,12 +43,7 @@ describe(listSubscriptionsHandler.name, () => {
   const mockQuery = { startsAt: '2024-03-20', endsAt: '2024-03-20' };
   const mockMappedQuery = { startsAt: new Date(mockQuery.startsAt), endsAt: new Date(mockQuery.endsAt) };
   const transformedQuery = { companyId: mockParams.companyId, ...mockMappedQuery };
-  const mockUser = {
-    userId: 'user123',
-    companies: {
-      [mockParams.companyId]: ['subscriptions:read'],
-    },
-  } as unknown as AuthUser;
+  const mockUser = { app_user_id: 'user123' } as AuthUser;
 
   beforeEach(() => {
     mockLogger = {
@@ -117,14 +112,14 @@ describe(listSubscriptionsHandler.name, () => {
     );
 
     expect(hasCompanySubscriptionsReadPermission).toHaveBeenCalledWith(mockParams.companyId, mockUser);
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.LIST_SUBSCRIPTIONS.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.LIST_SUBSCRIPTIONS, logGroup);
     expect(mapDateQueryParams).toHaveBeenCalledWith(mockQuery, ['startsAt', 'endsAt']);
     expect(transformQueryParams).toHaveBeenCalledWith({ companyId: mockParams.companyId, ...mockMappedQuery });
     expect(mockService.getResourcesList).toHaveBeenCalledWith(
       transformedQuery,
       mockLogger,
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.LIST_SUBSCRIPTIONS.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.LIST_SUBSCRIPTIONS);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
     expect(mockReply.send).toHaveBeenCalledWith(mockSubscriptions);
   });
@@ -141,14 +136,14 @@ describe(listSubscriptionsHandler.name, () => {
     ).rejects.toThrow(error);
 
     expect(hasCompanySubscriptionsReadPermission).toHaveBeenCalledWith(mockParams.companyId, mockUser);
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.LIST_SUBSCRIPTIONS.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.LIST_SUBSCRIPTIONS, logGroup);
     expect(mapDateQueryParams).toHaveBeenCalledWith(mockQuery, ['startsAt', 'endsAt']);
     expect(transformQueryParams).toHaveBeenCalledWith({ companyId: mockParams.companyId, ...mockMappedQuery });
     expect(mockService.getResourcesList).toHaveBeenCalledWith(
       transformedQuery,
       mockLogger,
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.LIST_SUBSCRIPTIONS.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.LIST_SUBSCRIPTIONS);
     expect(mockReply.code).not.toHaveBeenCalled();
     expect(mockReply.send).not.toHaveBeenCalled();
   });

@@ -4,7 +4,7 @@ import { TransactionsService } from '@repo/shared/domain';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../../../definitions/auth.interfaces';
-import { hasCompanyTransactionsReadPermission } from '../../../../../../../utils/auth/auth.utils';
+import { hasCompanyTransactionsReadPermission } from '../../../../../../../utils/permissions';
 import { STEPS } from '../transactions.list.handler.constants';
 import { listTransactionsHandler } from '../transactions.list.handler';
 
@@ -27,7 +27,7 @@ jest.mock('@repo/shared/domain', () => ({
   },
 }));
 
-jest.mock('../../../../../../../utils/auth/auth.utils', () => ({
+jest.mock('../../../../../../../utils/permissions', () => ({
   hasCompanyTransactionsReadPermission: jest.fn(),
 }));
 
@@ -43,12 +43,7 @@ describe(listTransactionsHandler.name, () => {
   const logGroup = listTransactionsHandler.name;
   const mockParams = { companyId: 'company123' };
   const mockQuery = { amount: { eq: 100 } };
-  const mockUser: AuthUser = {
-    userId: 'user123',
-    companies: {
-      [mockParams.companyId]: ['transaction:read'],
-    },
-  } as unknown as AuthUser;
+  const mockUser = { app_user_id: 'user123' } as AuthUser;
 
   beforeEach(() => {
     mockLogger = {
@@ -113,13 +108,13 @@ describe(listTransactionsHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS, logGroup);
     expect(transformQueryParams).toHaveBeenCalledWith(transformedQuery);
     expect(mockService.getResourcesList).toHaveBeenCalledWith(
       transformedQuery,
       mockLogger,
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
     expect(mockReply.send).toHaveBeenCalledWith(mockTransactions);
   });
@@ -136,12 +131,12 @@ describe(listTransactionsHandler.name, () => {
       ),
     ).rejects.toThrow(error);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS, logGroup);
     expect(mockService.getResourcesList).toHaveBeenCalledWith(
       transformedQuery,
       mockLogger,
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS);
     expect(mockReply.code).not.toHaveBeenCalled();
     expect(mockReply.send).not.toHaveBeenCalled();
   });

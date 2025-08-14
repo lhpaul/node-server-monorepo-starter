@@ -4,7 +4,7 @@ import { maskFields } from '@repo/shared/utils';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../../../definitions/auth.interfaces';
-import { hasCompanyFinancialInstitutionsListPermission } from '../../../../../../../utils/auth/auth.utils';
+import { hasCompanyFinancialInstitutionsListPermission } from '../../../../../../../utils/permissions';
 import { CREDENTIALS_FIELDS_TO_MASK } from '../../../financial-institutions.endpoints.constants';
 import { STEPS } from '../financial-institutions.list.handler.constants';
 import { listFinancialInstitutionsHandler } from '../financial-institutions.list.handler';
@@ -15,7 +15,7 @@ jest.mock('@repo/shared/utils', () => ({
   ...jest.requireActual('@repo/shared/utils'),
   maskFields: jest.fn(),
 }));
-jest.mock('../../../../../../../utils/auth/auth.utils', () => ({
+jest.mock('../../../../../../../utils/permissions', () => ({
   hasCompanyFinancialInstitutionsListPermission: jest.fn(),
 }));
 
@@ -26,7 +26,7 @@ describe(listFinancialInstitutionsHandler.name, () => {
   let mockService: Partial<CompaniesService>;
   const logGroup = listFinancialInstitutionsHandler.name;
   const mockParams: ListCompanyFinancialInstitutionsParams = { companyId: 'company123' };
-  const mockAuthUser = { userId: 'user123' } as unknown as AuthUser;
+  const mockUser = { app_user_id: 'user123' } as AuthUser;
   const mockFinancialInstitutions = [
     {
       id: 'fi-relation-1',
@@ -64,7 +64,7 @@ describe(listFinancialInstitutionsHandler.name, () => {
     mockRequest = {
       log: mockLogger,
       params: mockParams,
-      user: mockAuthUser,
+      user: mockUser,
     };
 
     mockReply = {
@@ -97,7 +97,7 @@ describe(listFinancialInstitutionsHandler.name, () => {
         mockReply as FastifyReply,
       );
 
-      expect(hasCompanyFinancialInstitutionsListPermission).toHaveBeenCalledWith(mockParams.companyId, mockAuthUser);
+      expect(hasCompanyFinancialInstitutionsListPermission).toHaveBeenCalledWith(mockParams.companyId, mockUser);
       expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.FORBIDDEN);
       expect(mockReply.send).toHaveBeenCalledWith({
         code: FORBIDDEN_ERROR.responseCode,
@@ -123,8 +123,8 @@ describe(listFinancialInstitutionsHandler.name, () => {
       expect(mockLogger.child).toHaveBeenCalledWith({
         handler: listFinancialInstitutionsHandler.name,
       });
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_FINANCIAL_INSTITUTIONS.id, logGroup);
-      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_FINANCIAL_INSTITUTIONS.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_FINANCIAL_INSTITUTIONS, logGroup);
+      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_FINANCIAL_INSTITUTIONS);
 
       expect(mockService.listFinancialInstitutions).toHaveBeenCalledWith(mockParams.companyId, mockLogger);
 
@@ -172,8 +172,8 @@ describe(listFinancialInstitutionsHandler.name, () => {
         ),
       ).rejects.toThrow(error);
 
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_FINANCIAL_INSTITUTIONS.id, logGroup);
-      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_FINANCIAL_INSTITUTIONS.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_FINANCIAL_INSTITUTIONS, logGroup);
+      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_FINANCIAL_INSTITUTIONS);
       expect(mockReply.code).not.toHaveBeenCalled();
       expect(mockReply.send).not.toHaveBeenCalled();
     });

@@ -14,10 +14,10 @@ export const getTransactionCategoryHandler = async (
   const logGroup = getTransactionCategoryHandler.name;
   const service = TransactionCategoriesService.getInstance();
   const params = request.params as GetTransactionCategoryParams;
-  logger.startStep(STEPS.GET_TRANSACTION_CATEGORY.id, logGroup);
+  logger.startStep(STEPS.GET_TRANSACTION_CATEGORY, logGroup);
   const result = await service
     .getResource(params.id, logger)
-    .finally(() => logger.endStep(STEPS.GET_TRANSACTION_CATEGORY.id));
+    .finally(() => logger.endStep(STEPS.GET_TRANSACTION_CATEGORY));
   
   if (!result) {
     return reply.code(STATUS_CODES.NOT_FOUND).send({

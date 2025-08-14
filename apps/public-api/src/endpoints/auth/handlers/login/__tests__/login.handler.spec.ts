@@ -1,25 +1,33 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { AuthService, DecodeEmailTokenError, DecodeEmailTokenErrorCode, UsersService } from '@repo/shared/domain';
+import { UsersService } from '@repo/shared/domain';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
+import {
+  decodeEmailToken,
+  DecodeEmailTokenError,
+  DecodeEmailTokenErrorCode,
+  generateUserToken,
+} from '../../../../../utils/auth';
 import { ERROR_RESPONSES, STEPS } from '../login.handler.constants';
 import { loginHandler } from '../login.handler';
 
 jest.mock('@repo/shared/domain', () => ({
   ...jest.requireActual('@repo/shared/domain'),
-  AuthService: {
-    getInstance: jest.fn(),
-  },
   UsersService: {
     getInstance: jest.fn(),
   }
+}));
+
+jest.mock('../../../../../utils/auth', () => ({
+  ...jest.requireActual('../../../../../utils/auth'),
+  decodeEmailToken: jest.fn(),
+  generateUserToken: jest.fn(),
 }));
 
 describe(loginHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;
   let mockReply: Partial<FastifyReply>;
   let mockLogger: any;
-  let mockAuthService: jest.SpyInstance;
   let mockUsersService: jest.SpyInstance;
 
   const mockEmail = 'test@example.com';
@@ -47,12 +55,6 @@ describe(loginHandler.name, () => {
       send: jest.fn(),
     };
 
-    // Mock AuthService
-    mockAuthService = jest.spyOn(AuthService, 'getInstance').mockReturnValue({
-      decodeEmailToken: jest.fn(),
-      generateUserToken: jest.fn(),
-    } as any);
-
     // Mock UsersRepository
     mockUsersService = jest.spyOn(UsersService, 'getInstance').mockReturnValue({
       getResourcesList: jest.fn(),
@@ -66,34 +68,29 @@ describe(loginHandler.name, () => {
   it('should successfully login a user with valid credentials', async () => {
     // Arrange
     const mockUser = { id: mockUserId, email: mockEmail };
-    mockAuthService.mockReturnValue({
-      decodeEmailToken: jest.fn().mockResolvedValue({ email: mockEmail }),
-      generateUserToken: jest.fn().mockResolvedValue(mockUserToken),
-    } as any);
 
     mockUsersService.mockReturnValue({
       getResourcesList: jest.fn().mockResolvedValue([mockUser]),
     } as any);
-
+    (decodeEmailToken as jest.Mock).mockResolvedValue({ email: mockEmail });
+    (generateUserToken as jest.Mock).mockResolvedValue(mockUserToken);
     // Act
     await loginHandler(mockRequest as FastifyRequest, mockReply as FastifyReply);
 
     // Assert
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DECODE_EMAIL_TOKEN.id, mockLogGroup);
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.DECODE_EMAIL_TOKEN.id);
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.FIND_USER.id, mockLogGroup);
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.FIND_USER.id);
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GENERATE_USER_TOKEN.id, mockLogGroup);
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GENERATE_USER_TOKEN.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DECODE_EMAIL_TOKEN, mockLogGroup);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.DECODE_EMAIL_TOKEN);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.FIND_USER, mockLogGroup);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.FIND_USER);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GENERATE_USER_TOKEN, mockLogGroup);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GENERATE_USER_TOKEN);
     expect(mockReply.status).toHaveBeenCalledWith(STATUS_CODES.OK);
     expect(mockReply.send).toHaveBeenCalledWith({ token: mockUserToken });
   });
 
   it('should return unauthorized when user is not found', async () => {
     // Arrange
-    mockAuthService.mockReturnValue({
-      decodeEmailToken: jest.fn().mockResolvedValue({ email: mockEmail }),
-    } as any);
+    (decodeEmailToken as jest.Mock).mockResolvedValue({ email: mockEmail });
 
     mockUsersService.mockReturnValue({
       getResourcesList: jest.fn().mockResolvedValue([]),
@@ -113,9 +110,7 @@ describe(loginHandler.name, () => {
   it('should return bad request when email token is invalid', async () => {
     // Arrange
     const mockError = new DecodeEmailTokenError({ code: DecodeEmailTokenErrorCode.INVALID_TOKEN, message: 'Invalid token' });
-    mockAuthService.mockReturnValue({
-      decodeEmailToken: jest.fn().mockRejectedValue(mockError),
-    } as any);
+    (decodeEmailToken as jest.Mock).mockRejectedValue(mockError);
 
     // Act
     await loginHandler(mockRequest as FastifyRequest, mockReply as FastifyReply);
@@ -131,9 +126,7 @@ describe(loginHandler.name, () => {
   it('should throw error for unexpected errors', async () => {
     // Arrange
     const unexpectedError = new Error('Unexpected error');
-    mockAuthService.mockReturnValue({
-      decodeEmailToken: jest.fn().mockRejectedValue(unexpectedError),
-    } as any);
+    (decodeEmailToken as jest.Mock).mockRejectedValue(unexpectedError);
 
     // Act & Assert
     await expect(loginHandler(mockRequest as FastifyRequest, mockReply as FastifyReply))

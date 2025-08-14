@@ -3,7 +3,7 @@ import { CompaniesService, UpdateFinancialInstitutionError, UpdateFinancialInsti
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../../../definitions/auth.interfaces';
-import { hasCompanyFinancialInstitutionsUpdatePermission } from '../../../../../../../utils/auth/auth.utils';
+import { hasCompanyFinancialInstitutionsUpdatePermission } from '../../../../../../../utils/permissions';
 import { STEPS } from '../financial-institutions.update.handler.constants';
 import { updateFinancialInstitutionHandler } from '../financial-institutions.update.handler';
 import { UpdateCompanyFinancialInstitutionBody, UpdateCompanyFinancialInstitutionParams } from '../financial-institutions.update.handler.interfaces';
@@ -14,7 +14,7 @@ jest.mock('@repo/shared/domain', () => ({
     getInstance: jest.fn(),
   },
 }));
-jest.mock('../../../../../../../utils/auth/auth.utils', () => ({
+jest.mock('../../../../../../../utils/permissions', () => ({
   hasCompanyFinancialInstitutionsUpdatePermission: jest.fn(),
 }));
 
@@ -28,7 +28,7 @@ describe(updateFinancialInstitutionHandler.name, () => {
     companyId: 'company123', 
     id: 'fi-relation-123' 
   };
-  const mockUser = { app_user_id: 'user123' } as unknown as AuthUser;
+  const mockUser = { app_user_id: 'user123' } as AuthUser;
   const mockBody: UpdateCompanyFinancialInstitutionBody = {
     credentials: { username: 'updated', password: 'newsecret' },
   };
@@ -101,8 +101,8 @@ describe(updateFinancialInstitutionHandler.name, () => {
       expect(mockLogger.child).toHaveBeenCalledWith({
         handler: updateFinancialInstitutionHandler.name,
       });
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_FINANCIAL_INSTITUTION.id, logGroup);
-      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_FINANCIAL_INSTITUTION.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_FINANCIAL_INSTITUTION, logGroup);
+      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_FINANCIAL_INSTITUTION);
 
       expect(mockService.updateFinancialInstitution).toHaveBeenCalledWith(
         mockParams.companyId,
@@ -135,7 +135,7 @@ describe(updateFinancialInstitutionHandler.name, () => {
         mockReply as FastifyReply,
       );
 
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_FINANCIAL_INSTITUTION.id, logGroup);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_FINANCIAL_INSTITUTION, logGroup);
       expect(mockService.updateFinancialInstitution).toHaveBeenCalledWith(
         mockParams.companyId,
         {
@@ -163,7 +163,7 @@ describe(updateFinancialInstitutionHandler.name, () => {
         mockReply as FastifyReply,
       );
 
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_FINANCIAL_INSTITUTION.id, logGroup);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_FINANCIAL_INSTITUTION, logGroup);
       expect(mockService.updateFinancialInstitution).toHaveBeenCalledWith(
         mockParams.companyId,
         {
@@ -172,7 +172,7 @@ describe(updateFinancialInstitutionHandler.name, () => {
         },
         mockLogger,
       );
-      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_FINANCIAL_INSTITUTION.id);
+      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_FINANCIAL_INSTITUTION);
       expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.BAD_REQUEST);
       expect(mockReply.send).toHaveBeenCalledWith({
         code: error.code,
@@ -191,8 +191,8 @@ describe(updateFinancialInstitutionHandler.name, () => {
         ),
       ).rejects.toThrow(error);
 
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_FINANCIAL_INSTITUTION.id, logGroup);
-      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_FINANCIAL_INSTITUTION.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_FINANCIAL_INSTITUTION, logGroup);
+      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_FINANCIAL_INSTITUTION);
       expect(mockReply.code).not.toHaveBeenCalled();
       expect(mockReply.send).not.toHaveBeenCalled();
     });

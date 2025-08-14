@@ -58,14 +58,14 @@ describe(updateFinancialInstitutionHandler.name, () => {
     expect(mockLogger.child).toHaveBeenCalledWith({
       handler: updateFinancialInstitutionHandler.name,
     });
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_FINANCIAL_INSTITUTION.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_FINANCIAL_INSTITUTION, logGroup);
     expect(FinancialInstitutionsService.getInstance).toHaveBeenCalled();
     expect(mockService.updateResource).toHaveBeenCalledWith(
       '123',
       { name: 'Updated Bank Name' },
       mockLogger,
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_FINANCIAL_INSTITUTION.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_FINANCIAL_INSTITUTION);
     expect(mockReply.send).toHaveBeenCalledWith(undefined);
   });
 
@@ -97,8 +97,8 @@ describe(updateFinancialInstitutionHandler.name, () => {
       ),
     ).rejects.toThrow(mockError);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_FINANCIAL_INSTITUTION.id, logGroup);
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_FINANCIAL_INSTITUTION.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_FINANCIAL_INSTITUTION, logGroup);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_FINANCIAL_INSTITUTION);
     expect(mockReply.send).not.toHaveBeenCalled();
   });
 }); 

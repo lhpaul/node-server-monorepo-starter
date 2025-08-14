@@ -17,10 +17,10 @@ export const deleteFinancialInstitutionHandler = async (
   const params = request.params as DeleteFinancialInstitutionParams;
   
   try {
-    logger.startStep(STEPS.DELETE_FINANCIAL_INSTITUTION.id, logGroup);
+    logger.startStep(STEPS.DELETE_FINANCIAL_INSTITUTION, logGroup);
     await service
       .deleteResource(params.id, logger)
-      .finally(() => logger.endStep(STEPS.DELETE_FINANCIAL_INSTITUTION.id));
+      .finally(() => logger.endStep(STEPS.DELETE_FINANCIAL_INSTITUTION));
   } catch (error) {
     if (error instanceof DomainModelServiceError && error.code === DomainModelServiceErrorCode.RESOURCE_NOT_FOUND) {
       return reply.code(STATUS_CODES.NOT_FOUND).send(ERROR_RESPONSES.FINANCIAL_INSTITUTION_NOT_FOUND);

@@ -3,7 +3,7 @@ import { TransactionsService } from '@repo/shared/domain';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../../definitions/auth.interfaces';
-import { hasCompanyTransactionsReadPermission } from '../../../../../../utils/auth/auth.utils';
+import { hasCompanyTransactionsReadPermission } from '../../../../../../utils/permissions';
 import { STEPS } from './transactions.get.handler.constants';
 import { GetTransactionParams } from './transactions.get.handler.interfaces';
 export const getTransactionHandler = async (
@@ -21,10 +21,10 @@ export const getTransactionHandler = async (
       message: FORBIDDEN_ERROR.responseMessage,
     });
   }
-  logger.startStep(STEPS.GET_TRANSACTION.id, logGroup);
+  logger.startStep(STEPS.GET_TRANSACTION, logGroup);
   const transaction = await service
     .getResource(id, logger)
-    .finally(() => logger.endStep(STEPS.GET_TRANSACTION.id));
+    .finally(() => logger.endStep(STEPS.GET_TRANSACTION));
   if (!transaction || transaction.companyId !== companyId) {
     return reply.code(STATUS_CODES.NOT_FOUND).send({
       code: RESOURCE_NOT_FOUND_ERROR.responseCode,

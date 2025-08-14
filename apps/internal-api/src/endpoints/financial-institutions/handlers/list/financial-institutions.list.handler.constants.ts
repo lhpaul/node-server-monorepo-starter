@@ -1,5 +1,3 @@
 export const STEPS = {
-  LIST_FINANCIAL_INSTITUTIONS: {
-    id: 'list-financial-institutions',
-  },
-} as const; 
+  LIST_FINANCIAL_INSTITUTIONS: 'list-financial-institutions',
+}; 

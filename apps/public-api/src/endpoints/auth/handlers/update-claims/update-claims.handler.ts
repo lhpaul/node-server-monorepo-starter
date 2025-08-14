@@ -1,7 +1,8 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { AuthService, UsersService } from '@repo/shared/domain';
+import { UsersService } from '@repo/shared/domain';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
+import { updatePermissionsToUser } from '../../../../utils/auth';
 import { ERROR_RESPONSES, STEPS } from './update-claims.handler.constants';
 
 export const updateClaimsHandler = async (request: FastifyRequest, reply: FastifyReply) => {
@@ -32,7 +33,7 @@ export const updateClaimsHandler = async (request: FastifyRequest, reply: Fastif
     app_user_id = user.id;
   }
   logger.startStep(STEPS.UPDATE_CLAIMS.id, logGroup);
-  await AuthService.getInstance().updatePermissionsToUser({
+  await updatePermissionsToUser({
     userId: app_user_id,
     uid: request.user.uid,
   }, logger)

@@ -3,7 +3,7 @@ import { CompaniesService } from '@repo/shared/domain';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../definitions/auth.interfaces';
-import { hasCompanyReadPermission } from '../../../../../utils/auth/auth.utils';
+import { hasCompanyReadPermission } from '../../../../../utils/permissions';
 import { COMPANY_NOT_FOUND_ERROR } from '../../../companies.endpoints.constants';
 import { STEPS } from '../companies.get.handler.constants';
 import { getCompanyHandler } from '../companies.get.handler';
@@ -21,7 +21,7 @@ jest.mock('@repo/fastify', () => ({
 
 jest.mock('@repo/shared/domain');
 
-jest.mock('../../../../../utils/auth/auth.utils', () => ({
+jest.mock('../../../../../utils/permissions', () => ({
   hasCompanyReadPermission: jest.fn(),
 }));
 
@@ -36,9 +36,7 @@ describe(getCompanyHandler.name, () => {
 
   const logGroup = getCompanyHandler.name;
   const mockParams = { id: '123' };
-  const mockUser: AuthUser = {
-    companies: { 'company-1': ['read'] },
-  } as unknown as AuthUser;
+  const mockUser = { app_user_id: 'user123' } as AuthUser;
 
   beforeEach(() => {
     mockLogger = {
@@ -90,9 +88,9 @@ describe(getCompanyHandler.name, () => {
     );
 
     expect(hasCompanyReadPermission).toHaveBeenCalledWith(mockParams.id, mockUser);
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANY.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANY, logGroup);
     expect(mockService.getResource).toHaveBeenCalledWith(mockParams.id, mockLogger);
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANY.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANY);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
     expect(mockReply.send).toHaveBeenCalledWith(mockCompany);
   });
@@ -125,9 +123,9 @@ describe(getCompanyHandler.name, () => {
     ).rejects.toThrow(COMPANY_NOT_FOUND_ERROR(mockParams.id));
 
     expect(hasCompanyReadPermission).toHaveBeenCalledWith(mockParams.id, mockUser);
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANY.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANY, logGroup);
     expect(mockService.getResource).toHaveBeenCalledWith(mockParams.id, mockLogger);
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANY.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANY);
     expect(mockReply.code).not.toHaveBeenCalled();
     expect(mockReply.send).not.toHaveBeenCalled();
   });
@@ -144,7 +142,7 @@ describe(getCompanyHandler.name, () => {
     ).rejects.toThrow(error);
 
     expect(hasCompanyReadPermission).toHaveBeenCalledWith(mockParams.id, mockUser);
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANY.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANY, logGroup);
     expect(mockService.getResource).toHaveBeenCalledWith(mockParams.id, mockLogger);
     expect(mockReply.code).not.toHaveBeenCalled();
     expect(mockReply.send).not.toHaveBeenCalled();

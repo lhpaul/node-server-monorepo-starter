@@ -75,13 +75,13 @@ describe(listFinancialInstitutionsHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.LIST_FINANCIAL_INSTITUTIONS.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.LIST_FINANCIAL_INSTITUTIONS, logGroup);
     expect(transformQueryParams).toHaveBeenCalledWith(mockQuery);
     expect(mockService.getResourcesList).toHaveBeenCalledWith(
       { filter: {}, limit: 1000 },
       mockLogger
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.LIST_FINANCIAL_INSTITUTIONS.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.LIST_FINANCIAL_INSTITUTIONS);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
     expect(mockReply.send).toHaveBeenCalledWith(mockFinancialInstitutions);
   });
@@ -128,9 +128,9 @@ describe(listFinancialInstitutionsHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.LIST_FINANCIAL_INSTITUTIONS.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.LIST_FINANCIAL_INSTITUTIONS, logGroup);
     expect(mockService.getResourcesList).toHaveBeenCalled();
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.LIST_FINANCIAL_INSTITUTIONS.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.LIST_FINANCIAL_INSTITUTIONS);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
     expect(mockReply.send).toHaveBeenCalledWith([]);
   });
@@ -146,9 +146,9 @@ describe(listFinancialInstitutionsHandler.name, () => {
       ),
     ).rejects.toThrow(error);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.LIST_FINANCIAL_INSTITUTIONS.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.LIST_FINANCIAL_INSTITUTIONS, logGroup);
     expect(mockService.getResourcesList).toHaveBeenCalled();
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.LIST_FINANCIAL_INSTITUTIONS.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.LIST_FINANCIAL_INSTITUTIONS);
     expect(mockReply.code).not.toHaveBeenCalled();
     expect(mockReply.send).not.toHaveBeenCalled();
   });

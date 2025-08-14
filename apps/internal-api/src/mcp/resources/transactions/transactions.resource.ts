@@ -21,7 +21,7 @@ export function transactionsResourceBuilder(serverLogger: FastifyBaseLogger): Mc
       const requestLogger = new RequestLogger({ logger: serverLogger })
       .child({ requestId: extra.requestId, resource: RESOURCE_NAME, uri, variables });
 
-      requestLogger.startStep(STEPS.GET_TRANSACTIONS.id, logGroup);
+      requestLogger.startStep(STEPS.GET_TRANSACTIONS, logGroup);
       const dateFilters: FilterItem<string>[] = [];
       if (dateFrom) {
         dateFilters.push({ value: dateFrom as string, operator: '>=' });
@@ -34,7 +34,7 @@ export function transactionsResourceBuilder(serverLogger: FastifyBaseLogger): Mc
         companyId: [{ value: companyId, operator: '==' }],
         date: dateFilters,
       }, requestLogger)
-      .finally(() => requestLogger.endStep(STEPS.GET_TRANSACTIONS.id));
+      .finally(() => requestLogger.endStep(STEPS.GET_TRANSACTIONS));
       return {
         contents: [{
           uri: uri.href,

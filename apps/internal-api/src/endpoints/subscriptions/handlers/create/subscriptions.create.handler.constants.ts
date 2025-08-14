@@ -1,6 +1,3 @@
 export const STEPS = {
-  CREATE_SUBSCRIPTION: {
-    id: 'createSubscription',
-    description: 'Creating subscription',
-  },
+  CREATE_SUBSCRIPTION: 'createSubscription',
 };

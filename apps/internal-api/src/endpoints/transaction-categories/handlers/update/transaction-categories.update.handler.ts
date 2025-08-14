@@ -16,9 +16,9 @@ export const updateTransactionCategoryHandler = async (
   const service = TransactionCategoriesService.getInstance();
   const body = request.body as UpdateTransactionCategoryBody;
   const params = request.params as UpdateTransactionCategoryParams;
-  logger.startStep(STEPS.UPDATE_TRANSACTION_CATEGORY.id, logGroup);
+  logger.startStep(STEPS.UPDATE_TRANSACTION_CATEGORY, logGroup);
   await service
     .updateResource(params.id, body, logger)
-    .finally(() => logger.endStep(STEPS.UPDATE_TRANSACTION_CATEGORY.id));
+    .finally(() => logger.endStep(STEPS.UPDATE_TRANSACTION_CATEGORY));
   return reply.send();
 }; 

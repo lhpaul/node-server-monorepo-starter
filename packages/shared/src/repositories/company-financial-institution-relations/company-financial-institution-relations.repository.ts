@@ -39,12 +39,12 @@ export class CompanyFinancialInstitutionRelationsRepository extends FirestoreCol
    */
   async createDocument(data: CreateCompanyFinancialInstitutionRelationDocumentInput, logger: ExecutionLogger): Promise<string> {
     const logGroup = `${this.constructor.name}.${this.createDocument.name}`;
-    logger.startStep(STEPS.GET_RELATED_DOCUMENTS.id, logGroup);
+    logger.startStep(STEPS.GET_RELATED_DOCUMENTS, logGroup);
     const { companyId, financialInstitutionId } = data;
     const [company, financialInstitution] = await Promise.all([
       CompaniesRepository.getInstance().getDocument(companyId, logger),
       FinancialInstitutionsRepository.getInstance().getDocument(financialInstitutionId, logger),
-    ]).finally(() => logger.endStep(STEPS.GET_RELATED_DOCUMENTS.id));
+    ]).finally(() => logger.endStep(STEPS.GET_RELATED_DOCUMENTS));
     if (!company) {
       throw new RepositoryError({ code: RepositoryErrorCode.RELATED_DOCUMENT_NOT_FOUND, message: ERROR_MESSAGES.COMPANY_NOT_FOUND, data: { companyId } });
     }

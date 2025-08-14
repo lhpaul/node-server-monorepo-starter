@@ -16,14 +16,14 @@ export const createTransactionHandler = async (
   const service = TransactionsService.getInstance();
   const body = request.body as CreateTransactionBody;
   try {
-    logger.startStep(STEPS.CREATE_TRANSACTION.id, logGroup);
+    logger.startStep(STEPS.CREATE_TRANSACTION, logGroup);
     const id = await service
       .createResource({
         description: null,
         categoryId: null,
         ...body,
       }, logger)
-      .finally(() => logger.endStep(STEPS.CREATE_TRANSACTION.id));
+      .finally(() => logger.endStep(STEPS.CREATE_TRANSACTION));
     return reply.code(STATUS_CODES.CREATED).send({ id });
   } catch (error) {
     if (error instanceof DomainModelServiceError) {

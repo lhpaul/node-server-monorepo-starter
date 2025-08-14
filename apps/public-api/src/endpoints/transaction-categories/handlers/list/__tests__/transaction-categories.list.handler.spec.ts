@@ -125,8 +125,8 @@ describe(listTransactionCategoriesHandler.name, () => {
     expect(mockLogger.child).toHaveBeenCalledWith({ handler: listTransactionCategoriesHandler.name });
 
     // Verify step logging
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.LIST_TRANSACTION_CATEGORIES.id, listTransactionCategoriesHandler.name);
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.LIST_TRANSACTION_CATEGORIES.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.LIST_TRANSACTION_CATEGORIES, listTransactionCategoriesHandler.name);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.LIST_TRANSACTION_CATEGORIES);
 
     // Verify service interaction
     expect(TransactionCategoriesService.getInstance).toHaveBeenCalled();
@@ -171,7 +171,7 @@ describe(listTransactionCategoriesHandler.name, () => {
 
     await expect(listTransactionCategoriesHandler(mockRequest, mockReply)).rejects.toThrow('Service error');
 
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.LIST_TRANSACTION_CATEGORIES.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.LIST_TRANSACTION_CATEGORIES);
   });
 
   it('should handle different query parameters', async () => {

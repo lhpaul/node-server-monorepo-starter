@@ -13,9 +13,9 @@ export const listCompaniesHandler = async (
   const logGroup = listCompaniesHandler.name;
   const service = CompaniesService.getInstance();
   const query = request.query as GetCompaniesQueryParams;
-  logger.startStep(STEPS.GET_COMPANIES.id, logGroup);
+  logger.startStep(STEPS.GET_COMPANIES, logGroup);
   const companies = await service
     .getResourcesList(transformQueryParams(query), logger)
-    .finally(() => logger.endStep(STEPS.GET_COMPANIES.id));
+    .finally(() => logger.endStep(STEPS.GET_COMPANIES));
   return reply.code(STATUS_CODES.OK).send(companies);
 };

@@ -1,11 +1,9 @@
 import { FORBIDDEN_ERROR, STATUS_CODES } from '@repo/fastify';
 import { CompaniesService, RemoveFinancialInstitutionError } from '@repo/shared/domain';
-import { DomainModelServiceError, DomainModelServiceErrorCode } from '@repo/shared/utils';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../../definitions/auth.interfaces';
-import { hasCompanyFinancialInstitutionsDeletePermission } from '../../../../../../utils/auth/auth.utils';
-import { ERROR_RESPONSES } from '../../financial-institutions.endpoints.constants';
+import { hasCompanyFinancialInstitutionsDeletePermission } from '../../../../../../utils/permissions';
 import { STEPS } from './financial-institutions.delete.handler.constants';
 import { DeleteCompanyFinancialInstitutionParams } from './financial-institutions.delete.handler.interfaces';
 
@@ -28,12 +26,12 @@ export const deleteFinancialInstitutionHandler = async (
   const service = CompaniesService.getInstance();
   
   try {
-    logger.startStep(STEPS.REMOVE_FINANCIAL_INSTITUTION.id, logGroup);
+    logger.startStep(STEPS.REMOVE_FINANCIAL_INSTITUTION, logGroup);
     await service
       .removeFinancialInstitution(companyId, {
         financialInstitutionRelationId,
       }, logger)
-      .finally(() => logger.endStep(STEPS.REMOVE_FINANCIAL_INSTITUTION.id));
+      .finally(() => logger.endStep(STEPS.REMOVE_FINANCIAL_INSTITUTION));
     
     return reply.code(STATUS_CODES.NO_CONTENT).send();
   } catch (error) {

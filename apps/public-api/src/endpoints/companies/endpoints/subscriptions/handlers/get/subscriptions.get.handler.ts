@@ -3,7 +3,7 @@ import { SubscriptionsService } from '@repo/shared/domain';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../../definitions/auth.interfaces';
-import { hasCompanySubscriptionsReadPermission } from '../../../../../../utils/auth/auth.utils';
+import { hasCompanySubscriptionsReadPermission } from '../../../../../../utils/permissions';
 import { STEPS } from './subscriptions.get.handler.constants';
 import { GetSubscriptionParams } from './subscriptions.get.handler.interfaces';
 
@@ -23,11 +23,11 @@ export const getSubscriptionHandler = async (
     });
   }
 
-  logger.startStep(STEPS.GET_SUBSCRIPTION.id, logGroup);
+  logger.startStep(STEPS.GET_SUBSCRIPTION, logGroup);
   const service = SubscriptionsService.getInstance();
   const subscription = await service
     .getResource(id, logger)
-    .finally(() => logger.endStep(STEPS.GET_SUBSCRIPTION.id));
+    .finally(() => logger.endStep(STEPS.GET_SUBSCRIPTION));
 
   if (!subscription || subscription.companyId !== companyId) {
     return reply.code(STATUS_CODES.NOT_FOUND).send({

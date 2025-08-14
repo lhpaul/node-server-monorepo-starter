@@ -1,3 +1,3 @@
 export const STEPS = {
-  GET_TRANSACTION: { id: 'get-transaction' },
+  GET_TRANSACTION: 'get-transaction',
 };

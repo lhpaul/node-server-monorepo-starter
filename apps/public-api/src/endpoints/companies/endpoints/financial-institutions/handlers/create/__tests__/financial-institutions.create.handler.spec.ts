@@ -3,7 +3,7 @@ import { AddFinancialInstitutionError, AddFinancialInstitutionErrorCode, Compani
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../../../definitions/auth.interfaces';
-import { hasCompanyFinancialInstitutionsCreatePermission } from '../../../../../../../utils/auth/auth.utils';
+import { hasCompanyFinancialInstitutionsCreatePermission } from '../../../../../../../utils/permissions';
 import { STEPS } from '../financial-institutions.create.handler.constants';
 import { createFinancialInstitutionHandler } from '../financial-institutions.create.handler';
 import { CreateCompanyFinancialInstitutionBody, CreateCompanyFinancialInstitutionParams } from '../financial-institutions.create.handler.interfaces';
@@ -15,7 +15,7 @@ jest.mock('@repo/shared/domain', () => ({
   },
   AddFinancialInstitutionError: jest.fn(),
 }));
-jest.mock('../../../../../../../utils/auth/auth.utils', () => ({
+jest.mock('../../../../../../../utils/permissions', () => ({
   hasCompanyFinancialInstitutionsCreatePermission: jest.fn(),
 }));
 
@@ -26,7 +26,7 @@ describe(createFinancialInstitutionHandler.name, () => {
   let mockService: Partial<CompaniesService>;
   const logGroup = createFinancialInstitutionHandler.name;
   const mockParams: CreateCompanyFinancialInstitutionParams = { companyId: 'company123' };
-  const mockUser = { userId: 'user123' } as unknown as AuthUser;
+  const mockUser = { app_user_id: 'user123' } as AuthUser;
   const mockBody: CreateCompanyFinancialInstitutionBody = {
     credentials: { username: 'test', password: 'secret' },
     financialInstitutionId: 'fi123',
@@ -101,8 +101,8 @@ describe(createFinancialInstitutionHandler.name, () => {
       expect(mockLogger.child).toHaveBeenCalledWith({
         handler: createFinancialInstitutionHandler.name,
       });
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.ADD_FINANCIAL_INSTITUTION.id, logGroup);
-      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.ADD_FINANCIAL_INSTITUTION.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.ADD_FINANCIAL_INSTITUTION, logGroup);
+      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.ADD_FINANCIAL_INSTITUTION);
 
       expect(mockService.addFinancialInstitution).toHaveBeenCalledWith(
         mockParams.companyId,
@@ -154,8 +154,8 @@ describe(createFinancialInstitutionHandler.name, () => {
         ),
       ).rejects.toThrow(error);
 
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.ADD_FINANCIAL_INSTITUTION.id, logGroup);
-      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.ADD_FINANCIAL_INSTITUTION.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.ADD_FINANCIAL_INSTITUTION, logGroup);
+      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.ADD_FINANCIAL_INSTITUTION);
       expect(mockReply.code).not.toHaveBeenCalled();
       expect(mockReply.send).not.toHaveBeenCalled();
     });

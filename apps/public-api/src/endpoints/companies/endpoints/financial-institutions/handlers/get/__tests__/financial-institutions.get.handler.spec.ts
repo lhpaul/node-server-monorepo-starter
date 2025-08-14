@@ -4,7 +4,7 @@ import { maskFields } from '@repo/shared/utils';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../../../definitions/auth.interfaces';
-import { hasCompanyFinancialInstitutionsGetPermission } from '../../../../../../../utils/auth/auth.utils';
+import { hasCompanyFinancialInstitutionsGetPermission } from '../../../../../../../utils/permissions';
 import { CREDENTIALS_FIELDS_TO_MASK, ERROR_RESPONSES } from '../../../financial-institutions.endpoints.constants';
 import { STEPS } from '../financial-institutions.get.handler.constants';
 import { getFinancialInstitutionHandler } from '../financial-institutions.get.handler';
@@ -15,7 +15,7 @@ jest.mock('@repo/shared/utils', () => ({
   ...jest.requireActual('@repo/shared/utils'),
   maskFields: jest.fn(),
 }));
-jest.mock('../../../../../../../utils/auth/auth.utils', () => ({
+jest.mock('../../../../../../../utils/permissions', () => ({
   hasCompanyFinancialInstitutionsGetPermission: jest.fn(),
 }));
 
@@ -29,7 +29,7 @@ describe(getFinancialInstitutionHandler.name, () => {
     companyId: 'company123', 
     id: 'fi-relation-123' 
   };
-  const mockAuthUser = { userId: 'user123' } as unknown as AuthUser;
+  const mockUser = { app_user_id: 'user123' } as AuthUser;
   const mockFinancialInstitution = {
     id: 'fi-relation-123',
     companyId: 'company123',
@@ -54,7 +54,7 @@ describe(getFinancialInstitutionHandler.name, () => {
     mockRequest = {
       log: mockLogger,
       params: mockParams,
-      user: mockAuthUser,
+      user: mockUser,
     };
 
     mockReply = {
@@ -87,7 +87,7 @@ describe(getFinancialInstitutionHandler.name, () => {
         mockReply as FastifyReply,
       );
 
-      expect(hasCompanyFinancialInstitutionsGetPermission).toHaveBeenCalledWith(mockParams.companyId, mockAuthUser);
+      expect(hasCompanyFinancialInstitutionsGetPermission).toHaveBeenCalledWith(mockParams.companyId, mockUser);
       expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.FORBIDDEN);
       expect(mockReply.send).toHaveBeenCalledWith({
         code: FORBIDDEN_ERROR.responseCode,
@@ -113,8 +113,8 @@ describe(getFinancialInstitutionHandler.name, () => {
       expect(mockLogger.child).toHaveBeenCalledWith({
         handler: getFinancialInstitutionHandler.name,
       });
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_FINANCIAL_INSTITUTION.id, logGroup);
-      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_FINANCIAL_INSTITUTION.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_FINANCIAL_INSTITUTION, logGroup);
+      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_FINANCIAL_INSTITUTION);
 
       expect(mockService.getFinancialInstitution).toHaveBeenCalledWith(
         mockParams.companyId,
@@ -147,13 +147,13 @@ describe(getFinancialInstitutionHandler.name, () => {
         mockReply as FastifyReply,
       );
 
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_FINANCIAL_INSTITUTION.id, logGroup);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_FINANCIAL_INSTITUTION, logGroup);
       expect(mockService.getFinancialInstitution).toHaveBeenCalledWith(
         mockParams.companyId,
         { financialInstitutionRelationId: mockParams.id },
         mockLogger,
       );
-      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_FINANCIAL_INSTITUTION.id);
+      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_FINANCIAL_INSTITUTION);
       expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.NOT_FOUND);
       expect(mockReply.send).toHaveBeenCalledWith({
         code: ERROR_RESPONSES.FINANCIAL_INSTITUTION_RELATION_NOT_FOUND.code,
@@ -172,8 +172,8 @@ describe(getFinancialInstitutionHandler.name, () => {
         ),
       ).rejects.toThrow(error);
 
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_FINANCIAL_INSTITUTION.id, logGroup);
-      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_FINANCIAL_INSTITUTION.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_FINANCIAL_INSTITUTION, logGroup);
+      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_FINANCIAL_INSTITUTION);
       expect(mockReply.code).not.toHaveBeenCalled();
       expect(mockReply.send).not.toHaveBeenCalled();
     });

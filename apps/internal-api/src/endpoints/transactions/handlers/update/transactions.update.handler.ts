@@ -20,9 +20,9 @@ export const updateTransactionHandler = async (
   const { id } = request.params as UpdateTransactionParams;
   const body = request.body as UpdateTransactionBody;
   try {
-    logger.startStep(STEPS.UPDATE_TRANSACTION.id, logGroup);
+    logger.startStep(STEPS.UPDATE_TRANSACTION, logGroup);
     await service.updateResource(id, body, logger)
-    .finally(() => logger.endStep(STEPS.UPDATE_TRANSACTION.id));
+    .finally(() => logger.endStep(STEPS.UPDATE_TRANSACTION));
     return reply.code(STATUS_CODES.NO_CONTENT).send();
   } catch (error) {
     if (error instanceof DomainModelServiceError) {

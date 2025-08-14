@@ -87,7 +87,7 @@ describe(transactionsResourceBuilder.name, () => {
 
     const result = await resource.handler(uri, variables, extra);
 
-    expect(mockRequestLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id, logGroup);
+    expect(mockRequestLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS, logGroup);
     expect(mockService.getResourcesList).toHaveBeenCalledWith(
       {
         companyId: [{ value: variables.companyId, operator: '==' }],
@@ -98,7 +98,7 @@ describe(transactionsResourceBuilder.name, () => {
       },
       mockRequestLogger
     );
-    expect(mockRequestLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id);
+    expect(mockRequestLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS);
     expect(result.contents[0]).toEqual({
       uri: uri.href,
       text: JSON.stringify(mockTransactions),
@@ -247,6 +247,6 @@ describe(transactionsResourceBuilder.name, () => {
     };
 
     await expect(resource.handler(uri, variables, extra)).rejects.toThrow(error);
-    expect(mockRequestLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id);
+    expect(mockRequestLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS);
   });
 });

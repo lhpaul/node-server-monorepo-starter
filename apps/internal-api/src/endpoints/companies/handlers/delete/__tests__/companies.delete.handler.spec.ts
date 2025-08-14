@@ -61,9 +61,9 @@ describe(deleteCompanyHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DELETE_COMPANY.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DELETE_COMPANY, logGroup);
     expect(mockService.deleteResource).toHaveBeenCalledWith(mockParams.id, mockLogger);
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.DELETE_COMPANY.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.DELETE_COMPANY);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.NO_CONTENT);
     expect(mockReply.send).toHaveBeenCalled();
   });
@@ -81,9 +81,9 @@ describe(deleteCompanyHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DELETE_COMPANY.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DELETE_COMPANY, logGroup);
     expect(mockService.deleteResource).toHaveBeenCalledWith(mockParams.id, mockLogger);
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.DELETE_COMPANY.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.DELETE_COMPANY);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.NOT_FOUND);
     expect(mockReply.send).toHaveBeenCalledWith(
       ERROR_RESPONSES.COMPANY_NOT_FOUND,
@@ -102,9 +102,9 @@ describe(deleteCompanyHandler.name, () => {
       expect(false).toBe(true);
     } catch (error) {
       expect(error).toBe(error);
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DELETE_COMPANY.id, logGroup);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DELETE_COMPANY, logGroup);
       expect(mockService.deleteResource).toHaveBeenCalledWith(mockParams.id, mockLogger);
-      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.DELETE_COMPANY.id);
+      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.DELETE_COMPANY);
       expect(mockReply.code).not.toHaveBeenCalled();
       expect(mockReply.send).not.toHaveBeenCalled();
     }

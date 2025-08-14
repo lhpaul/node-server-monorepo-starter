@@ -3,7 +3,7 @@ import { CompaniesService } from '@repo/shared/domain';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../definitions/auth.interfaces';
-import { hasCompanyReadPermission } from '../../../../utils/auth/auth.utils';
+import { hasCompanyReadPermission } from '../../../../utils/permissions';
 import { COMPANY_NOT_FOUND_ERROR } from '../../companies.endpoints.constants';
 import { STEPS } from './companies.get.handler.constants';
 import { GetCompanyParams } from './companies.get.handler.interfaces';
@@ -22,10 +22,10 @@ export const getCompanyHandler = async (
       message: FORBIDDEN_ERROR.responseMessage,
     });
   }
-  logger.startStep(STEPS.GET_COMPANY.id, logGroup);
+  logger.startStep(STEPS.GET_COMPANY, logGroup);
   const company = await CompaniesService.getInstance()
     .getResource(id, logger)
-    .finally(() => logger.endStep(STEPS.GET_COMPANY.id));
+    .finally(() => logger.endStep(STEPS.GET_COMPANY));
   if (!company) { // this should never happen since the user has permission to read the company so it should exist
     throw new Error(COMPANY_NOT_FOUND_ERROR(id));
   }

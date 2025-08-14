@@ -4,7 +4,7 @@ import { DomainModelServiceError, DomainModelServiceErrorCode } from '@repo/shar
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../../definitions/auth.interfaces';
-import { hasCompanyTransactionsUpdatePermission } from '../../../../../../utils/auth/auth.utils';
+import { hasCompanyTransactionsUpdatePermission } from '../../../../../../utils/permissions';
 import { ERROR_RESPONSES } from '../../transactions.endpoints.constants';
 import { STEPS } from './transactions.update.handler.constants';
 import {
@@ -29,9 +29,9 @@ export const updateTransactionHandler = async (
     });
   }
   try {
-    logger.startStep(STEPS.UPDATE_TRANSACTION.id, logGroup);
+    logger.startStep(STEPS.UPDATE_TRANSACTION, logGroup);
     await service.updateResource(id, body, logger)
-    .finally(() => logger.endStep(STEPS.UPDATE_TRANSACTION.id));
+    .finally(() => logger.endStep(STEPS.UPDATE_TRANSACTION));
     return reply.code(STATUS_CODES.NO_CONTENT).send();
   } catch (error) {
     if (error instanceof DomainModelServiceError) {

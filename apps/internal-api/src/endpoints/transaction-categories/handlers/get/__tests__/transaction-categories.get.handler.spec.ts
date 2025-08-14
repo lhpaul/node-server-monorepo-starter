@@ -85,9 +85,9 @@ describe(getTransactionCategoryHandler.name, () => {
 
     // Assert
     expect(mockLogger.child).toHaveBeenCalledWith({ handler: getTransactionCategoryHandler.name });
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION_CATEGORY.id, getTransactionCategoryHandler.name);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION_CATEGORY, getTransactionCategoryHandler.name);
     expect(mockService.getResource).toHaveBeenCalledWith(mockParams.id, mockLogger);
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION_CATEGORY.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION_CATEGORY);
     expect(parseTransactionCategoryToResource).toHaveBeenCalledWith(mockTransactionCategory);
     expect(mockReply.send).toHaveBeenCalledWith(mockResource);
     expect(mockReply.code).not.toHaveBeenCalled();
@@ -102,9 +102,9 @@ describe(getTransactionCategoryHandler.name, () => {
 
     // Assert
     expect(mockLogger.child).toHaveBeenCalledWith({ handler: getTransactionCategoryHandler.name });
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION_CATEGORY.id, getTransactionCategoryHandler.name);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION_CATEGORY, getTransactionCategoryHandler.name);
     expect(mockService.getResource).toHaveBeenCalledWith(mockParams.id, mockLogger);
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION_CATEGORY.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION_CATEGORY);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.NOT_FOUND);
     expect(mockReply.send).toHaveBeenCalledWith({
       code: 'transaction-category-not-found',
@@ -121,9 +121,9 @@ describe(getTransactionCategoryHandler.name, () => {
     // Act & Assert
     await expect(getTransactionCategoryHandler(mockRequest, mockReply)).rejects.toThrow('Service error');
     
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION_CATEGORY.id, getTransactionCategoryHandler.name);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION_CATEGORY, getTransactionCategoryHandler.name);
     expect(mockService.getResource).toHaveBeenCalledWith(mockParams.id, mockLogger);
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION_CATEGORY.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION_CATEGORY);
   });
 
   it('should use correct params from request', async () => {
@@ -158,7 +158,7 @@ describe(getTransactionCategoryHandler.name, () => {
     await getTransactionCategoryHandler(mockRequest, mockReply);
 
     // Assert
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION_CATEGORY.id, getTransactionCategoryHandler.name);
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION_CATEGORY.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION_CATEGORY, getTransactionCategoryHandler.name);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTION_CATEGORY);
   });
 }); 

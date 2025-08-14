@@ -120,13 +120,13 @@ describe(listTransactionCategoriesHandler.name, () => {
     );
 
     expect(mockLogger.child).toHaveBeenCalledWith({ handler: listTransactionCategoriesHandler.name });
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.LIST_TRANSACTION_CATEGORIES.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.LIST_TRANSACTION_CATEGORIES, logGroup);
     expect(transformQueryParams).toHaveBeenCalledWith(mockQuery);
     expect(mockService.getResourcesList).toHaveBeenCalledWith(
       { limit: 10, offset: 0, type: 'income' },
       mockLogger,
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.LIST_TRANSACTION_CATEGORIES.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.LIST_TRANSACTION_CATEGORIES);
     expect(parseTransactionCategoryToResource).toHaveBeenCalledTimes(2);
     expect(parseTransactionCategoryToResource).toHaveBeenCalledWith(mockTransactionCategories[0]);
     expect(parseTransactionCategoryToResource).toHaveBeenCalledWith(mockTransactionCategories[1]);
@@ -142,12 +142,12 @@ describe(listTransactionCategoriesHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.LIST_TRANSACTION_CATEGORIES.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.LIST_TRANSACTION_CATEGORIES, logGroup);
     expect(mockService.getResourcesList).toHaveBeenCalledWith(
       { limit: 10, offset: 0, type: 'income' },
       mockLogger,
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.LIST_TRANSACTION_CATEGORIES.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.LIST_TRANSACTION_CATEGORIES);
     expect(parseTransactionCategoryToResource).not.toHaveBeenCalled();
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
     expect(mockReply.send).toHaveBeenCalledWith([]);
@@ -164,12 +164,12 @@ describe(listTransactionCategoriesHandler.name, () => {
       ),
     ).rejects.toThrow(error);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.LIST_TRANSACTION_CATEGORIES.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.LIST_TRANSACTION_CATEGORIES, logGroup);
     expect(mockService.getResourcesList).toHaveBeenCalledWith(
       { limit: 10, offset: 0, type: 'income' },
       mockLogger,
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.LIST_TRANSACTION_CATEGORIES.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.LIST_TRANSACTION_CATEGORIES);
     expect(mockReply.code).not.toHaveBeenCalled();
     expect(mockReply.send).not.toHaveBeenCalled();
   });
@@ -225,8 +225,8 @@ describe(listTransactionCategoriesHandler.name, () => {
       // Expected to throw
     }
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.LIST_TRANSACTION_CATEGORIES.id, logGroup);
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.LIST_TRANSACTION_CATEGORIES.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.LIST_TRANSACTION_CATEGORIES, logGroup);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.LIST_TRANSACTION_CATEGORIES);
   });
 
   it('should handle single transaction category result', async () => {

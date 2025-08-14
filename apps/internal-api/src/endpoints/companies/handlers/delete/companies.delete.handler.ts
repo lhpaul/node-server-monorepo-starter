@@ -15,11 +15,11 @@ export const deleteCompanyHandler = async (
   const logGroup = deleteCompanyHandler.name;
   const service = CompaniesService.getInstance();
   const { id } = request.params as DeleteCompanyParams;
-  logger.startStep(STEPS.DELETE_COMPANY.id, logGroup);
+  logger.startStep(STEPS.DELETE_COMPANY, logGroup);
   try {
     await service
       .deleteResource(id, logger)
-      .finally(() => logger.endStep(STEPS.DELETE_COMPANY.id));
+      .finally(() => logger.endStep(STEPS.DELETE_COMPANY));
   } catch (error) {
     if (
       error instanceof DomainModelServiceError &&

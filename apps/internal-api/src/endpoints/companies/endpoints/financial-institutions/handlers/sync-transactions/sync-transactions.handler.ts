@@ -14,7 +14,7 @@ export const syncTransactionsHandler = async (
   const { companyId, financialInstitutionId } = request.params as SyncTransactionsParams;
   const { fromDate, toDate } = request.body as SyncTransactionsBody;
   
-  logger.startStep(STEPS.SYNC_TRANSACTIONS.id, logGroup);
+  logger.startStep(STEPS.SYNC_TRANSACTIONS, logGroup);
   const service = TransactionsService.getInstance();
   await service.syncWithFinancialInstitution({
     companyId,
@@ -22,7 +22,7 @@ export const syncTransactionsHandler = async (
     fromDate,
     toDate,
   }, logger).finally(() => {
-    logger.endStep(STEPS.SYNC_TRANSACTIONS.id);
+    logger.endStep(STEPS.SYNC_TRANSACTIONS);
   });
   return reply.code(STATUS_CODES.NO_CONTENT).send();
 }; 

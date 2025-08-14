@@ -3,7 +3,7 @@ import { TransactionsService } from '@repo/shared/domain';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../../../definitions/auth.interfaces';
-import { hasCompanyFinancialInstitutionsCreatePermission, hasCompanyFinancialInstitutionsReadPermission } from '../../../../../../../utils/auth/auth.utils';
+import { hasCompanyFinancialInstitutionsCreatePermission, hasCompanyFinancialInstitutionsReadPermission } from '../../../../../../../utils/permissions';
 import { STEPS } from '../sync-transactions.handler.constants';
 import { syncTransactionsHandler } from '../sync-transactions.handler';
 import { SyncTransactionsBody, SyncTransactionsParams } from '../sync-transactions.handler.interfaces';
@@ -14,7 +14,7 @@ jest.mock('@repo/shared/domain', () => ({
     getInstance: jest.fn(),
   },
 }));
-jest.mock('../../../../../../../utils/auth/auth.utils', () => ({
+jest.mock('../../../../../../../utils/permissions', () => ({
   hasCompanyFinancialInstitutionsCreatePermission: jest.fn(),
   hasCompanyFinancialInstitutionsReadPermission: jest.fn(),
 }));
@@ -29,7 +29,7 @@ describe(syncTransactionsHandler.name, () => {
     companyId: 'company123', 
     financialInstitutionId: 'fi123' 
   };
-  const mockAuthUser = { userId: 'user123' } as unknown as AuthUser;
+  const mockUser = { app_user_id: 'user123' } as AuthUser;
   const mockBody: SyncTransactionsBody = {
     fromDate: '2024-01-01',
     toDate: '2024-01-31',
@@ -46,7 +46,7 @@ describe(syncTransactionsHandler.name, () => {
       log: mockLogger,
       body: mockBody,
       params: mockParams,
-      user: mockAuthUser,
+      user: mockUser,
     };
 
     mockReply = {
@@ -75,8 +75,8 @@ describe(syncTransactionsHandler.name, () => {
         mockReply as FastifyReply,
       );
 
-      expect(hasCompanyFinancialInstitutionsCreatePermission).toHaveBeenCalledWith(mockParams.companyId, mockAuthUser);
-      expect(hasCompanyFinancialInstitutionsReadPermission).toHaveBeenCalledWith(mockParams.companyId, mockAuthUser);
+      expect(hasCompanyFinancialInstitutionsCreatePermission).toHaveBeenCalledWith(mockParams.companyId, mockUser);
+      expect(hasCompanyFinancialInstitutionsReadPermission).toHaveBeenCalledWith(mockParams.companyId, mockUser);
       expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.FORBIDDEN);
       expect(mockReply.send).toHaveBeenCalledWith({
         code: FORBIDDEN_ERROR.responseCode,
@@ -131,8 +131,8 @@ describe(syncTransactionsHandler.name, () => {
       expect(mockLogger.child).toHaveBeenCalledWith({
         handler: syncTransactionsHandler.name,
       });
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.SYNC_TRANSACTIONS.id, logGroup);
-      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.SYNC_TRANSACTIONS.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.SYNC_TRANSACTIONS, logGroup);
+      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.SYNC_TRANSACTIONS);
 
       expect(mockService.syncWithFinancialInstitution).toHaveBeenCalledWith({
         companyId: mockParams.companyId,
@@ -156,8 +156,8 @@ describe(syncTransactionsHandler.name, () => {
         ),
       ).rejects.toThrow(error);
 
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.SYNC_TRANSACTIONS.id, logGroup);
-      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.SYNC_TRANSACTIONS.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.SYNC_TRANSACTIONS, logGroup);
+      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.SYNC_TRANSACTIONS);
       expect(mockReply.code).not.toHaveBeenCalled();
       expect(mockReply.send).not.toHaveBeenCalled();
     });

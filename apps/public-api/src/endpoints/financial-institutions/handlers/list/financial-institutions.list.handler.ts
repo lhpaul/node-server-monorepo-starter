@@ -14,10 +14,10 @@ export const listFinancialInstitutionsHandler = async (
   const service = FinancialInstitutionsService.getInstance();
   const query = request.query as ListFinancialInstitutionsQuery;
   
-  logger.startStep(STEPS.LIST_FINANCIAL_INSTITUTIONS.id, logGroup);
+  logger.startStep(STEPS.LIST_FINANCIAL_INSTITUTIONS, logGroup);
   const result = await service
     .getResourcesList(transformQueryParams(query), logger)
-    .finally(() => logger.endStep(STEPS.LIST_FINANCIAL_INSTITUTIONS.id));
+    .finally(() => logger.endStep(STEPS.LIST_FINANCIAL_INSTITUTIONS));
   
   return reply.code(STATUS_CODES.OK).send(result);
 }; 

@@ -73,7 +73,7 @@ describe(syncTransactionsHandler.name, () => {
     expect(mockLogger.child).toHaveBeenCalledWith({
       handler: syncTransactionsHandler.name,
     });
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.SYNC_TRANSACTIONS.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.SYNC_TRANSACTIONS, logGroup);
     expect(TransactionsService.getInstance).toHaveBeenCalled();
     expect(mockService.syncWithFinancialInstitution).toHaveBeenCalledWith({
       companyId: mockCompanyId,
@@ -81,7 +81,7 @@ describe(syncTransactionsHandler.name, () => {
       fromDate: mockFromDate,
       toDate: mockToDate,
     }, mockLogger);
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.SYNC_TRANSACTIONS.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.SYNC_TRANSACTIONS);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.NO_CONTENT);
     expect(mockReply.send).toHaveBeenCalled();
   });
@@ -132,8 +132,8 @@ describe(syncTransactionsHandler.name, () => {
       ),
     ).rejects.toThrow(mockError);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.SYNC_TRANSACTIONS.id, logGroup);
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.SYNC_TRANSACTIONS.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.SYNC_TRANSACTIONS, logGroup);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.SYNC_TRANSACTIONS);
     expect(mockReply.send).not.toHaveBeenCalled();
   });
 
@@ -151,7 +151,7 @@ describe(syncTransactionsHandler.name, () => {
     ).rejects.toThrow(mockError);
 
     // Verify that endStep is called even when the service throws an error
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.SYNC_TRANSACTIONS.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.SYNC_TRANSACTIONS);
   });
 
   it('should return 204 No Content status code on successful sync', async () => {

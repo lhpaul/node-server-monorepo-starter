@@ -59,7 +59,7 @@ describe(createSubscriptionHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_SUBSCRIPTION.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_SUBSCRIPTION, logGroup);
     expect(mockService.createResource).toHaveBeenCalledWith(
       {
         ...mockBody,
@@ -68,7 +68,7 @@ describe(createSubscriptionHandler.name, () => {
       },
       mockLogger,
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.CREATE_SUBSCRIPTION.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.CREATE_SUBSCRIPTION);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.CREATED);
     expect(mockReply.send).toHaveBeenCalledWith({ id: mockId });
   });
@@ -88,7 +88,7 @@ describe(createSubscriptionHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_SUBSCRIPTION.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_SUBSCRIPTION, logGroup);
     expect(mockService.createResource).toHaveBeenCalledWith(
       {
         ...mockBody,
@@ -97,7 +97,7 @@ describe(createSubscriptionHandler.name, () => {
       },
       mockLogger,
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.CREATE_SUBSCRIPTION.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.CREATE_SUBSCRIPTION);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.BAD_REQUEST);
     expect(mockReply.send).toHaveBeenCalledWith({
       code: ERROR_RESPONSES.COMPANY_NOT_FOUND.code,
@@ -121,7 +121,7 @@ describe(createSubscriptionHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_SUBSCRIPTION.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_SUBSCRIPTION, logGroup);
     expect(mockService.createResource).toHaveBeenCalledWith(
       {
         ...mockBody,
@@ -130,7 +130,7 @@ describe(createSubscriptionHandler.name, () => {
       },
       mockLogger,
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.CREATE_SUBSCRIPTION.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.CREATE_SUBSCRIPTION);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.BAD_REQUEST);
     expect(mockReply.send).toHaveBeenCalledWith({
       code: DomainModelServiceErrorCode.INVALID_INPUT,
@@ -150,7 +150,7 @@ describe(createSubscriptionHandler.name, () => {
       ),
     ).rejects.toThrow(error);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_SUBSCRIPTION.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_SUBSCRIPTION, logGroup);
     expect(mockService.createResource).toHaveBeenCalledWith(
       {
         ...mockBody,
@@ -159,7 +159,7 @@ describe(createSubscriptionHandler.name, () => {
       },
       mockLogger,
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.CREATE_SUBSCRIPTION.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.CREATE_SUBSCRIPTION);
     expect(mockReply.code).not.toHaveBeenCalled();
     expect(mockReply.send).not.toHaveBeenCalled();
   });

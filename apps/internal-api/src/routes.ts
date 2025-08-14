@@ -5,6 +5,7 @@ import { financialInstitutionsEndpointsBuilder } from './endpoints/financial-ins
 import { subscriptionsEndpointsBuilder } from './endpoints/subscriptions/subscriptions.endpoints';
 import { transactionCategoriesEndpointsBuilder } from './endpoints/transaction-categories/transaction-categories.endpoints';
 import { transactionsEndpointsBuilder } from './endpoints/transactions/transactions.endpoints';
+import { usersEndpointsBuilder } from './endpoints/users/users.endpoints';
 
 export const routesBuilder = (server: FastifyInstance): RouteOptions[] => {
   return [
@@ -13,5 +14,6 @@ export const routesBuilder = (server: FastifyInstance): RouteOptions[] => {
     ...subscriptionsEndpointsBuilder(server),
     ...transactionCategoriesEndpointsBuilder(server),
     ...transactionsEndpointsBuilder(server),
+    ...usersEndpointsBuilder(server),
   ];
 };

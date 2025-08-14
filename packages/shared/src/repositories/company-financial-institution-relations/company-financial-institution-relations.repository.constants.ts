@@ -5,8 +5,5 @@ export const ERROR_MESSAGES = {
   FINANCIAL_INSTITUTION_NOT_FOUND: 'Related financial institution not found',
 }
 export const STEPS = {
-  GET_RELATED_DOCUMENTS: {
-    id: 'get-related-documents',
-    label: 'Get related documents',
-  },
+  GET_RELATED_DOCUMENTS: 'get-related-documents',
 }

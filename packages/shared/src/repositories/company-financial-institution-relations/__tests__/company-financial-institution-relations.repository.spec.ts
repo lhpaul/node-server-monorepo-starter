@@ -140,8 +140,8 @@ describe(CompanyFinancialInstitutionRelationsRepository.name, () => {
       expect(mockFinancialInstitutionsRepository.getDocument).toHaveBeenCalledWith(mockFinancialInstitutionId, mockLogger);
 
       // Verify logging
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_RELATED_DOCUMENTS.id, `${repository.constructor.name}.${repository.createDocument.name}`);
-      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_RELATED_DOCUMENTS.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_RELATED_DOCUMENTS, `${repository.constructor.name}.${repository.createDocument.name}`);
+      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_RELATED_DOCUMENTS);
     });
 
     it('should throw RepositoryError when financial institution is not found', async () => {
@@ -164,8 +164,8 @@ describe(CompanyFinancialInstitutionRelationsRepository.name, () => {
       expect(mockFinancialInstitutionsRepository.getDocument).toHaveBeenCalledWith(mockFinancialInstitutionId, mockLogger);
 
       // Verify logging
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_RELATED_DOCUMENTS.id, `${repository.constructor.name}.${repository.createDocument.name}`);
-      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_RELATED_DOCUMENTS.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_RELATED_DOCUMENTS, `${repository.constructor.name}.${repository.createDocument.name}`);
+      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_RELATED_DOCUMENTS);
     });
 
     it('should successfully create a document', async () => {
@@ -198,8 +198,8 @@ describe(CompanyFinancialInstitutionRelationsRepository.name, () => {
       expect(mockFinancialInstitutionsRepository.getDocument).toHaveBeenCalledWith(mockFinancialInstitutionId, mockLogger);
 
       // Verify logging
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_RELATED_DOCUMENTS.id, `${repository.constructor.name}.${repository.createDocument.name}`);
-      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_RELATED_DOCUMENTS.id);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_RELATED_DOCUMENTS, `${repository.constructor.name}.${repository.createDocument.name}`);
+      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_RELATED_DOCUMENTS);
     });
   });
 });

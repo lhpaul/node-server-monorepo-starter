@@ -44,7 +44,7 @@ export class FinancialInstitutionService {
    */
   public async getTransactions(input: GetTransactionsInput, logger: ExecutionLogger): Promise<FinancialInstitutionTransaction[]> {
     const logGroup = `${FinancialInstitutionService.name}.${this.getTransactions.name}`;
-    logger.startStep(STEPS.GET_TRANSACTIONS.id, logGroup);
+    logger.startStep(STEPS.GET_TRANSACTIONS, logGroup);
 
     const transactionsEndpoint = getEnvironmentVariable(MOCK_TRANSACTIONS_ENDPOINT_ENV_VARIABLE_KEY);
     const projectSecret = getSecret(MOCK_API_PROJECT_SECRET_KEY);
@@ -52,7 +52,7 @@ export class FinancialInstitutionService {
       method: 'GET',
       url: `https://${projectSecret}.${HOST_BY_INSTITUTION_ID[this._config.financialInstitutionId]}/${transactionsEndpoint}?sortBy=createdAt&order=desc`,
     }, logger);
-    logger.endStep(STEPS.GET_TRANSACTIONS.id);
+    logger.endStep(STEPS.GET_TRANSACTIONS);
 
     if (result.error) {
       logger.warn({

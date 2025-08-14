@@ -92,6 +92,8 @@ const fetchUsers = async (page: number) => {
 };
 ```
 
+**Important** The "as const" at the end of the constant declarations should only be used for schema constants since it is needed for method `FromSchema` from `json-schema-to-ts` to compile.
+
 By following these practices, the codebase remains clean, consistent, and significantly easier to maintain.
 
 ## Module Import Order

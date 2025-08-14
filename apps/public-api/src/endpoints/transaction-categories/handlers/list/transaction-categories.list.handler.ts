@@ -15,10 +15,10 @@ export const listTransactionCategoriesHandler = async (
   const service = TransactionCategoriesService.getInstance();
   const query = request.query as ListTransactionCategoriesQuery;
   
-  logger.startStep(STEPS.LIST_TRANSACTION_CATEGORIES.id, logGroup);
+  logger.startStep(STEPS.LIST_TRANSACTION_CATEGORIES, logGroup);
   const result = await service
     .getResourcesList(transformQueryParams(query), logger)
-    .finally(() => logger.endStep(STEPS.LIST_TRANSACTION_CATEGORIES.id));
+    .finally(() => logger.endStep(STEPS.LIST_TRANSACTION_CATEGORIES));
   
   // Get Accept-Language header
   const acceptLanguage = request.headers[ACCEPT_LANGUAGE_HEADER_NAME] as string;

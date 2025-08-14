@@ -59,7 +59,7 @@ describe(updateSubscriptionHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_SUBSCRIPTION.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_SUBSCRIPTION, logGroup);
     expect(mockService.updateResource).toHaveBeenCalledWith(
       mockParams.id,
       {
@@ -70,7 +70,7 @@ describe(updateSubscriptionHandler.name, () => {
       mockLogger,
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(
-      STEPS.UPDATE_SUBSCRIPTION.id,
+      STEPS.UPDATE_SUBSCRIPTION,
     );
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.NO_CONTENT);
     expect(mockReply.send).toHaveBeenCalled();
@@ -89,7 +89,7 @@ describe(updateSubscriptionHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_SUBSCRIPTION.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_SUBSCRIPTION, logGroup);
     expect(mockService.updateResource).toHaveBeenCalledWith(
       mockParams.id,
       {
@@ -100,7 +100,7 @@ describe(updateSubscriptionHandler.name, () => {
       mockLogger,
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(
-      STEPS.UPDATE_SUBSCRIPTION.id,
+      STEPS.UPDATE_SUBSCRIPTION,
     );
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.NOT_FOUND);
     expect(mockReply.send).toHaveBeenCalledWith(
@@ -124,7 +124,7 @@ describe(updateSubscriptionHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_SUBSCRIPTION.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_SUBSCRIPTION, logGroup);
     expect(mockService.updateResource).toHaveBeenCalledWith(
       mockParams.id,
       {
@@ -134,7 +134,7 @@ describe(updateSubscriptionHandler.name, () => {
       },
       mockLogger,
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_SUBSCRIPTION.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_SUBSCRIPTION);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.BAD_REQUEST);
     expect(mockReply.send).toHaveBeenCalledWith({
       code: DomainModelServiceErrorCode.INVALID_INPUT,
@@ -154,7 +154,7 @@ describe(updateSubscriptionHandler.name, () => {
       ),
     ).rejects.toThrow(unexpectedError);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_SUBSCRIPTION.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_SUBSCRIPTION, logGroup);
     expect(mockService.updateResource).toHaveBeenCalledWith(
       mockParams.id,
       {
@@ -165,7 +165,7 @@ describe(updateSubscriptionHandler.name, () => {
       mockLogger,
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(
-      STEPS.UPDATE_SUBSCRIPTION.id,
+      STEPS.UPDATE_SUBSCRIPTION,
     );
     expect(mockReply.code).not.toHaveBeenCalled();
     expect(mockReply.send).not.toHaveBeenCalled();
