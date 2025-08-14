@@ -16,19 +16,19 @@ export const loginHandler = async (
   const body = request.body as LoginBody;
   const { email, password } = body;
   logger.startStep(STEPS.VALIDATE_CREDENTIALS, logGroup);
-  const user = await AuthService.getInstance().validateCredentials({ email, password }, logger);
-  logger.endStep(STEPS.VALIDATE_CREDENTIALS);
+  const user = await AuthService.getInstance().validateCredentials({ email, password }, logger)
+  .finally(() => logger.endStep(STEPS.VALIDATE_CREDENTIALS));
   if (!user) {
     return reply.status(STATUS_CODES.UNAUTHORIZED).send(ERROR_RESPONSES.INVALID_CREDENTIALS);
   }
   logger.startStep(STEPS.GET_PERMISSIONS, logGroup);
-  const permissions = await getUserPermissions(user.id, logger);
-  logger.endStep(STEPS.GET_PERMISSIONS);
+  const permissions = await getUserPermissions(user.id, logger)
+  .finally(() => logger.endStep(STEPS.GET_PERMISSIONS));
   logger.startStep(STEPS.GENERATE_USER_TOKEN, logGroup);
-  const token = await request.server.jwt.sign({
+  const token = request.server.jwt.sign({
     userId: user.id,
-    ...permissions,
-  });
+      ...permissions,
+    })
   logger.endStep(STEPS.GENERATE_USER_TOKEN);
   return reply.status(STATUS_CODES.OK).send({ token });
 };
