@@ -54,7 +54,6 @@ class SomeClass {
       await usersService
         .updateUser()
         .finally(() => logger.endStep(STEPS.UPDATE_USER));
-      logger.endStep(STEPS.UPDATE_USER);
       logger.startStep(STEPS.NOTIFY_USER, logGroup);
       await usersService
         .notifyUser()
