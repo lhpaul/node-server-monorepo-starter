@@ -4,7 +4,11 @@ This document is to keep track of the technical debt in this repository.
 
 Global:
 
+- Change "DomainModelService" to "EntityService"
+- Remove "getResourcesList" method from EntityService class.
+- Make TransactionManager and BatchManager
 - Add update validations when updating transaction's categoryId
+- Refactor environment variables handling
 - Implement text search
 - Automatic openapi documentation
 - Functional tests
