@@ -77,4 +77,9 @@ describe(maskFields.name, () => {
     expect(input).toEqual({ name: 'John Doe', email: 'john.doe@example.com' });
     expect(result).not.toBe(input);
   });
+  it('should mask specified fields in an array', () => {
+    const input = [{ name: 'John Doe', email: 'john.doe@example.com' }, { name: 'Jane Doe', email: 'jane.doe@example.com' }];
+    const result = maskFields(input, ['email']);
+    expect(result).toEqual([{ name: 'John Doe', email: '********************' }, { name: 'Jane Doe', email: '********************' }]);
+  });
 });

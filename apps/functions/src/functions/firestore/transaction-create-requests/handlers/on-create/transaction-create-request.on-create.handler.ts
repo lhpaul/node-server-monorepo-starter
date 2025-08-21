@@ -1,4 +1,4 @@
-import { TransactionsService } from '@repo/shared/services';
+import { TransactionsService } from '@repo/shared/domain';
 import { DomainModelServiceError, DomainModelServiceErrorCode, printError } from '@repo/shared/utils';
 
 import { ProcessStatus } from '../../../../../definitions';
@@ -22,8 +22,13 @@ export async function transactionCreateRequestOnCreateHandler<DocumentModel exte
     logger.startStep(STEPS.CREATE_TRANSACTION.id, logGroup);
     const createData = {
       amount: transactionCreateRequest.amount,
+      categoryId: transactionCreateRequest.categoryId,
       companyId: context.params.companyId,
       date: transactionCreateRequest.date,
+      description: transactionCreateRequest.description,
+      sourceType: transactionCreateRequest.sourceType,
+      sourceId: transactionCreateRequest.sourceId,
+      sourceTransactionId: transactionCreateRequest.sourceTransactionId,
       type: transactionCreateRequest.type,
     };
     const transactionId = await TransactionsService.getInstance().createResource(createData, logger)

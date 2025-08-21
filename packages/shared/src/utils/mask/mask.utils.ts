@@ -37,6 +37,9 @@ export function maskFields(
   if (typeof jsonObject !== 'object' || jsonObject === null) {
     return jsonObject;
   }
+  if (jsonObject instanceof Array) {
+    return jsonObject.map((item) => maskFields(item, fieldsToMask, config));
+  }
   const maskedObject = { ...jsonObject };
   fieldsToMask.forEach((field) => {
     if (field in maskedObject) {

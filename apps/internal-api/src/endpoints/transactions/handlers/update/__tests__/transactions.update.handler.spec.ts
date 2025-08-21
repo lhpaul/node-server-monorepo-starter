@@ -1,5 +1,5 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { TransactionsService } from '@repo/shared/services';
+import { TransactionsService } from '@repo/shared/domain';
 import { DomainModelServiceError, DomainModelServiceErrorCode } from '@repo/shared/utils';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
@@ -7,7 +7,7 @@ import { ERROR_RESPONSES } from '../../../transactions.endpoints.constants';
 import { STEPS } from '../transactions.update.handler.constants';
 import { updateTransactionHandler } from '../transactions.update.handler';
 
-jest.mock('@repo/shared/services');
+jest.mock('@repo/shared/domain');
 
 describe(updateTransactionHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;
@@ -56,14 +56,14 @@ describe(updateTransactionHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION, logGroup);
     expect(mockService.updateResource).toHaveBeenCalledWith(
       id,
       mockRequest.body,
       mockLogger,
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(
-      STEPS.UPDATE_TRANSACTION.id,
+      STEPS.UPDATE_TRANSACTION,
     );
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.NO_CONTENT);
     expect(mockReply.send).toHaveBeenCalled();
@@ -82,14 +82,14 @@ describe(updateTransactionHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION, logGroup);
     expect(mockService.updateResource).toHaveBeenCalledWith(
       id,
       mockRequest.body,
       mockLogger,
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(
-      STEPS.UPDATE_TRANSACTION.id,
+      STEPS.UPDATE_TRANSACTION,
     );
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.NOT_FOUND);
     expect(mockReply.send).toHaveBeenCalledWith(
@@ -118,14 +118,14 @@ describe(updateTransactionHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION, logGroup);
     expect(mockService.updateResource).toHaveBeenCalledWith(
       id,
       mockRequest.body,
       mockLogger,
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(
-      STEPS.UPDATE_TRANSACTION.id,
+      STEPS.UPDATE_TRANSACTION,
     );
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.BAD_REQUEST);
     expect(mockReply.send).toHaveBeenCalledWith({
@@ -146,14 +146,14 @@ describe(updateTransactionHandler.name, () => {
       ),
     ).rejects.toThrow(unexpectedError);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION, logGroup);
     expect(mockService.updateResource).toHaveBeenCalledWith(
       id,
       mockRequest.body,
       mockLogger,
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(
-      STEPS.UPDATE_TRANSACTION.id,
+      STEPS.UPDATE_TRANSACTION,
     );
     expect(mockReply.code).not.toHaveBeenCalled();
     expect(mockReply.send).not.toHaveBeenCalled();

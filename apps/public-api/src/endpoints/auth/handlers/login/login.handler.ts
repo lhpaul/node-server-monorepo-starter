@@ -1,7 +1,8 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { AuthService, DecodeEmailTokenError, UsersService } from '@repo/shared/services';
+import { UsersService } from '@repo/shared/domain';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
+import { decodeEmailToken, DecodeEmailTokenError, generateUserToken } from '../../../../utils/auth';
 import { ERROR_RESPONSES, STEPS } from './login.handler.constants';
 import { LoginBody } from './login.handler.interfaces';
 
@@ -13,19 +14,18 @@ export const loginHandler = async (
   const logGroup = `${loginHandler.name}`;
   const body = request.body as LoginBody;
   const { token: emailToken } = body;
-  const authService = AuthService.getInstance();
 
   try {
-    logger.startStep(STEPS.DECODE_EMAIL_TOKEN.id, logGroup);
-    const { email } = await authService.decodeEmailToken(emailToken)
-      .finally(() => logger.endStep(STEPS.DECODE_EMAIL_TOKEN.id));
-    logger.startStep(STEPS.FIND_USER.id, logGroup);
+    logger.startStep(STEPS.DECODE_EMAIL_TOKEN, logGroup);
+    const { email } = await decodeEmailToken(emailToken)
+      .finally(() => logger.endStep(STEPS.DECODE_EMAIL_TOKEN));
+    logger.startStep(STEPS.FIND_USER, logGroup);
     const [user, ..._rest] = await UsersService.getInstance().getResourcesList(
       {
         email: [{ value: email, operator: '==' }],
       },
       logger,
-    ).finally(() => logger.endStep(STEPS.FIND_USER.id));
+    ).finally(() => logger.endStep(STEPS.FIND_USER));
 
     if (!user) {
       return reply.status(STATUS_CODES.UNAUTHORIZED).send({
@@ -34,9 +34,9 @@ export const loginHandler = async (
       });
     }
 
-    logger.startStep(STEPS.GENERATE_USER_TOKEN.id, logGroup);
-    const token = await authService.generateUserToken(user.id, logger)
-      .finally(() => logger.endStep(STEPS.GENERATE_USER_TOKEN.id));
+    logger.startStep(STEPS.GENERATE_USER_TOKEN, logGroup);
+    const token = await generateUserToken(user.id, logger)
+      .finally(() => logger.endStep(STEPS.GENERATE_USER_TOKEN));
 
     return reply.status(STATUS_CODES.OK).send({ token });
   } catch (err: any) {

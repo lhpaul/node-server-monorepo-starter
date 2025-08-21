@@ -1,5 +1,5 @@
 import { mapDateQueryParams, STATUS_CODES } from '@repo/fastify';
-import { SubscriptionsService } from '@repo/shared/services';
+import { SubscriptionsService } from '@repo/shared/domain';
 import { DomainModelServiceError, DomainModelServiceErrorCode } from '@repo/shared/utils';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
@@ -17,9 +17,9 @@ export const updateSubscriptionHandler = async (
   const { id } = request.params as UpdateSubscriptionParams;
   const body = request.body as UpdateSubscriptionBody;
   try {
-    logger.startStep(STEPS.UPDATE_SUBSCRIPTION.id, logGroup);
+    logger.startStep(STEPS.UPDATE_SUBSCRIPTION, logGroup);
     await service.updateResource(id, mapDateQueryParams(body as Record<string, string>, ['startsAt', 'endsAt']), logger)
-    .finally(() => logger.endStep(STEPS.UPDATE_SUBSCRIPTION.id));
+    .finally(() => logger.endStep(STEPS.UPDATE_SUBSCRIPTION));
     return reply.code(STATUS_CODES.NO_CONTENT).send();
   } catch (error) {
     if (error instanceof DomainModelServiceError) {

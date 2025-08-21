@@ -1,5 +1,3 @@
 export const STEPS = {
-  GET_COMPANIES: {
-    id: 'get-companies'
-  },
+  GET_COMPANIES: 'get-companies',
 }; 

@@ -1,17 +1,22 @@
 import { FORBIDDEN_ERROR, STATUS_CODES } from '@repo/fastify';
-import { TransactionsService } from '@repo/shared/services';
+import { TransactionsService } from '@repo/shared/domain';
 import { DomainModelServiceError, DomainModelServiceErrorCode } from '@repo/shared/utils';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../../../definitions/auth.interfaces';
-import { hasCompanyTransactionsUpdatePermission } from '../../../../../../../utils/auth/auth.utils';
+import { hasCompanyTransactionsUpdatePermission } from '../../../../../../../utils/permissions';
 import { ERROR_RESPONSES } from '../../../transactions.endpoints.constants';
 import { STEPS } from '../transactions.update.handler.constants';
 import { updateTransactionHandler } from '../transactions.update.handler';
 
-jest.mock('@repo/shared/services');
+jest.mock('@repo/shared/domain', () => ({
+  ...jest.requireActual('@repo/shared/domain'),
+  TransactionsService: {
+    getInstance: jest.fn(),
+  },
+}));
 
-jest.mock('../../../../../../../utils/auth/auth.utils', () => ({
+jest.mock('../../../../../../../utils/permissions', () => ({
   hasCompanyTransactionsUpdatePermission: jest.fn(),
 }));
 
@@ -26,11 +31,7 @@ describe(updateTransactionHandler.name, () => {
   const logGroup = updateTransactionHandler.name;
   const mockParams = { companyId: 'company123', id: 'transaction123' };
   const mockBody = { amount: 100, date: '2024-03-20', type: 'INCOME' };
-  const mockUser: AuthUser = {
-    companies: {
-      'company123': ['transaction:update'],
-    },
-  } as unknown as AuthUser;
+  const mockUser = { app_user_id: 'user123' } as AuthUser;
 
   beforeEach(() => {
     mockLogger = {
@@ -74,13 +75,13 @@ describe(updateTransactionHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION, logGroup);
     expect(mockService.updateResource).toHaveBeenCalledWith(
       mockParams.id,
       mockBody,
       mockLogger,
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.NO_CONTENT);
     expect(mockReply.send).toHaveBeenCalled();
   });
@@ -98,13 +99,13 @@ describe(updateTransactionHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION, logGroup);
     expect(mockService.updateResource).toHaveBeenCalledWith(
       mockParams.id,
       mockBody,
       mockLogger,
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.NOT_FOUND);
     expect(mockReply.send).toHaveBeenCalledWith(ERROR_RESPONSES.TRANSACTION_NOT_FOUND);
   });
@@ -130,13 +131,13 @@ describe(updateTransactionHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION, logGroup);
     expect(mockService.updateResource).toHaveBeenCalledWith(
       mockParams.id,
       mockBody,
       mockLogger,
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.BAD_REQUEST);
     expect(mockReply.send).toHaveBeenCalledWith({
       code: DomainModelServiceErrorCode.INVALID_INPUT,
@@ -156,13 +157,13 @@ describe(updateTransactionHandler.name, () => {
       ),
     ).rejects.toThrow(error);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION, logGroup);
     expect(mockService.updateResource).toHaveBeenCalledWith(
       mockParams.id,
       mockBody,
       mockLogger,
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_TRANSACTION);
     expect(mockReply.code).not.toHaveBeenCalled();
     expect(mockReply.send).not.toHaveBeenCalled();
   });

@@ -1,5 +1,5 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { SubscriptionsService } from '@repo/shared/services';
+import { SubscriptionsService } from '@repo/shared/domain';
 import { DomainModelServiceError, DomainModelServiceErrorCode } from '@repo/shared/utils';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
@@ -7,7 +7,7 @@ import { ERROR_RESPONSES } from '../../../subscriptions.endpoints.constants';
 import { STEPS } from '../subscriptions.delete.handler.constants';
 import { deleteSubscriptionHandler } from '../subscriptions.delete.handler';
 
-jest.mock('@repo/shared/services');
+jest.mock('@repo/shared/domain');
 jest.mock('@repo/shared/utils', () => ({
   ...jest.requireActual('@repo/shared/utils'),
   DomainModelServiceError: jest.fn(),
@@ -60,13 +60,13 @@ describe(deleteSubscriptionHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DELETE_SUBSCRIPTION.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DELETE_SUBSCRIPTION, logGroup);
     expect(mockService.deleteResource).toHaveBeenCalledWith(
       mockParams.id,
       mockLogger,
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(
-      STEPS.DELETE_SUBSCRIPTION.id,
+      STEPS.DELETE_SUBSCRIPTION,
     );
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.NO_CONTENT);
     expect(mockReply.send).toHaveBeenCalled();
@@ -85,13 +85,13 @@ describe(deleteSubscriptionHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DELETE_SUBSCRIPTION.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DELETE_SUBSCRIPTION, logGroup);
     expect(mockService.deleteResource).toHaveBeenCalledWith(
       mockParams.id,
       mockLogger,
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(
-      STEPS.DELETE_SUBSCRIPTION.id,
+      STEPS.DELETE_SUBSCRIPTION,
     );
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.NOT_FOUND);
     expect(mockReply.send).toHaveBeenCalledWith(
@@ -110,13 +110,13 @@ describe(deleteSubscriptionHandler.name, () => {
       ),
     ).rejects.toThrow(error);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DELETE_SUBSCRIPTION.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.DELETE_SUBSCRIPTION, logGroup);
     expect(mockService.deleteResource).toHaveBeenCalledWith(
       mockParams.id,
       mockLogger,
     );
     expect(mockLogger.endStep).toHaveBeenCalledWith(
-      STEPS.DELETE_SUBSCRIPTION.id,
+      STEPS.DELETE_SUBSCRIPTION,
     );
     expect(mockReply.code).not.toHaveBeenCalled();
     expect(mockReply.send).not.toHaveBeenCalled();

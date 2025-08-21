@@ -1,256 +1,273 @@
-import { UserPermissions } from '@repo/shared/services';
+import { ExecutionLogger } from '@repo/shared/definitions';
 import {
-  hasCompanyReadPermission,
-  hasCompanyUpdatePermission,
-  hasCompanyDeletePermission,
-  hasCompanyTransactionsCreatePermission,
-  hasCompanyTransactionsReadPermission,
-  hasCompanyTransactionsUpdatePermission,
-  hasCompanyTransactionsDeletePermission,
-  hasCompanySubscriptionsReadPermission,
-} from '../auth.utils';
+  CompaniesService,
+  UserCompanyRelationsService,
+  UserCompanyRole,
+} from '@repo/shared/domain';
 
-describe('Auth Utils', () => {
-  const mockCompanyId = 'company-123';
-  const mockPermissions: UserPermissions = {
-    companies: {
-      'company-123': ['company:read', 'company:update'],
-      'company-456': ['company:write'],
-    },
-  };
+import { getUserPermissions } from '../auth.utils';
+import { PERMISSIONS_BY_ROLE } from '../../../constants/permissions.constants';
+import { GET_USER_PERMISSIONS_STEPS, LOG_GROUP_NAME, PERMISSIONS_SUFFIXES } from '../auth.utils.constants';
 
-  describe(hasCompanyReadPermission.name, () => {
-    it('should return true when user has company:read permission', () => {
-      const result = hasCompanyReadPermission(mockCompanyId, mockPermissions);
-      expect(result).toBe(true);
-    });
+// Mock the shared domain services
+jest.mock('@repo/shared/domain');
 
-    it('should return true when user has company:write permission', () => {
-      const permissions: UserPermissions = {
-        companies: {
-          'company-123': ['company:write'],
-        },
-      };
-      const result = hasCompanyReadPermission(mockCompanyId, permissions);
-      expect(result).toBe(true);
-    });
+describe(getUserPermissions.name, () => {
+  let mockUserCompanyRelationsService: Partial<UserCompanyRelationsService>;
+  let mockCompaniesService: Partial<CompaniesService>;
+  let mockLogger: jest.Mocked<ExecutionLogger>;
+  let mockUserCompanyRelations: any[];
+  let mockCompanySubscriptions: any[][];
 
-    it('should return false when user has no read or write permissions', () => {
-      const permissions: UserPermissions = {
-        companies: {
-          'company-123': ['company:update'],
-        },
-      };
-      const result = hasCompanyReadPermission(mockCompanyId, permissions);
-      expect(result).toBe(false);
-    });
+  const userId = 'user-123';
+  const companyId1 = 'company-1';
+  const companyId2 = 'company-2';
 
-    it('should return undefined when company does not exist in permissions', () => {
-      const result = hasCompanyReadPermission('non-existent-company', mockPermissions);
-      expect(result).toBeUndefined();
-    });
-  });
+  beforeEach(() => {
+    // Setup mock logger
+    mockLogger = {
+      startStep: jest.fn(),
+      endStep: jest.fn(),
+      child: jest.fn(),
+      level: 'info',
+      fatal: jest.fn(),
+      error: jest.fn(),
+      warn: jest.fn(),
+      info: jest.fn(),
+      debug: jest.fn(),
+      trace: jest.fn(),
+      silent: jest.fn(),
+    } as unknown as jest.Mocked<ExecutionLogger>;
 
-  describe(hasCompanyUpdatePermission.name, () => {
-    it('should return true when user has company:update permission', () => {
-      const result = hasCompanyUpdatePermission(mockCompanyId, mockPermissions);
-      expect(result).toBe(true);
-    });
-
-    it('should return true when user has company:write permission', () => {
-      const permissions: UserPermissions = {
-        companies: {
-          'company-123': ['company:write'],
-        },
-      };
-      const result = hasCompanyUpdatePermission(mockCompanyId, permissions);
-      expect(result).toBe(true);
-    });
-
-    it('should return false when user has no update or write permissions', () => {
-      const permissions: UserPermissions = {
-        companies: {
-          'company-123': ['company:read'],
-        },
-      };
-      const result = hasCompanyUpdatePermission(mockCompanyId, permissions);
-      expect(result).toBe(false);
-    });
-
-    it('should return undefined when company does not exist in permissions', () => {
-      const result = hasCompanyUpdatePermission('non-existent-company', mockPermissions);
-      expect(result).toBeUndefined();
-    });
-  });
-
-  describe(hasCompanyDeletePermission.name, () => {
-    it('should return true when user has company:delete permission', () => {
-      const permissions: UserPermissions = {
-        companies: {
-          'company-123': ['company:delete'],
-        },
-      };
-      const result = hasCompanyDeletePermission(mockCompanyId, permissions);
-      expect(result).toBe(true);
-    });
-
-    it('should return true when user has company:write permission', () => {
-      const permissions: UserPermissions = {
-        companies: {
-          'company-123': ['company:write'],
-        },
-      };
-      const result = hasCompanyDeletePermission(mockCompanyId, permissions);
-      expect(result).toBe(true);
-    });
-
-    it('should return false when user has no delete or write permissions', () => {
-      const result = hasCompanyDeletePermission(mockCompanyId, mockPermissions);
-      expect(result).toBe(false);
-    });
-
-    it('should return undefined when company does not exist in permissions', () => {
-      const result = hasCompanyDeletePermission('non-existent-company', mockPermissions);
-      expect(result).toBeUndefined();
-    });
-  });
-
-  describe(hasCompanySubscriptionsReadPermission.name, () => {
-    it('should return true when user has subscriptions:read permission', () => {
-      const result = hasCompanySubscriptionsReadPermission(mockCompanyId, {
-        companies: {
-          ...mockPermissions.companies,
-          [mockCompanyId]: ['subscriptions:read'],
-        },
-      });
-      expect(result).toBe(true);
-    });
-
-    it('should return false when user has no read or write permissions', () => {
-      const result = hasCompanySubscriptionsReadPermission(mockCompanyId, mockPermissions);
-      expect(result).toBe(false);
-    });
-
-    it('should return undefined when company does not exist in permissions', () => {
-      const result = hasCompanySubscriptionsReadPermission('non-existent-company', mockPermissions);
-      expect(result).toBeUndefined();
-    });
-  });
-
-  describe('Transaction Permissions', () => {
-    const mockTransactionPermissions: UserPermissions = {
-      companies: {
-        'company-123': ['transactions:read', 'transactions:update'],
-        'company-456': ['transactions:write'],
+    // Setup mock user company relations
+    mockUserCompanyRelations = [
+      {
+        id: 'relation-1',
+        companyId: companyId1,
+        userId: userId,
+        role: UserCompanyRole.ADMIN,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
+      {
+        id: 'relation-2',
+        companyId: companyId2,
+        userId: userId,
+        role: UserCompanyRole.MEMBER,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ];
+
+    // Setup mock company subscriptions
+    mockCompanySubscriptions = [
+      [{ id: 'subscription-1', status: 'active' }], // Company 1 has active subscription
+      [], // Company 2 has no subscription
+    ];
+
+    // Setup mock services
+    mockUserCompanyRelationsService = {
+      getUserCompanyRelations: jest.fn().mockResolvedValue(mockUserCompanyRelations),
     };
 
-    describe(hasCompanyTransactionsCreatePermission.name, () => {
-      it('should return true when user has transactions:create permission', () => {
-        const permissions: UserPermissions = {
-          companies: {
-            'company-123': ['transactions:create'],
-          },
-        };
-        const result = hasCompanyTransactionsCreatePermission(mockCompanyId, permissions);
-        expect(result).toBe(true);
-      });
+    mockCompaniesService = {
+      getActiveSubscriptions: jest.fn(),
+    };
 
-      it('should return true when user has transactions:write permission', () => {
-        const result = hasCompanyTransactionsCreatePermission('company-456', mockTransactionPermissions);
-        expect(result).toBe(true);
-      });
+    // Mock service getInstance methods
+    (UserCompanyRelationsService.getInstance as jest.Mock).mockReturnValue(mockUserCompanyRelationsService);
+    (CompaniesService.getInstance as jest.Mock).mockReturnValue(mockCompaniesService);
 
-      it('should return false when user has no create or write permissions', () => {
-        const result = hasCompanyTransactionsCreatePermission(mockCompanyId, mockTransactionPermissions);
-        expect(result).toBe(false);
-      });
+    // Setup getActiveSubscriptions to return different results for each company
+    (mockCompaniesService.getActiveSubscriptions as jest.Mock)
+      .mockResolvedValueOnce(mockCompanySubscriptions[0]) // For company 1
+      .mockResolvedValueOnce(mockCompanySubscriptions[1]); // For company 2
+  });
 
-      it('should return undefined when company does not exist in permissions', () => {
-        const result = hasCompanyTransactionsCreatePermission('non-existent-company', mockTransactionPermissions);
-        expect(result).toBeUndefined();
-      });
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('should get user permissions successfully with active subscriptions', async () => {
+    const result = await getUserPermissions(userId, mockLogger);
+
+    // Verify logger calls
+    expect(mockLogger.startStep).toHaveBeenCalledWith(
+      GET_USER_PERMISSIONS_STEPS.GET_USER_COMPANY_RELATIONS,
+      `${LOG_GROUP_NAME}.${getUserPermissions.name}`
+    );
+    expect(mockLogger.endStep).toHaveBeenCalledWith(
+      GET_USER_PERMISSIONS_STEPS.GET_USER_COMPANY_RELATIONS
+    );
+    expect(mockLogger.startStep).toHaveBeenCalledWith(
+      GET_USER_PERMISSIONS_STEPS.GET_SUBSCRIPTIONS,
+      `${LOG_GROUP_NAME}.${getUserPermissions.name}`
+    );
+    expect(mockLogger.endStep).toHaveBeenCalledWith(
+      GET_USER_PERMISSIONS_STEPS.GET_SUBSCRIPTIONS
+    );
+
+    // Verify service calls
+    expect(mockUserCompanyRelationsService.getUserCompanyRelations).toHaveBeenCalledWith(userId, mockLogger);
+    expect(mockCompaniesService.getActiveSubscriptions).toHaveBeenCalledWith(companyId1, mockLogger);
+    expect(mockCompaniesService.getActiveSubscriptions).toHaveBeenCalledWith(companyId2, mockLogger);
+
+    // Verify result structure
+    expect(result).toEqual({
+      companies: {
+        [companyId1]: PERMISSIONS_BY_ROLE[UserCompanyRole.ADMIN], // Admin permissions unchanged (has subscription)
+        [companyId2]: PERMISSIONS_BY_ROLE[UserCompanyRole.MEMBER], // Member permissions unchanged (no write permissions to convert)
+      },
+    });
+  });
+
+  it('should convert write permissions to read permissions when company has no active subscriptions', async () => {
+    // Setup: Company 1 (ADMIN) has no subscriptions, Company 2 (MEMBER) has subscriptions
+    mockCompanySubscriptions = [
+      [], // Company 1 has no subscription
+      [{ id: 'subscription-2', status: 'active' }], // Company 2 has active subscription
+    ];
+
+    // Reset the mock to ensure proper setup
+    (mockCompaniesService.getActiveSubscriptions as jest.Mock).mockReset();
+    (mockCompaniesService.getActiveSubscriptions as jest.Mock)
+      .mockResolvedValueOnce(mockCompanySubscriptions[0]) // For company 1
+      .mockResolvedValueOnce(mockCompanySubscriptions[1]); // For company 2
+
+    const result = await getUserPermissions(userId, mockLogger);
+
+    // Get expected permissions for admin role
+    const adminPermissions = PERMISSIONS_BY_ROLE[UserCompanyRole.ADMIN];
+    const expectedAdminPermissions = adminPermissions.map(permission =>
+      permission.replace(PERMISSIONS_SUFFIXES.WRITE, PERMISSIONS_SUFFIXES.READ)
+    );
+
+    expect(result).toEqual({
+      companies: {
+        [companyId1]: expectedAdminPermissions, // Write permissions converted to read
+        [companyId2]: PERMISSIONS_BY_ROLE[UserCompanyRole.MEMBER], // Member permissions unchanged
+      },
+    });
+  });
+
+  it('should handle user with no company relations', async () => {
+    mockUserCompanyRelations = [];
+    (mockUserCompanyRelationsService.getUserCompanyRelations as jest.Mock).mockResolvedValue(mockUserCompanyRelations);
+
+    const result = await getUserPermissions(userId, mockLogger);
+
+    expect(result).toEqual({
+      companies: {},
     });
 
-    describe(hasCompanyTransactionsReadPermission.name, () => {
-      it('should return true when user has transactions:read permission', () => {
-        const result = hasCompanyTransactionsReadPermission(mockCompanyId, mockTransactionPermissions);
-        expect(result).toBe(true);
-      });
+    expect(mockCompaniesService.getActiveSubscriptions).not.toHaveBeenCalled();
+  });
 
-      it('should return true when user has transactions:write permission', () => {
-        const result = hasCompanyTransactionsReadPermission('company-456', mockTransactionPermissions);
-        expect(result).toBe(true);
-      });
+  it('should handle user with single company relation', async () => {
+    mockUserCompanyRelations = [mockUserCompanyRelations[0]]; // Only admin relation
+    mockCompanySubscriptions = [[{ id: 'subscription-1', status: 'active' }]];
 
-      it('should return false when user has no read or write permissions', () => {
-        const permissions: UserPermissions = {
-          companies: {
-            'company-123': ['transactions:update'],
-          },
-        };
-        const result = hasCompanyTransactionsReadPermission(mockCompanyId, permissions);
-        expect(result).toBe(false);
-      });
+    (mockUserCompanyRelationsService.getUserCompanyRelations as jest.Mock).mockResolvedValue(mockUserCompanyRelations);
+    (mockCompaniesService.getActiveSubscriptions as jest.Mock).mockResolvedValue(mockCompanySubscriptions[0]);
 
-      it('should return undefined when company does not exist in permissions', () => {
-        const result = hasCompanyTransactionsReadPermission('non-existent-company', mockTransactionPermissions);
-        expect(result).toBeUndefined();
-      });
+    const result = await getUserPermissions(userId, mockLogger);
+
+    expect(result).toEqual({
+      companies: {
+        [companyId1]: PERMISSIONS_BY_ROLE[UserCompanyRole.ADMIN],
+      },
     });
 
-    describe(hasCompanyTransactionsUpdatePermission.name, () => {
-      it('should return true when user has transactions:update permission', () => {
-        const result = hasCompanyTransactionsUpdatePermission(mockCompanyId, mockTransactionPermissions);
-        expect(result).toBe(true);
-      });
+    expect(mockCompaniesService.getActiveSubscriptions).toHaveBeenCalledTimes(1);
+    expect(mockCompaniesService.getActiveSubscriptions).toHaveBeenCalledWith(companyId1, mockLogger);
+  });
 
-      it('should return true when user has transactions:write permission', () => {
-        const result = hasCompanyTransactionsUpdatePermission('company-456', mockTransactionPermissions);
-        expect(result).toBe(true);
-      });
+  it('should handle service errors gracefully', async () => {
+    const error = new Error('Service error');
+    (mockUserCompanyRelationsService.getUserCompanyRelations as jest.Mock).mockRejectedValue(error);
 
-      it('should return false when user has no update or write permissions', () => {
-        const permissions: UserPermissions = {
-          companies: {
-            'company-123': ['transactions:read'],
-          },
-        };
-        const result = hasCompanyTransactionsUpdatePermission(mockCompanyId, permissions);
-        expect(result).toBe(false);
-      });
+    await expect(getUserPermissions(userId, mockLogger)).rejects.toThrow('Service error');
 
-      it('should return undefined when company does not exist in permissions', () => {
-        const result = hasCompanyTransactionsUpdatePermission('non-existent-company', mockTransactionPermissions);
-        expect(result).toBeUndefined();
-      });
-    });
+    expect(mockLogger.startStep).toHaveBeenCalledWith(
+      GET_USER_PERMISSIONS_STEPS.GET_USER_COMPANY_RELATIONS,
+      `${LOG_GROUP_NAME}.${getUserPermissions.name}`
+    );
+    expect(mockLogger.endStep).not.toHaveBeenCalled();
+  });
 
-    describe(hasCompanyTransactionsDeletePermission.name, () => {
-      it('should return true when user has transactions:delete permission', () => {
-        const permissions: UserPermissions = {
-          companies: {
-            'company-123': ['transactions:delete'],
-          },
-        };
-        const result = hasCompanyTransactionsDeletePermission(mockCompanyId, permissions);
-        expect(result).toBe(true);
-      });
+  it('should handle subscription service errors gracefully', async () => {
+    const error = new Error('Subscription service error');
+    
+    // Reset the mock to ensure proper setup for error scenario
+    (mockCompaniesService.getActiveSubscriptions as jest.Mock).mockReset();
+    (mockCompaniesService.getActiveSubscriptions as jest.Mock).mockRejectedValue(error);
 
-      it('should return true when user has transactions:write permission', () => {
-        const result = hasCompanyTransactionsDeletePermission('company-456', mockTransactionPermissions);
-        expect(result).toBe(true);
-      });
+    await expect(getUserPermissions(userId, mockLogger)).rejects.toThrow('Subscription service error');
 
-      it('should return false when user has no delete or write permissions', () => {
-        const result = hasCompanyTransactionsDeletePermission(mockCompanyId, mockTransactionPermissions);
-        expect(result).toBe(false);
-      });
+    expect(mockLogger.startStep).toHaveBeenCalledWith(
+      GET_USER_PERMISSIONS_STEPS.GET_SUBSCRIPTIONS,
+      `${LOG_GROUP_NAME}.${getUserPermissions.name}`
+    );
+    expect(mockLogger.endStep).not.toHaveBeenCalledWith(
+      GET_USER_PERMISSIONS_STEPS.GET_SUBSCRIPTIONS
+    );
+  });
 
-      it('should return undefined when company does not exist in permissions', () => {
-        const result = hasCompanyTransactionsDeletePermission('non-existent-company', mockTransactionPermissions);
-        expect(result).toBeUndefined();
-      });
+  it('should handle mixed subscription scenarios correctly', async () => {
+    // Setup: Multiple companies with different subscription states
+    mockUserCompanyRelations = [
+      {
+        id: 'relation-1',
+        companyId: 'company-admin-with-sub',
+        userId: userId,
+        role: UserCompanyRole.ADMIN,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: 'relation-2',
+        companyId: 'company-admin-without-sub',
+        userId: userId,
+        role: UserCompanyRole.ADMIN,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: 'relation-3',
+        companyId: 'company-member',
+        userId: userId,
+        role: UserCompanyRole.MEMBER,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ];
+
+    mockCompanySubscriptions = [
+      [{ id: 'subscription-1', status: 'active' }], // Admin with subscription
+      [], // Admin without subscription
+      [{ id: 'subscription-3', status: 'active' }], // Member with subscription
+    ];
+
+    (mockUserCompanyRelationsService.getUserCompanyRelations as jest.Mock).mockResolvedValue(mockUserCompanyRelations);
+    (mockCompaniesService.getActiveSubscriptions as jest.Mock)
+      .mockResolvedValueOnce(mockCompanySubscriptions[0])
+      .mockResolvedValueOnce(mockCompanySubscriptions[1])
+      .mockResolvedValueOnce(mockCompanySubscriptions[2]);
+
+    const result = await getUserPermissions(userId, mockLogger);
+
+    // Get expected permissions for admin role with write permissions converted to read
+    const adminPermissions = PERMISSIONS_BY_ROLE[UserCompanyRole.ADMIN];
+    const expectedAdminPermissionsWithoutSub = adminPermissions.map(permission =>
+      permission.replace(PERMISSIONS_SUFFIXES.WRITE, PERMISSIONS_SUFFIXES.READ)
+    );
+
+    expect(result).toEqual({
+      companies: {
+        'company-admin-with-sub': PERMISSIONS_BY_ROLE[UserCompanyRole.ADMIN], // Unchanged (has subscription)
+        'company-admin-without-sub': expectedAdminPermissionsWithoutSub, // Write permissions converted to read
+        'company-member': PERMISSIONS_BY_ROLE[UserCompanyRole.MEMBER], // Unchanged (no write permissions)
+      },
     });
   });
 });

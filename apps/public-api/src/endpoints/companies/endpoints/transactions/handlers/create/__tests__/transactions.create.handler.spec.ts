@@ -1,18 +1,17 @@
 import { FORBIDDEN_ERROR, STATUS_CODES } from '@repo/fastify';
-import { TransactionType } from '@repo/shared/domain';
-import { TransactionsService } from '@repo/shared/services';
+import { TransactionSourceType, TransactionType, TransactionsService } from '@repo/shared/domain';
 import { DomainModelServiceError, DomainModelServiceErrorCode } from '@repo/shared/utils';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../../../definitions/auth.interfaces';
-import { hasCompanyTransactionsCreatePermission } from '../../../../../../../utils/auth/auth.utils';
+import { hasCompanyTransactionsCreatePermission } from '../../../../../../../utils/permissions';
 import { STEPS } from '../transactions.create.handler.constants';
 import { createTransactionHandler } from '../transactions.create.handler';
 import { CreateCompanyTransactionBody } from '../transactions.create.handler.interfaces';
 
 
-jest.mock('@repo/shared/services');
-jest.mock('../../../../../../../utils/auth/auth.utils', () => ({
+jest.mock('@repo/shared/domain');
+jest.mock('../../../../../../../utils/permissions', () => ({
   hasCompanyTransactionsCreatePermission: jest.fn()
 }));
 
@@ -23,11 +22,7 @@ describe(createTransactionHandler.name, () => {
   let mockService: Partial<TransactionsService>;
   const logGroup = createTransactionHandler.name;
   const mockParams = { companyId: '123' };
-  const mockUser: AuthUser = {
-    companies: {
-      'company-1': ['read'],
-    },
-  } as unknown as AuthUser;
+  const mockUser = { app_user_id: 'user123' } as AuthUser;
   const mockBody = {
     amount: 100,
     date: '2024-03-20',
@@ -35,6 +30,7 @@ describe(createTransactionHandler.name, () => {
   } as CreateCompanyTransactionBody;
 
   beforeEach(() => {
+    jest.useFakeTimers();
     // Setup logger mock
     mockLogger = {
       child: jest.fn().mockReturnThis(),
@@ -65,6 +61,7 @@ describe(createTransactionHandler.name, () => {
   });
 
   afterEach(() => {
+    jest.useRealTimers();
     jest.clearAllMocks();
   });
 
@@ -91,37 +88,76 @@ describe(createTransactionHandler.name, () => {
     beforeEach(() => {
       (hasCompanyTransactionsCreatePermission as jest.Mock).mockReturnValue(true);
     });
+    describe('when optional fields are not provided', () => {
+      it('should create a transaction successfully, logging the right values', async () => {
+        const mockTransactionId = '123';
+        const now = new Date('2024-03-20');
+        jest.setSystemTime(now);
+        jest.spyOn(mockService, 'createResource').mockResolvedValue(mockTransactionId);
 
-    it('should create a transaction successfully', async () => {
-      const mockTransactionId = '123';
-      jest.spyOn(mockService, 'createResource').mockResolvedValue(mockTransactionId);
+        await createTransactionHandler(
+          mockRequest as FastifyRequest,
+          mockReply as FastifyReply,
+        );
 
-      await createTransactionHandler(
-        mockRequest as FastifyRequest,
-        mockReply as FastifyReply,
-      );
+        // Verify logging
+        expect(mockLogger.child).toHaveBeenCalledWith({
+          handler: createTransactionHandler.name,
+        });
+        expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_TRANSACTION, logGroup);
+        expect(mockLogger.endStep).toHaveBeenCalledWith(
+          STEPS.CREATE_TRANSACTION,
+        );
 
-      // Verify logging
-      expect(mockLogger.child).toHaveBeenCalledWith({
-        handler: createTransactionHandler.name,
+        // Verify service call
+        expect(mockService.createResource).toHaveBeenCalledWith(
+          {
+            categoryId: null,
+            description: null,
+            ...mockBody,
+            companyId: mockParams.companyId,
+            sourceId: mockUser.app_user_id,
+            sourceTransactionId: now.getTime().toString(),
+            sourceType: TransactionSourceType.USER,
+          } as CreateCompanyTransactionBody,
+          mockLogger,
+        );
+
+        // Verify response
+        expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.CREATED);
+        expect(mockReply.send).toHaveBeenCalledWith({ id: mockTransactionId });
       });
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_TRANSACTION.id, logGroup);
-      expect(mockLogger.endStep).toHaveBeenCalledWith(
-        STEPS.CREATE_TRANSACTION.id,
-      );
-
-      // Verify service call
-      expect(mockService.createResource).toHaveBeenCalledWith(
-        {
-          ...mockBody,
-          companyId: mockParams.companyId,
-        } as CreateCompanyTransactionBody,
-        mockLogger,
-      );
-
-      // Verify response
-      expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.CREATED);
-      expect(mockReply.send).toHaveBeenCalledWith({ id: mockTransactionId });
+    });
+    describe('when optional fields are provided', () => {
+      it('should create a transaction successfully, logging the right values', async () => {
+        const mockTransactionId = '123';
+        const now = new Date('2024-03-20');
+        jest.setSystemTime(now);
+        jest.spyOn(mockService, 'createResource').mockResolvedValue(mockTransactionId);
+        const body = {
+          amount: 100,
+          date: '2024-03-20',
+          description: 'description',
+          categoryId: 'categoryId',
+          type: TransactionType.CREDIT,
+        } as CreateCompanyTransactionBody;
+        mockRequest.body = body;
+        await createTransactionHandler(mockRequest as FastifyRequest, mockReply as FastifyReply);
+        expect(mockService.createResource).toHaveBeenCalledWith(
+          {
+            ...body,
+            companyId: mockParams.companyId,
+            sourceId: mockUser.app_user_id,
+            sourceTransactionId: now.getTime().toString(),
+            sourceType: TransactionSourceType.USER,
+          },
+          mockLogger,
+        );
+        expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_TRANSACTION, logGroup);
+        expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.CREATE_TRANSACTION);
+        expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.CREATED);
+        expect(mockReply.send).toHaveBeenCalledWith({ id: mockTransactionId });
+      });
     });
   });
 
@@ -151,15 +187,20 @@ describe(createTransactionHandler.name, () => {
         mockReply as FastifyReply,
       );
 
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_TRANSACTION.id, logGroup);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_TRANSACTION, logGroup);
       expect(mockService.createResource).toHaveBeenCalledWith(
         {
           ...mockBody,
+          categoryId: null,
+          description: null,
           companyId: mockParams.companyId,
-        } as CreateCompanyTransactionBody,
+          sourceId: mockUser.app_user_id,
+          sourceTransactionId: new Date().getTime().toString(),
+          sourceType: TransactionSourceType.USER,
+        },
         mockLogger,
       );
-      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.CREATE_TRANSACTION.id);
+      expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.CREATE_TRANSACTION);
       expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.BAD_REQUEST);
       expect(mockReply.send).toHaveBeenCalledWith({
         code: DomainModelServiceErrorCode.INVALID_INPUT,
@@ -180,9 +221,9 @@ describe(createTransactionHandler.name, () => {
       ).rejects.toThrow(error);
 
       // Verify logging still occurs
-      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_TRANSACTION.id, logGroup);
+      expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_TRANSACTION, logGroup);
       expect(mockLogger.endStep).toHaveBeenCalledWith(
-        STEPS.CREATE_TRANSACTION.id,
+        STEPS.CREATE_TRANSACTION,
       );
 
       // Verify no response is sent

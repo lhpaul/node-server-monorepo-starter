@@ -11,7 +11,7 @@ import {
   setServerHooks,
   setServerProcessErrorHandlers,
 } from '@repo/fastify';
-import { getEnvVariable } from '@repo/shared/utils';
+import { getEnvironmentVariable } from '@repo/shared/utils';
 import fastify, { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { Sessions, streamableHttp } from 'fastify-mcp';
 import * as admin from 'firebase-admin';
@@ -19,6 +19,8 @@ import * as admin from 'firebase-admin';
 import packageJson from '../package.json';
 import {
   COR_CONFIG,
+  ENVIRONMENT_VARIABLES_KEYS,
+  ERROR_MESSAGES,
   FASTIFY_ENV_CONFIG,
   MCP_SERVER_CONFIG,
   SERVER_START_VALUES,
@@ -45,10 +47,15 @@ export const init = async function (): Promise<FastifyInstance> {
   server.register(helmet, { global: true });
 
   // Initialize Firebase Admin SDK
+  const firebaseProjectId = getEnvironmentVariable(ENVIRONMENT_VARIABLES_KEYS.FIREBASE_PROJECT_ID);
+  const firebaseDatabaseUrl = getEnvironmentVariable(ENVIRONMENT_VARIABLES_KEYS.FIREBASE_DATABASE_URL);
+  if (!firebaseProjectId || !firebaseDatabaseUrl) {
+    throw new Error(ERROR_MESSAGES.FIREBASE_PROJECT_ID_OR_DATABASE_URL_NOT_SET);
+  }
   await admin.initializeApp({
-    projectId: getEnvVariable('FIREBASE_PROJECT_ID'),
+    projectId: firebaseProjectId,
     credential: admin.credential.applicationDefault(),
-    databaseURL: getEnvVariable('FIREBASE_DATABASE_URL'),
+    databaseURL: firebaseDatabaseUrl,
   });
 
   // Add decorator to authenticate requests. To avoid authentication in an route, you set the `authenticate` option to `false` when building the route.

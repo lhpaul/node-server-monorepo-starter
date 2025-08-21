@@ -1,5 +1,5 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { SubscriptionsService } from '@repo/shared/services';
+import { SubscriptionsService } from '@repo/shared/domain';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { ERROR_RESPONSES } from '../../subscriptions.endpoints.constants';
@@ -14,10 +14,10 @@ export const getSubscriptionHandler = async (
   const logGroup = getSubscriptionHandler.name;
   const service = SubscriptionsService.getInstance();
   const { id } = request.params as GetSubscriptionParams;
-  logger.startStep(STEPS.GET_SUBSCRIPTION.id, logGroup);
+  logger.startStep(STEPS.GET_SUBSCRIPTION, logGroup);
   const subscription = await service
     .getResource(id, logger)
-    .finally(() => logger.endStep(STEPS.GET_SUBSCRIPTION.id));
+    .finally(() => logger.endStep(STEPS.GET_SUBSCRIPTION));
   if (!subscription) {
     return reply.code(STATUS_CODES.NOT_FOUND).send(ERROR_RESPONSES.SUBSCRIPTION_NOT_FOUND);
   }

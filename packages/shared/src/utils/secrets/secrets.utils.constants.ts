@@ -1,0 +1,1 @@
+export const SECRET_NOT_FOUND_ERROR_MESSAGE = (key: string) => `Secret ${key} is not set`;

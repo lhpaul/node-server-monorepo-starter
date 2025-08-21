@@ -1,12 +1,12 @@
 import { FORBIDDEN_ERROR, RESOURCE_NOT_FOUND_ERROR, STATUS_CODES } from '@repo/fastify';
-import { SubscriptionsService } from '@repo/shared/services';
-import { UserPermissions } from '@repo/shared/services';
+import { SubscriptionsService } from '@repo/shared/domain';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../../../definitions/auth.interfaces';
-import { hasCompanySubscriptionsReadPermission } from '../../../../../../../utils/auth/auth.utils';
+import { hasCompanySubscriptionsReadPermission } from '../../../../../../../utils/permissions';
 import { STEPS } from '../subscriptions.get.handler.constants';
 import { getSubscriptionHandler } from '../subscriptions.get.handler';
+
 
 jest.mock('@repo/fastify', () => ({
   STATUS_CODES: {
@@ -24,16 +24,14 @@ jest.mock('@repo/fastify', () => ({
   }
 }));
 
-jest.mock('@repo/shared/services', () => ({
-  ...jest.requireActual('@repo/shared/services'),
+jest.mock('@repo/shared/domain', () => ({
+  ...jest.requireActual('@repo/shared/domain'),
   SubscriptionsService: {
-    getInstance: jest.fn().mockImplementation(() => ({
-      getResource: jest.fn(),
-    })),
+    getInstance: jest.fn(),
   },
 }));
 
-jest.mock('../../../../../../../utils/auth/auth.utils', () => ({
+jest.mock('../../../../../../../utils/permissions', () => ({
   hasCompanySubscriptionsReadPermission: jest.fn(),
 }));
 
@@ -47,11 +45,7 @@ describe(getSubscriptionHandler.name, () => {
   let mockService: Partial<SubscriptionsService>;
 
   const mockParams = { companyId: 'company123', id: 'subscription123' };
-  const mockUser: UserPermissions = {
-    companies: {
-      'company123': ['subscription:read'],
-    },
-  };
+  const mockUser = { app_user_id: 'user123' } as AuthUser;
   const mockSubscription = {
     id: mockParams.id,
     companyId: mockParams.companyId,
@@ -118,12 +112,12 @@ describe(getSubscriptionHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTION.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTION, logGroup);
     expect(mockService.getResource).toHaveBeenCalledWith(
       mockParams.id,
       mockLogger,
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTION.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTION);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
     expect(mockReply.send).toHaveBeenCalledWith(mockSubscription);
   });
@@ -136,12 +130,12 @@ describe(getSubscriptionHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTION.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTION, logGroup);
     expect(mockService.getResource).toHaveBeenCalledWith(
       mockParams.id,
       mockLogger,
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTION.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTION);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.NOT_FOUND);
     expect(mockReply.send).toHaveBeenCalledWith({
       code: RESOURCE_NOT_FOUND_ERROR.responseCode,
@@ -160,12 +154,12 @@ describe(getSubscriptionHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTION.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTION, logGroup);
     expect(mockService.getResource).toHaveBeenCalledWith(
       mockParams.id,
       mockLogger,
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTION.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTION);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.NOT_FOUND);
   });
 }); 

@@ -1,8 +1,8 @@
 import { QueryInput, QueryItem } from '@repo/shared/definitions';
 
-import { ProcessResource, ProcessStatus } from '../../definitions';
+import { ProcessDocument, ProcessStatus } from '../../definitions';
 
-export interface CompanyUpdateRequestDocument extends ProcessResource {
+export interface CompanyUpdateRequestDocument extends ProcessDocument {
   name: string;
 }
 

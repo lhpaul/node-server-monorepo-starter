@@ -1,5 +1,5 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { TransactionsService } from '@repo/shared/services';
+import { TransactionsService } from '@repo/shared/domain';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { ERROR_RESPONSES } from '../../transactions.endpoints.constants';
@@ -14,10 +14,10 @@ export const getTransactionHandler = async (
   const logGroup = getTransactionHandler.name;
   const service = TransactionsService.getInstance();
   const { id } = request.params as GetTransactionParams;
-  logger.startStep(STEPS.GET_TRANSACTION.id, logGroup);
+  logger.startStep(STEPS.GET_TRANSACTION, logGroup);
   const transaction = await service
     .getResource(id, logger)
-    .finally(() => logger.endStep(STEPS.GET_TRANSACTION.id));
+    .finally(() => logger.endStep(STEPS.GET_TRANSACTION));
   if (!transaction) {
     return reply.code(STATUS_CODES.NOT_FOUND).send(ERROR_RESPONSES.TRANSACTION_NOT_FOUND);
   }

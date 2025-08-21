@@ -1,12 +1,12 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { CompaniesService } from '@repo/shared/services';
+import { CompaniesService } from '@repo/shared/domain';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
 import { ERROR_RESPONSES } from '../../../companies.endpoints.constants';
 import { STEPS } from '../companies.get.handler.constants';
 import { getCompanyHandler } from '../companies.get.handler';
 
-jest.mock('@repo/shared/services');
+jest.mock('@repo/shared/domain');
 
 describe(getCompanyHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;
@@ -50,6 +50,7 @@ describe(getCompanyHandler.name, () => {
     const mockCompany = {
       id: mockParams.id,
       name: 'Test Company',
+      countryCode: 'US',
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -61,9 +62,9 @@ describe(getCompanyHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANY.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANY, logGroup);
     expect(mockService.getResource).toHaveBeenCalledWith(mockParams.id, mockLogger);
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANY.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANY);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
     expect(mockReply.send).toHaveBeenCalledWith(mockCompany);
   });
@@ -76,9 +77,9 @@ describe(getCompanyHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANY.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANY, logGroup);
     expect(mockService.getResource).toHaveBeenCalledWith(mockParams.id, mockLogger);
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANY.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANY);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.NOT_FOUND);
     expect(mockReply.send).toHaveBeenCalledWith(
       ERROR_RESPONSES.COMPANY_NOT_FOUND,
@@ -96,9 +97,9 @@ describe(getCompanyHandler.name, () => {
       ),
     ).rejects.toThrow(error);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANY.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANY, logGroup);
     expect(mockService.getResource).toHaveBeenCalledWith(mockParams.id, mockLogger);
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANY.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANY);
     expect(mockReply.code).not.toHaveBeenCalled();
     expect(mockReply.send).not.toHaveBeenCalled();
   });

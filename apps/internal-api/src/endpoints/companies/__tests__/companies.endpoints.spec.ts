@@ -1,5 +1,7 @@
 import { createEndpoint, HTTP_METHODS_MAP } from '@repo/fastify';
 import { FastifyInstance } from 'fastify';
+
+import { companiesEndpointsBuilder } from '../companies.endpoints';
 import {
   CREATE_COMPANY_BODY_JSON_SCHEMA,
   COMPANY_ENDPOINTS_PARAMS_JSON_SCHEMA,
@@ -14,11 +16,15 @@ import {
   listCompaniesHandler,
   updateCompanyHandler,
 } from '../handlers';
-import { companiesEndpointsBuilder } from '../companies.endpoints';
+import { financialInstitutionsEndpointsBuilder } from '../endpoints/financial-institutions/financial-institutions.endpoints';
 
 jest.mock('@repo/fastify', () => ({
   ...jest.requireActual('@repo/fastify'),
   createEndpoint: jest.fn(),
+}));
+
+jest.mock('../endpoints/financial-institutions/financial-institutions.endpoints', () => ({
+  financialInstitutionsEndpointsBuilder: jest.fn().mockReturnValue([]),
 }));
 
 describe(companiesEndpointsBuilder.name, () => {
@@ -35,6 +41,10 @@ describe(companiesEndpointsBuilder.name, () => {
   it('should create all endpoints with correct configuration', () => {
     expect(createEndpoint).toHaveBeenCalledTimes(5);
     expect(companiesEndpoints).toHaveLength(5);
+  });
+
+  it('should create sync transactions endpoints with correct configuration', () => {
+    expect(financialInstitutionsEndpointsBuilder).toHaveBeenCalledWith(mockServer);
   });
 
   it('should create POST company endpoint with correct configuration', () => {
@@ -62,6 +72,9 @@ describe(companiesEndpointsBuilder.name, () => {
             'name[gt]': { type: 'string' },
             'name[le]': { type: 'string' },
             'name[lt]': { type: 'string' },
+            countryCode: { type: 'string' },
+            'countryCode[in]': { type: 'string' },
+            'countryCode[not-in]': { type: 'string' },
           },
         },
       },

@@ -1,5 +1,4 @@
-import { TransactionType } from '@repo/shared/domain';
-import { TransactionsService } from '@repo/shared/services';
+import { TransactionType, TransactionsService } from '@repo/shared/domain';
 import { DomainModelServiceError, DomainModelServiceErrorCode, printError } from '@repo/shared/utils';
 
 import { ProcessStatus } from '../../../../../../definitions/models.interfaces';
@@ -7,7 +6,7 @@ import { TransactionUpdateRequestsRepository } from '../../../../../../repositor
 import { transactionUpdateRequestOnCreateHandler } from '../transaction-update-request.on-create.handler';
 import { ERRORS, STEPS } from '../transaction-update-request.on-create.constants';
 
-jest.mock('@repo/shared/services');
+jest.mock('@repo/shared/domain');
 jest.mock('@repo/shared/utils', () => ({
   ...jest.requireActual('@repo/shared/utils'),
   printError: jest.fn(),

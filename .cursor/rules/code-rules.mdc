@@ -67,32 +67,44 @@ const fetchUsers = async (page: number) => {
 };
 ```
 
+**Important** The "as const" at the end of the constant declarations should only be used for schema constants since it is needed for method `FromSchema` from `json-schema-to-ts` to compile.
+
 # Module Import Order
 
 Maintain a consistent import order within each file:
 
 1. **External Dependencies:**
    - Import all third-party packages first (e.g., `react`, `lodash`, `axios`).
-   - Sort these alphabetically. Treat scoped packages or path aliases beginning with `@` (e.g., `@nestjs/common`, `@components`) as preceding other letters.
+   - Sort these alphabetically. Treat scoped packages or path aliases beginning with `@` (e.g., `@nestjs/common`, `@components`) as preceding other letters in the alphabet.
+
 2. **Internal Project Modules:**
    - Import modules from within this project after external dependencies.
-   - Primary sort criterion: Relative path depth. Imports from higher-level directories (e.g., `../../../config`) come before those from closer directories (e.g., `../services`, `./utils`).
-   - Secondary sort criterion: Alphabetical order for modules at the same path depth.
+   - **Primary sort criterion**: Relative path depth. Imports from higher-level directories (e.g., `../../../config`) come before those from closer directories (e.g., `../services`, `./utils`).
+   - **Secondary sort criterion**: Alphabetical order for modules at the same path depth.
+
+3. **Import Statement Formatting:**
+   - Components imported from a module should be declared in alphabetical order.
+   - If the number of imported components exceeds 3, declare them in multiple lines for better readability.
 
 **Example:**
 
 ```typescript
 // External dependencies (alphabetical, @ first)
-import { Injectable } from "@nestjs/common";
-import axios from "axios";
-import * as bcrypt from "bcrypt";
+import { Injectable } from '@nestjs/common';
+import axios from 'axios';
+import * as bcrypt from 'bcrypt';
 
 // Internal modules (farthest path first, then alphabetical)
-import { AppConfig } from "../../../config";
-import { DatabaseService } from "../../database/database.service";
-import { User } from "../entities/user.entity";
-import { CreateUserDto } from "./dto/create-user.dto";
-import { hashPassword } from "./utils/security.utils";
+import { AppConfig, EnvironmentConfig } from '../../../config';
+import {
+  DatabaseService,
+  DateField,
+  FloatField,
+  IntegerField
+} from '../../database/database.service';
+import { User } from '../entities/user.entity';
+import { CreateUserDto } from './dto/create-user.dto';
+import { hashPassword } from './utils/security.utils';
 ```
 
 # Logging
@@ -125,29 +137,40 @@ request.log.warn(
 
 To effectively monitor performance, wrap asynchronous calls with the `startStep` and `endStep` functions provided by the logger object. These functions generate logs that measure the total time elapsed during execution, making it easier to identify and troubleshoot slow operations.
 
+**Important:** When using the `startStep` function, always supply a log group to ensure performance logs are well-organized and easy to trace. The recommended approach is to use the class name combined with the function name (e.g., `${ClassName}.${functionName}`), or at minimum, the function name itself. This practice helps categorize logs by context and improves traceability across the codebase.
+
 **Example:**
 
 ```typescript
 /*
 lets assume that the STEPS constant is defined like this:
 export const STEPS = {
-  UPDATE_USER: { id: 'proxy-request' },
-  NOTIFY_USER: { id: 'notify-user' }
+  UPDATE_USER: 'proxy-request',
+  NOTIFY_USER: 'notify-user'
 };
 */
-try {
-  logger.startStep(STEPS.UPDATE_USER.id);
-  await usersService
-    .updateUser()
-    .finally(() => logger.endStep(STEPS.UPDATE_USER.id));
-  logger.endStep(STEPS.UPDATE_USER.id);
-  logger.startStep(STEPS.NOTIFY_USER.id);
-  await usersService
-    .notifyUser()
-    .finally(() => logger.endStep(STEPS.NOTIFY_USER.id));
-  // Continue with further logic...
-} catch (error) {
-  // Handle the error...
+
+class SomeClass {
+  // ...
+
+  async function someFunction(..args): Promise<void> {
+
+    const logGroup = `${SomeClass.name}.${this.someFunction.name}`;
+    try {
+      logger.startStep(STEPS.UPDATE_USER, logGroup);
+      await usersService
+        .updateUser()
+        .finally(() => logger.endStep(STEPS.UPDATE_USER));
+      logger.endStep(STEPS.UPDATE_USER);
+      logger.startStep(STEPS.NOTIFY_USER, logGroup);
+      await usersService
+        .notifyUser()
+        .finally(() => logger.endStep(STEPS.NOTIFY_USER));
+      // Continue with further logic...
+    } catch (error) {
+      // Handle the error...
+    }
+  }
 }
 ```
 

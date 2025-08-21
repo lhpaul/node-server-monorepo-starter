@@ -1,13 +1,13 @@
-import { getEnvVariable } from '@repo/shared/utils';
+import { getEnvironmentVariable } from '@repo/shared/utils';
 import { getStructuredLoggingConfig } from '../gcp.utils';
 import { PROJECT_ID_ENV_VAR, STRUCTURED_LOGGING_KEYS } from '../gcp.utils.constants';
 
 // Mock the shared utils module
 jest.mock('@repo/shared/utils', () => ({
-  getEnvVariable: jest.fn(),
+  getEnvironmentVariable: jest.fn(),
 }));
 
-const mockGetEnvVariable = getEnvVariable as jest.MockedFunction<typeof getEnvVariable>;
+const mockGetEnvVariable = getEnvironmentVariable as jest.MockedFunction<typeof getEnvironmentVariable>;
 
 describe('gcp.utils', () => {
   beforeEach(() => {

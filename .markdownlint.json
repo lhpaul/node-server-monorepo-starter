@@ -6,6 +6,7 @@
   "first-line-h1": false,
   "line_length": false,
   "no-bare-urls": false,
+  "no-duplicate-heading": false,
   "no-inline-html": false,
   "ol-prefix": false,
   "ul-indent": false,

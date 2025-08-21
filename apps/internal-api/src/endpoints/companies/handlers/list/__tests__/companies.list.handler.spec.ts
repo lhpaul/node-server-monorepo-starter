@@ -1,11 +1,11 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { CompaniesService } from '@repo/shared/services';
+import { CompaniesService } from '@repo/shared/domain';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { listCompaniesHandler } from '../companies.list.handler';
 import { STEPS } from '../companies.list.handler.constants';
 
-jest.mock('@repo/shared/services');
+jest.mock('@repo/shared/domain');
 
 describe(listCompaniesHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;
@@ -13,9 +13,9 @@ describe(listCompaniesHandler.name, () => {
   let mockService: Partial<CompaniesService>;
   let mockLogger: any;
   const mockCompanies = [
-    { id: '1', name: 'Company 1', createdAt: new Date(), updatedAt: new Date() },
-    { id: '2', name: 'Company 2', createdAt: new Date(), updatedAt: new Date() },
-    { id: '3', name: 'Company 3', createdAt: new Date(), updatedAt: new Date() },
+    { id: '1', name: 'Company 1', countryCode: 'US', createdAt: new Date(), updatedAt: new Date() },
+    { id: '2', name: 'Company 2', countryCode: 'CA', createdAt: new Date(), updatedAt: new Date() },
+    { id: '3', name: 'Company 3', countryCode: 'GB', createdAt: new Date(), updatedAt: new Date() },
   ];
   const logGroup = listCompaniesHandler.name;
   beforeEach(() => {
@@ -56,12 +56,12 @@ describe(listCompaniesHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES, logGroup);
     expect(mockService.getResourcesList).toHaveBeenCalledWith(
       {},
       mockLogger,
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
     expect(mockReply.send).toHaveBeenCalledWith(mockCompanies);
   });
@@ -79,14 +79,14 @@ describe(listCompaniesHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES, logGroup);
     expect(mockService.getResourcesList).toHaveBeenCalledWith(
       {
         name: [{ operator: '==', value: 'Company 1' }],
       },
       mockLogger,
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
     expect(mockReply.send).toHaveBeenCalledWith(filteredCompanies);
   });
@@ -99,12 +99,12 @@ describe(listCompaniesHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES, logGroup);
     expect(mockService.getResourcesList).toHaveBeenCalledWith(
       {},
       mockLogger,
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
     expect(mockReply.send).toHaveBeenCalledWith([]);
   });
@@ -120,8 +120,8 @@ describe(listCompaniesHandler.name, () => {
       ),
     ).rejects.toThrow(error);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id, logGroup);
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES, logGroup);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES);
     expect(mockReply.code).not.toHaveBeenCalled();
     expect(mockReply.send).not.toHaveBeenCalled();
   });

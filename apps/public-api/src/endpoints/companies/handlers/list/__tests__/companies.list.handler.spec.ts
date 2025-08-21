@@ -1,5 +1,5 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { CompaniesService } from '@repo/shared/services';
+import { CompaniesService } from '@repo/shared/domain';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../definitions/auth.interfaces';
@@ -12,7 +12,7 @@ jest.mock('@repo/fastify', () => ({
   },
 }));
 
-jest.mock('@repo/shared/services');
+jest.mock('@repo/shared/domain');
 
 describe(listCompaniesHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;
@@ -35,6 +35,7 @@ describe(listCompaniesHandler.name, () => {
     };
 
     mockUser = {
+      userId: 'user123',
       companies: {
         'company-1': ['company:read'],
         'company-2': ['company:write'],
@@ -57,9 +58,9 @@ describe(listCompaniesHandler.name, () => {
 
   it('should return list of companies user has access to', async () => {
     const mockCompanies = [
-      { id: 'company-1', name: 'Company 1', createdAt: new Date(), updatedAt: new Date() },
-      { id: 'company-2', name: 'Company 2', createdAt: new Date(), updatedAt: new Date() },
-      { id: 'company-3', name: 'Company 3', createdAt: new Date(), updatedAt: new Date() },
+      { id: 'company-1', name: 'Company 1', countryCode: 'US', createdAt: new Date(), updatedAt: new Date() },
+      { id: 'company-2', name: 'Company 2', countryCode: 'CA', createdAt: new Date(), updatedAt: new Date() },
+      { id: 'company-3', name: 'Company 3', countryCode: 'GB', createdAt: new Date(), updatedAt: new Date() },
     ];
     jest.spyOn(mockService, 'getResource').mockImplementation((id) => Promise.resolve(mockCompanies.find((company) => company.id === id) ?? null));
 
@@ -68,18 +69,18 @@ describe(listCompaniesHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES, logGroup);
     expect(mockService.getResource).toHaveBeenCalledTimes(3);
     expect(mockService.getResource).toHaveBeenCalledWith('company-1', mockLogger);
     expect(mockService.getResource).toHaveBeenCalledWith('company-2', mockLogger);
     expect(mockService.getResource).toHaveBeenCalledWith('company-3', mockLogger);
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
     expect(mockReply.send).toHaveBeenCalledWith(mockCompanies);
   });
 
   it('should handle user with no companies', async () => {
-    mockUser.companies = undefined;
+    mockUser.companies = undefined as unknown as { [companyId: string]: string[] };
     mockRequest.user = mockUser;
 
     await listCompaniesHandler(
@@ -101,17 +102,17 @@ describe(listCompaniesHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES, logGroup);
     expect(mockService.getResource).not.toHaveBeenCalled();
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
     expect(mockReply.send).toHaveBeenCalledWith([]);
   });
 
   it('should filter out null companies', async () => {
     const mockCompanies = [
-      { id: 'company-1', name: 'Company 1', createdAt: new Date(), updatedAt: new Date() },
-      { id: 'company-3', name: 'Company 3', createdAt: new Date(), updatedAt: new Date() },
+      { id: 'company-1', name: 'Company 1', countryCode: 'US', createdAt: new Date(), updatedAt: new Date() },
+      { id: 'company-3', name: 'Company 3', countryCode: 'GB', createdAt: new Date(), updatedAt: new Date() },
     ];
 
     jest.spyOn(mockService, 'getResource')
@@ -124,9 +125,9 @@ describe(listCompaniesHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES, logGroup);
     expect(mockService.getResource).toHaveBeenCalledTimes(3);
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
     expect(mockReply.send).toHaveBeenCalledWith(mockCompanies);
   });
@@ -142,9 +143,9 @@ describe(listCompaniesHandler.name, () => {
       ),
     ).rejects.toThrow(error);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES, logGroup);
     expect(mockService.getResource).toHaveBeenCalled();
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_COMPANIES);
     expect(mockReply.code).not.toHaveBeenCalled();
     expect(mockReply.send).not.toHaveBeenCalled();
   });

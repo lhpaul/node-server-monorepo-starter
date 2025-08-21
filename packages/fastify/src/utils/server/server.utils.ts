@@ -2,6 +2,7 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import * as admin from 'firebase-admin';
 import { Bindings } from 'pino';
 
+import { TRACE_CONTEXT_HEADER_NAME } from '../../constants/requests.constants';
 import {
   AUTHENTICATE_DECORATOR_NAME,
   FORBIDDEN_ERROR,
@@ -19,7 +20,6 @@ import { RequestLogger } from '../request-logger/request-logger.class';
 import {
   FIREBASE_DECODE_ID_TOKEN_ERROR_CODES,
   FIREBASE_DECODE_ID_TOKEN_ERROR_LOG,
-  TRACE_CONTEXT_HEADER_NAME,
 } from './server.utils.constants';
 
 export function setServerErrorHandlers(server: FastifyInstance): void {

@@ -1,4 +1,4 @@
 export const STEPS = {
-  GET_TRANSACTION: { id: 'get-transaction' },
-  DELETE_TRANSACTION: { id: 'delete-transaction' },
+  GET_TRANSACTION: 'get-transaction',
+  DELETE_TRANSACTION: 'delete-transaction',
 };

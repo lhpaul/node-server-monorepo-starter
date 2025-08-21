@@ -1,12 +1,12 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { SubscriptionsService } from '@repo/shared/services';
+import { SubscriptionsService } from '@repo/shared/domain';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
 import { ERROR_RESPONSES } from '../../../subscriptions.endpoints.constants';
 import { STEPS } from '../subscriptions.get.handler.constants';
 import { getSubscriptionHandler } from '../subscriptions.get.handler';
 
-jest.mock('@repo/shared/services');
+jest.mock('@repo/shared/domain');
 
 describe(getSubscriptionHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;
@@ -63,12 +63,12 @@ describe(getSubscriptionHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTION.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTION, logGroup);
     expect(mockService.getResource).toHaveBeenCalledWith(
       mockParams.id,
       mockLogger,
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTION.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTION);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
     expect(mockReply.send).toHaveBeenCalledWith(mockSubscription);
   });
@@ -81,12 +81,12 @@ describe(getSubscriptionHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTION.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTION, logGroup);
     expect(mockService.getResource).toHaveBeenCalledWith(
       mockParams.id,
       mockLogger,
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTION.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTION);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.NOT_FOUND);
     expect(mockReply.send).toHaveBeenCalledWith(
       ERROR_RESPONSES.SUBSCRIPTION_NOT_FOUND,
@@ -104,12 +104,12 @@ describe(getSubscriptionHandler.name, () => {
       ),
     ).rejects.toThrow(error);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTION.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTION, logGroup);
     expect(mockService.getResource).toHaveBeenCalledWith(
       mockParams.id,
       mockLogger,
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTION.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_SUBSCRIPTION);
     expect(mockReply.code).not.toHaveBeenCalled();
     expect(mockReply.send).not.toHaveBeenCalled();
   });

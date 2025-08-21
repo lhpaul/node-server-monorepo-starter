@@ -1,5 +1,5 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { TransactionsService } from '@repo/shared/services';
+import { TransactionsService } from '@repo/shared/domain';
 import { DomainModelServiceError, DomainModelServiceErrorCode } from '@repo/shared/utils';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
@@ -16,10 +16,14 @@ export const createTransactionHandler = async (
   const service = TransactionsService.getInstance();
   const body = request.body as CreateTransactionBody;
   try {
-    logger.startStep(STEPS.CREATE_TRANSACTION.id, logGroup);
+    logger.startStep(STEPS.CREATE_TRANSACTION, logGroup);
     const id = await service
-      .createResource(body, logger)
-      .finally(() => logger.endStep(STEPS.CREATE_TRANSACTION.id));
+      .createResource({
+        description: null,
+        categoryId: null,
+        ...body,
+      }, logger)
+      .finally(() => logger.endStep(STEPS.CREATE_TRANSACTION));
     return reply.code(STATUS_CODES.CREATED).send({ id });
   } catch (error) {
     if (error instanceof DomainModelServiceError) {

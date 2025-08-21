@@ -1,4 +1,4 @@
-import { CompaniesService } from '@repo/shared/services';
+import { CompaniesService } from '@repo/shared/domain';
 import { DomainModelServiceError, DomainModelServiceErrorCode, printError } from '@repo/shared/utils';
 
 import { ProcessStatus } from '../../../../../../definitions';
@@ -8,7 +8,7 @@ import { FunctionLogger } from '../../../../../../utils/logging/function-logger.
 import { ERRORS, STEPS } from '../company-update-request.on-create.constants';
 import { companyUpdateRequestOnCreateHandler } from '../company-update-request.on-create.handler';
 
-jest.mock('@repo/shared/services');
+jest.mock('@repo/shared/domain');
 jest.mock('@repo/shared/utils', () => ({
   ...jest.requireActual('@repo/shared/utils'),
   printError: jest.fn(),

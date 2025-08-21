@@ -1,10 +1,11 @@
 import { FORBIDDEN_ERROR, STATUS_CODES } from '@repo/fastify';
-import { TransactionsService } from '@repo/shared/services';
+import { TransactionSourceType } from '@repo/shared/domain';
+import { TransactionsService } from '@repo/shared/domain';
 import { DomainModelServiceError, DomainModelServiceErrorCode } from '@repo/shared/utils';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../../definitions/auth.interfaces';
-import { hasCompanyTransactionsCreatePermission } from '../../../../../../utils/auth/auth.utils';
+import { hasCompanyTransactionsCreatePermission } from '../../../../../../utils/permissions';
 import { STEPS } from './transactions.create.handler.constants';
 import { CreateCompanyTransactionBody, CreateCompanyTransactionParams } from './transactions.create.handler.interfaces';
 
@@ -25,13 +26,18 @@ export const createTransactionHandler = async (
   const service = TransactionsService.getInstance();
   const body = request.body as CreateCompanyTransactionBody;
   try {
-    logger.startStep(STEPS.CREATE_TRANSACTION.id, logGroup);
+    logger.startStep(STEPS.CREATE_TRANSACTION, logGroup);
     const id = await service
       .createResource({
+        categoryId: null,
+        description: null,
         ...body,
+        sourceId: user.app_user_id as string,
+        sourceTransactionId: new Date().getTime().toString(),
+        sourceType: TransactionSourceType.USER,
         companyId,
       }, logger)
-      .finally(() => logger.endStep(STEPS.CREATE_TRANSACTION.id));
+      .finally(() => logger.endStep(STEPS.CREATE_TRANSACTION));
     return reply.code(STATUS_CODES.CREATED).send({ id });
   } catch (error) {
     if (error instanceof DomainModelServiceError) {

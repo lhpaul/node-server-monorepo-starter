@@ -1,12 +1,12 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { TransactionType } from '@repo/shared/domain';
-import { TransactionsService } from '@repo/shared/services';
+import { Transaction, TransactionSourceType, TransactionType } from '@repo/shared/domain';
+import { TransactionsService } from '@repo/shared/domain';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
 import { listTransactionsHandler } from '../transactions.list.handler';
 import { STEPS } from '../transactions.list.handler.constants';
 
-jest.mock('@repo/shared/services');
+jest.mock('@repo/shared/domain');
 
 describe(listTransactionsHandler.name, () => {
   let mockRequest: Partial<FastifyRequest>;
@@ -15,9 +15,14 @@ describe(listTransactionsHandler.name, () => {
   let mockLogger: Partial<FastifyBaseLogger>;
   const logGroup = listTransactionsHandler.name;
   
-  const mockTransactions = [
+  const mockTransactions: Transaction[] = [
     {
       id: '1',
+      categoryId: '1',
+      description: 'description1',
+      sourceType: TransactionSourceType.FINANCIAL_INSTITUTION,
+      sourceId: '1',
+      sourceTransactionId: '1',
       companyId: '1',
       date: '2024-01-01',
       amount: 100,
@@ -27,6 +32,11 @@ describe(listTransactionsHandler.name, () => {
     },
     {
       id: '2',
+      categoryId: '2',
+      description: 'description2',
+      sourceType: TransactionSourceType.FINANCIAL_INSTITUTION,
+      sourceId: '2',
+      sourceTransactionId: '2',
       companyId: '2',
       date: '2024-01-02',
       amount: 200,
@@ -36,6 +46,11 @@ describe(listTransactionsHandler.name, () => {
     },
     {
       id: '3',
+      categoryId: '3',
+      description: 'description3',
+      sourceType: TransactionSourceType.FINANCIAL_INSTITUTION,
+      sourceId: '3',
+      sourceTransactionId: '3',
       companyId: '3',
       date: '2024-01-03',
       amount: 300,
@@ -83,12 +98,12 @@ describe(listTransactionsHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS, logGroup);
     expect(mockService.getResourcesList).toHaveBeenCalledWith(
       {},
       mockLogger,
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
     expect(mockReply.send).toHaveBeenCalledWith(mockTransactions);
   });
@@ -107,7 +122,7 @@ describe(listTransactionsHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS, logGroup);
     expect(mockService.getResourcesList).toHaveBeenCalledWith(
       {
         amount: [{ operator: '==', value: 100 }],
@@ -115,7 +130,7 @@ describe(listTransactionsHandler.name, () => {
       },
       mockLogger,
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
     expect(mockReply.send).toHaveBeenCalledWith(filteredTransactions);
   });
@@ -128,12 +143,12 @@ describe(listTransactionsHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS, logGroup);
     expect(mockService.getResourcesList).toHaveBeenCalledWith(
       {},
       mockLogger,
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
     expect(mockReply.send).toHaveBeenCalledWith([]);
   });
@@ -149,8 +164,8 @@ describe(listTransactionsHandler.name, () => {
       ),
     ).rejects.toThrow(error);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id, logGroup);
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS, logGroup);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS);
     expect(mockReply.code).not.toHaveBeenCalled();
     expect(mockReply.send).not.toHaveBeenCalled();
   });

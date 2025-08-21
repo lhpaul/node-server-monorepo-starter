@@ -1,10 +1,10 @@
 import { FORBIDDEN_ERROR, STATUS_CODES } from '@repo/fastify';
-import { CompaniesService } from '@repo/shared/services';
+import { CompaniesService } from '@repo/shared/domain';
 import { DomainModelServiceError, DomainModelServiceErrorCode } from '@repo/shared/utils';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../definitions/auth.interfaces';
-import { hasCompanyUpdatePermission } from '../../../../utils/auth/auth.utils';
+import { hasCompanyUpdatePermission } from '../../../../utils/permissions';
 import { COMPANY_NOT_FOUND_ERROR } from '../../companies.endpoints.constants';
 import { STEPS } from './companies.update.handler.constants';
 import { UpdateCompanyBody, UpdateCompanyParams } from './companies.update.handler.interfaces';
@@ -26,9 +26,9 @@ export const updateCompanyHandler = async (
     });
   }
   try {
-    logger.startStep(STEPS.UPDATE_COMPANY.id, logGroup);
+    logger.startStep(STEPS.UPDATE_COMPANY, logGroup);
     await service.updateResource(id, body, logger)
-      .finally(() => logger.endStep(STEPS.UPDATE_COMPANY.id));
+      .finally(() => logger.endStep(STEPS.UPDATE_COMPANY));
     return reply.code(STATUS_CODES.NO_CONTENT).send();
   } catch (error) {
     if (

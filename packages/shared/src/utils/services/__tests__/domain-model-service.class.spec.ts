@@ -1,12 +1,17 @@
 import { ExecutionLogger, FilterInput, FilterItem, QueryInput, QueryItem, Repository } from '../../../definitions';
-import { RepositoryError, RepositoryErrorCode } from '../../repositories';
+import { FirestoreCollectionRepository, RepositoryError, RepositoryErrorCode } from '../../repositories';
 import { DomainModelService } from '../domain-model-service.class';
 import { DomainModelServiceError, DomainModelServiceErrorCode } from '../domain-model-service.class.errors';
 
 // Test interfaces
-interface TestDomainModel {
+class TestDomainModel {
   id: string;
   name: string;
+
+  constructor(data: Required<TestDomainModel>) {
+    this.id = data.id;
+    this.name = data.name;
+  }
 }
 
 interface TestDocumentModel {
@@ -49,16 +54,19 @@ describe(DomainModelService.name, () => {
     TestFilterResourcesInput,
     TestDocumentsQueryInput
   >;
-  let mockRepository: jest.Mocked<Repository<TestDocumentModel, TestCreateDocumentInput, TestUpdateDocumentInput, TestDocumentsQueryInput>>;
+  let mockRepository: jest.Mocked<FirestoreCollectionRepository<TestDocumentModel, TestCreateDocumentInput, TestUpdateDocumentInput, TestDocumentsQueryInput>>;
   let mockLogger: jest.Mocked<ExecutionLogger>;
 
   beforeEach(() => {
     mockRepository = {
       createDocument: jest.fn(),
+      createDocumentSync: jest.fn(),
       deleteDocument: jest.fn(),
+      deleteDocumentSync: jest.fn(),
       getDocument: jest.fn(),
       getDocumentsList: jest.fn(),
       updateDocument: jest.fn(),
+      updateDocumentSync: jest.fn(),
     } as any;
 
     mockLogger = {
@@ -67,7 +75,7 @@ describe(DomainModelService.name, () => {
       logError: jest.fn(),
     } as any;
 
-    service = new DomainModelService(mockRepository);
+    service = new DomainModelService(mockRepository, TestDomainModel);
   });
 
   describe(DomainModelService.prototype.createResource.name, () => {
@@ -230,25 +238,6 @@ describe(DomainModelService.name, () => {
       mockRepository.updateDocument.mockRejectedValue(error);
 
       await expect(service.updateResource(resourceId, updateInput, mockLogger)).rejects.toThrow(error);
-    });
-  });
-
-  describe(DomainModelService.prototype.mapDocumentToModel.name, () => {
-    it('should map document to domain model', () => {
-      const document: TestDocumentModel = {
-        id: '123',
-        name: 'test',
-      };
-
-      const result = service.mapDocumentToModel(document);
-
-      expect(result).toEqual(document);
-    });
-
-    it('should return null when document is null', () => {
-      const result = service.mapDocumentToModel(null);
-
-      expect(result).toBeNull();
     });
   });
 }); 

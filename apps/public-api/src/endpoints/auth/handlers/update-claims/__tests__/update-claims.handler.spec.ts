@@ -1,25 +1,27 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { User } from '@repo/shared/domain';
-import { AuthService, DecodeEmailTokenError, DecodeEmailTokenErrorCode, UsersService } from '@repo/shared/services';
+import { User, UsersService } from '@repo/shared/domain';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
+import { updatePermissionsToUser } from '../../../../../utils/auth';
 import { ERROR_RESPONSES, STEPS } from '../update-claims.handler.constants';
 import { updateClaimsHandler } from '../update-claims.handler';
 
-jest.mock('@repo/shared/services', () => ({
-  AuthService: {
-    getInstance: jest.fn(),
-  },
+
+jest.mock('@repo/shared/domain', () => ({
+  ...jest.requireActual('@repo/shared/domain'),
   UsersService: {
     getInstance: jest.fn(),
   },
+}));
+jest.mock('../../../../../utils/auth', () => ({
+  ...jest.requireActual('../../../../../utils/auth'),
+  updatePermissionsToUser: jest.fn(),
 }));
 
 describe(updateClaimsHandler.name, () => {
   let mockRequest: FastifyRequest;
   let mockReply: FastifyReply;
   let mockLogger: any;
-  let mockAuthService: Partial<AuthService>;
   let mockUsersService: Partial<UsersService>;
   const logGroup = updateClaimsHandler.name;
 
@@ -53,11 +55,6 @@ describe(updateClaimsHandler.name, () => {
       getResourcesList: jest.fn(),
     };
 
-    mockAuthService = {
-      updatePermissionsToUser: jest.fn(),
-    };
-
-    jest.spyOn(AuthService, 'getInstance').mockReturnValue(mockAuthService as AuthService);
     jest.spyOn(UsersService, 'getInstance').mockReturnValue(mockUsersService as UsersService);
   });
 
@@ -70,11 +67,11 @@ describe(updateClaimsHandler.name, () => {
     });
 
     it('should update claims and return 204', async () => {
-      (mockAuthService.updatePermissionsToUser as jest.Mock).mockResolvedValueOnce(undefined);
+      (updatePermissionsToUser as jest.Mock).mockResolvedValueOnce(undefined);
       await updateClaimsHandler(mockRequest, mockReply);
       expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_CLAIMS.id, logGroup);
       expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_CLAIMS.id);
-      expect(mockAuthService.updatePermissionsToUser).toHaveBeenCalledWith({
+      expect(updatePermissionsToUser).toHaveBeenCalledWith({
         userId: 'test-user-id',
         uid: 'test-uid',
       }, mockLogger);
@@ -140,7 +137,7 @@ describe(updateClaimsHandler.name, () => {
           updatedAt: new Date(),
         });
         (mockUsersService.getResourcesList as jest.Mock).mockResolvedValueOnce([mockUser]);
-        (mockAuthService.updatePermissionsToUser as jest.Mock).mockResolvedValueOnce(undefined);
+        (updatePermissionsToUser as jest.Mock).mockResolvedValueOnce(undefined);
 
         await updateClaimsHandler(mockRequest, mockReply);
 
@@ -148,7 +145,7 @@ describe(updateClaimsHandler.name, () => {
         expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.FIND_USER.id);
         expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.UPDATE_CLAIMS.id, logGroup);
         expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.UPDATE_CLAIMS.id);
-        expect(mockAuthService.updatePermissionsToUser).toHaveBeenCalledWith({
+        expect(updatePermissionsToUser).toHaveBeenCalledWith({
           userId: mockUser.id,
           uid: 'test-uid',
         }, mockLogger);

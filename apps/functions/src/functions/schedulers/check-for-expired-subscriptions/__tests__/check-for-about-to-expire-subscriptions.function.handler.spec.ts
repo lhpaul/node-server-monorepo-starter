@@ -1,4 +1,4 @@
-import { SubscriptionsService } from '@repo/shared/services';
+import { SubscriptionsService } from '@repo/shared/domain';
 import { publishMessage } from '@repo/shared/utils';
 
 import { FunctionLogger } from '../../../../utils/logging/function-logger.class';
@@ -7,7 +7,7 @@ import { DAYS_TO_EXPIRE_TO_NOTIFY, HANDLER_NAME, LOGS, STEPS } from '../check-fo
 import { NOTIFY_SUBSCRIPTION_ABOUT_TO_EXPIRE_TOPIC } from '../../../pub-subs/notify-subscription-about-to-expire/notify-subscription-about-to-expire.function.constants';
 
 // Mock dependencies
-jest.mock('@repo/shared/services');
+jest.mock('@repo/shared/domain');
 jest.mock('@repo/shared/utils');
 
 describe(checkForAboutToExpireSubscriptionsHandler.name, () => {

@@ -1,10 +1,10 @@
 import { FORBIDDEN_ERROR, STATUS_CODES, transformQueryParams } from '@repo/fastify';
-import { TransactionType } from '@repo/shared/domain';
-import { TransactionsService } from '@repo/shared/services';
+import { Transaction, TransactionSourceType, TransactionType } from '@repo/shared/domain';
+import { TransactionsService } from '@repo/shared/domain';
 import { FastifyBaseLogger, FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../../../definitions/auth.interfaces';
-import { hasCompanyTransactionsReadPermission } from '../../../../../../../utils/auth/auth.utils';
+import { hasCompanyTransactionsReadPermission } from '../../../../../../../utils/permissions';
 import { STEPS } from '../transactions.list.handler.constants';
 import { listTransactionsHandler } from '../transactions.list.handler';
 
@@ -20,9 +20,14 @@ jest.mock('@repo/fastify', () => ({
   transformQueryParams: jest.fn(),
 }));
 
-jest.mock('@repo/shared/services');
+jest.mock('@repo/shared/domain', () => ({
+  ...jest.requireActual('@repo/shared/domain'),
+  TransactionsService: {
+    getInstance: jest.fn(),
+  },
+}));
 
-jest.mock('../../../../../../../utils/auth/auth.utils', () => ({
+jest.mock('../../../../../../../utils/permissions', () => ({
   hasCompanyTransactionsReadPermission: jest.fn(),
 }));
 
@@ -38,11 +43,7 @@ describe(listTransactionsHandler.name, () => {
   const logGroup = listTransactionsHandler.name;
   const mockParams = { companyId: 'company123' };
   const mockQuery = { amount: { eq: 100 } };
-  const mockUser: AuthUser = {
-    companies: {
-      [mockParams.companyId]: ['transaction:read'],
-    },
-  } as unknown as AuthUser;
+  const mockUser = { app_user_id: 'user123' } as AuthUser;
 
   beforeEach(() => {
     mockLogger = {
@@ -94,7 +95,11 @@ describe(listTransactionsHandler.name, () => {
 
   it('should successfully list transactions', async () => {
     const transformedQuery = { companyId: mockParams.companyId, ...mockQuery };
-    const mockTransactions = [{ id: '1', amount: 100, companyId: 'company123', createdAt: new Date(), date: '2024-03-20', type: TransactionType.CREDIT, updatedAt: new Date() }];
+    const mockTransactions: Transaction[] = [
+      { id: '1', amount: 100, categoryId: '1', description: 'description1', sourceType: TransactionSourceType.FINANCIAL_INSTITUTION, sourceId: '1', sourceTransactionId: '1', companyId: 'company123', createdAt: new Date(), date: '2024-03-20', type: TransactionType.CREDIT, updatedAt: new Date() },
+      { id: '2', amount: 200, categoryId: '2', description: 'description2', sourceType: TransactionSourceType.FINANCIAL_INSTITUTION, sourceId: '2', sourceTransactionId: '2', companyId: 'company123', createdAt: new Date(), date: '2024-03-20', type: TransactionType.CREDIT, updatedAt: new Date() },
+      { id: '3', amount: 300, categoryId: '3', description: 'description3', sourceType: TransactionSourceType.FINANCIAL_INSTITUTION, sourceId: '3', sourceTransactionId: '3', companyId: 'company123', createdAt: new Date(), date: '2024-03-20', type: TransactionType.CREDIT, updatedAt: new Date() },
+    ];
     (transformQueryParams as jest.Mock).mockReturnValue(transformedQuery);
     jest.spyOn(mockService, 'getResourcesList').mockResolvedValue(mockTransactions);
 
@@ -103,13 +108,13 @@ describe(listTransactionsHandler.name, () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS, logGroup);
     expect(transformQueryParams).toHaveBeenCalledWith(transformedQuery);
     expect(mockService.getResourcesList).toHaveBeenCalledWith(
       transformedQuery,
       mockLogger,
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS);
     expect(mockReply.code).toHaveBeenCalledWith(STATUS_CODES.OK);
     expect(mockReply.send).toHaveBeenCalledWith(mockTransactions);
   });
@@ -126,12 +131,12 @@ describe(listTransactionsHandler.name, () => {
       ),
     ).rejects.toThrow(error);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id, logGroup);
+    expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS, logGroup);
     expect(mockService.getResourcesList).toHaveBeenCalledWith(
       transformedQuery,
       mockLogger,
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS.id);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS);
     expect(mockReply.code).not.toHaveBeenCalled();
     expect(mockReply.send).not.toHaveBeenCalled();
   });

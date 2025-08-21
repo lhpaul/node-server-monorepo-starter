@@ -31,9 +31,9 @@
     "firebase-functions": "^6.3.2",
     "firebase-tools": "^14.9.0",
     "isolate-package": "^1.23.0",
-    "lint-staged": "^16.1.2",
+    "lint-staged": "^16.1.5",
     "prettier": "^3.6.2",
-    "turbo": "^2.5.4",
+    "turbo": "^2.5.5",
     "typescript": "5.8.2"
   },
   "packageManager": "pnpm@10.13.1",

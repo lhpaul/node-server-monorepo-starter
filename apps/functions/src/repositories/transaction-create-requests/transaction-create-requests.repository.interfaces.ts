@@ -1,37 +1,53 @@
 import { QueryInput, QueryItem } from '@repo/shared/definitions';
-import { TransactionType } from '@repo/shared/domain';
+import { TransactionType, TransactionSourceType } from '@repo/shared/domain';
 
-import { ProcessResource, ProcessStatus } from '../../definitions';
+import { ProcessDocument, ProcessStatus } from '../../definitions';
 
-export interface TransactionCreateRequestDocument extends ProcessResource {
+export interface TransactionCreateRequestDocument extends ProcessDocument {
   amount: number;
+  categoryId: string | null;
   date: string;
+  description: string;
+  sourceType: TransactionSourceType;
+  sourceId: string;
+  sourceTransactionId: string;
   transactionId: string | null;
   type: TransactionType;
 }
 
 export interface CreateTransactionCreateRequestDocumentInput {
   amount: number;
+  categoryId: string | null;
   date: string;
-  error: null;
-  status: ProcessStatus.PENDING;
-  transactionId: string | null;
+  description: string;
+  sourceType: TransactionSourceType;
+  sourceId: string;
+  sourceTransactionId: string;
   type: TransactionType;
 }
 
 export interface UpdateTransactionCreateRequestDocumentInput {
   amount?: number;
+  categoryId?: string;
   date?: string;
+  description?: string;
   error?: any;
   status?: ProcessStatus;
-  transactionId?: string;
   type?: TransactionType;
+  transactionId?: string;
 }
 
 export interface QueryTransactionCreateRequestsInput extends QueryInput {
   amount?: QueryItem<number>[];
+  categoryId?: QueryItem<string>[];
   date?: QueryItem<string>[];
   status?: QueryItem<ProcessStatus>[];
-  transactionId?: QueryItem<string>[];
+  sourceId?: QueryItem<string>[];
+  sourceType?: QueryItem<TransactionSourceType>[];
+  sourceTransactionId?: QueryItem<string>[];
   type?: QueryItem<TransactionType>[];
+  transactionId?: {
+    value: string | null;
+    operator: '==' | '!=';
+  };
 } 

@@ -1,5 +1,5 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { SubscriptionsService } from '@repo/shared/services';
+import { SubscriptionsService } from '@repo/shared/domain';
 import { DomainModelServiceError, DomainModelServiceErrorCode } from '@repo/shared/utils';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
@@ -16,14 +16,14 @@ export const createSubscriptionHandler = async (
   const service = SubscriptionsService.getInstance();
   const body = request.body as CreateSubscriptionBody;
   try {
-    logger.startStep(STEPS.CREATE_SUBSCRIPTION.id, logGroup);
+    logger.startStep(STEPS.CREATE_SUBSCRIPTION, logGroup);
     const id = await service
       .createResource({
         ...body,
         startsAt: new Date(body.startsAt),
         endsAt: new Date(body.endsAt),
       }, logger)
-      .finally(() => logger.endStep(STEPS.CREATE_SUBSCRIPTION.id));
+      .finally(() => logger.endStep(STEPS.CREATE_SUBSCRIPTION));
     return reply.code(STATUS_CODES.CREATED).send({ id });
   } catch (error) {
     if (error instanceof DomainModelServiceError) {

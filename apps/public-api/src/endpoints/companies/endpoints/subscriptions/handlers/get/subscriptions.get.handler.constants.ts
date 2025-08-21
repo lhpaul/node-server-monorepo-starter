@@ -1,3 +1,3 @@
 export const STEPS = {
-  GET_SUBSCRIPTION: { id: 'get-subscription' },
+  GET_SUBSCRIPTION: 'get-subscription',
 }; 

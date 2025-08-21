@@ -1,5 +1,4 @@
-import { TransactionType } from '@repo/shared/domain';
-import { TransactionsService } from '@repo/shared/services';
+import { TransactionSourceType, TransactionType, TransactionsService } from '@repo/shared/domain';
 import { DomainModelServiceError, DomainModelServiceErrorCode, printError } from '@repo/shared/utils';
 
 import { ProcessStatus } from '../../../../../../definitions/models.interfaces';
@@ -7,7 +6,7 @@ import { TransactionCreateRequestsRepository } from '../../../../../../repositor
 import { transactionCreateRequestOnCreateHandler } from '../transaction-create-request.on-create.handler';
 import { STEPS } from '../transaction-create-request.on-create.constants';
 
-jest.mock('@repo/shared/services');
+jest.mock('@repo/shared/domain');
 jest.mock('@repo/shared/utils', () => ({
   ...jest.requireActual('@repo/shared/utils'),
   printError: jest.fn(),
@@ -41,11 +40,16 @@ describe(transactionCreateRequestOnCreateHandler.name, () => {
     amount: 100,
     date: '2024-01-01',
     type: TransactionType.CREDIT,
-    transactionId: null,
+    categoryId: 'category-id',
     status: ProcessStatus.PENDING,
     error: null,
     createdAt: new Date(),
     updatedAt: new Date(),
+    description: 'description',
+    sourceType: TransactionSourceType.USER,
+    sourceId: 'source-id',
+    sourceTransactionId: 'source-transaction-id',
+    transactionId: null,
   };
 
   const mockTransactionsService = {
@@ -75,8 +79,13 @@ describe(transactionCreateRequestOnCreateHandler.name, () => {
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.CREATE_TRANSACTION.id, logGroup);
     expect(mockTransactionsService.createResource).toHaveBeenCalledWith({
       amount: mockTransactionCreateRequest.amount,
+      categoryId: mockTransactionCreateRequest.categoryId,
       companyId: mockContext.params.companyId,
       date: mockTransactionCreateRequest.date,
+      description: mockTransactionCreateRequest.description,
+      sourceType: mockTransactionCreateRequest.sourceType,
+      sourceId: mockTransactionCreateRequest.sourceId,
+      sourceTransactionId: mockTransactionCreateRequest.sourceTransactionId,
       type: mockTransactionCreateRequest.type,
     }, mockLogger);
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.CREATE_TRANSACTION.id);

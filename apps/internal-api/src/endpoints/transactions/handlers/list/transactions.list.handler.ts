@@ -1,5 +1,5 @@
 import { STATUS_CODES, transformQueryParams } from '@repo/fastify';
-import { TransactionsService } from '@repo/shared/services';
+import { TransactionsService } from '@repo/shared/domain';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { STEPS } from './transactions.list.handler.constants';
@@ -13,9 +13,9 @@ export const listTransactionsHandler = async (
   const logGroup = listTransactionsHandler.name;
   const service = TransactionsService.getInstance();
   const query = request.query as GetTransactionsQueryParams;
-  logger.startStep(STEPS.GET_TRANSACTIONS.id, logGroup);
+  logger.startStep(STEPS.GET_TRANSACTIONS, logGroup);
   const transactions = await service
     .getResourcesList(transformQueryParams(query), logger)
-    .finally(() => logger.endStep(STEPS.GET_TRANSACTIONS.id));
+    .finally(() => logger.endStep(STEPS.GET_TRANSACTIONS));
   return reply.code(STATUS_CODES.OK).send(transactions);
 };

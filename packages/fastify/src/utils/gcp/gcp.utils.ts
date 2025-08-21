@@ -1,4 +1,4 @@
-import { getEnvVariable } from '@repo/shared/utils';
+import { getEnvironmentVariable } from '@repo/shared/utils';
 import { LoggerOptions } from 'pino';
 
 import { PROJECT_ID_ENV_VAR, STRUCTURED_LOGGING_KEYS } from './gcp.utils.constants';
@@ -32,7 +32,7 @@ export function getStructuredLoggingConfig(): LoggerOptions {
         // Add trace context attributes following Cloud Logging structured log format described
         // in https://cloud.google.com/logging/docs/structured-logging#special-payload-fields
         const { traceId, spanId, ...rest} = object;
-        const projectId = getEnvVariable(PROJECT_ID_ENV_VAR);
+        const projectId = getEnvironmentVariable(PROJECT_ID_ENV_VAR);
         return {
           ...(traceId && { [STRUCTURED_LOGGING_KEYS.TRACE_ID]: projectId ? `projects/${projectId}/traces/${traceId}` : traceId }),
           ...(spanId && { [STRUCTURED_LOGGING_KEYS.SPAN_ID]: spanId }),

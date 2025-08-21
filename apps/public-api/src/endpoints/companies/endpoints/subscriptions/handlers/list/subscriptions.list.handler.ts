@@ -1,10 +1,10 @@
 import { FORBIDDEN_ERROR, STATUS_CODES, transformQueryParams } from '@repo/fastify';
-import { SubscriptionsService } from '@repo/shared/services';
+import { SubscriptionsService } from '@repo/shared/domain';
 import { mapDateQueryParams } from '@repo/fastify';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { AuthUser } from '../../../../../../definitions/auth.interfaces';
-import { hasCompanySubscriptionsReadPermission } from '../../../../../../utils/auth/auth.utils';
+import { hasCompanySubscriptionsReadPermission } from '../../../../../../utils/permissions';
 import { STEPS } from './subscriptions.list.handler.constants';
 import { GetSubscriptionsQueryParams, ListSubscriptionsParams } from './subscriptions.list.handler.interfaces';
 
@@ -25,13 +25,13 @@ export const listSubscriptionsHandler = async (
     });
   }
 
-  logger.startStep(STEPS.LIST_SUBSCRIPTIONS.id, logGroup);
+  logger.startStep(STEPS.LIST_SUBSCRIPTIONS, logGroup);
   const query = request.query as GetSubscriptionsQueryParams;
   const subscriptions = await service
     .getResourcesList(transformQueryParams({
       companyId,
       ...mapDateQueryParams(query as Record<string, string>, ['startsAt', 'endsAt']),
     }), logger)
-    .finally(() => logger.endStep(STEPS.LIST_SUBSCRIPTIONS.id));
+    .finally(() => logger.endStep(STEPS.LIST_SUBSCRIPTIONS));
   return reply.code(STATUS_CODES.OK).send(subscriptions);
 }; 
