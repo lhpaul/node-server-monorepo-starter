@@ -61,6 +61,8 @@ Update the following in your `.env` file:
 - Set `GOOGLE_APPLICATION_CREDENTIALS` to the path from step 2
 - Configure other environment variables as needed for local development
 
+Most environment variables are used to reference secrets required by the application; for details on how secrets are managed and accessed, see the [Secret Management](#secret-management) section.
+
 > ⚠️ **Security Note**: Never commit the `.env` file to version control as it contains sensitive credentials.
 
 ### Troubleshooting
@@ -89,3 +91,97 @@ Permission 'iam.serviceAccounts.signBlob' denied on resource (or it may not exis
 
 - [Google Cloud Authentication Setup](https://cloud.google.com/docs/authentication/set-up-adc-local-dev-environment)
 - [Service Account Impersonation Guide](https://cloud.google.com/docs/authentication/use-service-account-impersonation#adc)
+
+## Secret Management
+
+This application uses Google Cloud Secret Manager to securely store sensitive configuration values that are injected as environment variables during deployment.
+
+### How Secrets Work
+
+Secrets are accessed in the application as regular environment variables. The `getSecret` utility function from `@repo/shared` provides a safe way to access these values with proper error handling.
+
+```typescript
+   import { getSecret } from '@repo/shared';
+
+   const apiKey = getSecret('EXTERNAL_API_KEY');
+```
+
+   > **Note**: Always use the `getSecret` utility function from `@repo/shared` instead of directly accessing `process.env`. This utility provides proper error handling and ensures the secret exists.
+
+**For Local Development:**
+- Add secrets to your `.env` file with their actual values
+- Also add them to `.env.example` file (without values) for documentation purposes
+
+**When Deployed:**
+- Secrets are configured in the Terraform infrastructure code (`infra/services/public-api/main.tf`)
+- They are automatically injected as environment variables when the Cloud Run service is deployed
+- Changes to secrets require updating the infrastructure code and deploying the infrastructure. For more information checkout the infrastructure [README](../../infra/README.md)
+
+### Adding a New Secret
+
+To add a new secret that will be available as an environment variable in your deployed service:
+
+1. **Ensure you're working with the correct Google Cloud project:**
+
+   ```bash
+   gcloud config get-value project
+   ```
+
+   If you need to switch to a different project:
+
+   ```bash
+   gcloud config set project YOUR_PROJECT_ID
+   ```
+
+2. **Create the secret in Google Cloud Secret Manager:**
+
+   ```bash
+   gcloud secrets create SECRET_NAME --data-file=- <<< "your-secret-value"
+   ```
+
+   For example, to create an API key secret:
+
+   ```bash
+   gcloud secrets create external-api-key --data-file=- <<< "sk-1234567890abcdef"
+   ```
+
+3. **Update the infrastructure code** (`infra/services/public-api/main.tf`):
+
+   Add a new environment variable entry in the `environment_variables` list:
+
+   ```hcl
+   {
+     name = "ENVIRONMENT_VARIABLE_NAME"
+     value_source = {
+       secret = "SECRET_NAME"
+       version = "latest"
+     }
+   }
+   ```
+
+   For example, if you created a secret called `external-api-key` and want it available as `EXTERNAL_API_KEY`:
+
+   ```hcl
+   {
+     name = "EXTERNAL_API_KEY"
+     value_source = {
+       secret = "external-api-key"
+       version = "latest"
+     }
+   }
+   ```
+
+   Once you've updated the infrastructure code, apply the changes to deploy them. For detailed instructions, refer to the infrastructure [README](../../infra/README.md).
+
+
+### Security Best Practices
+
+- Never commit secret values to version control
+- Use descriptive names for secrets that indicate their purpose
+- Use the `:latest` version in deployment to ensure you always get the most recent value
+- Limit access to secrets using IAM policies
+
+### Additional Resources
+
+- [Google Cloud Secret Manager Documentation](https://cloud.google.com/secret-manager/docs)
+- [Secret Manager Best Practices](https://cloud.google.com/secret-manager/docs/best-practices)

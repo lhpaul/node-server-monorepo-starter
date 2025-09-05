@@ -14,7 +14,7 @@ resource "google_project_service" "default" {
   provider = google-beta.no_user_project_override
   project  = var.project_id
   for_each = toset([
-    "cloudbilling.googleapis.com", # Billing is required for Firebase services.
+    "cloudbilling.googleapis.com", # Billing is required for Firebase services and set up billing budgets.
     "cloudresourcemanager.googleapis.com", # Used to manage metadata for containers in Cloud Build deployments.
     "iam.googleapis.com", # Used to manage IAM roles
     "secretmanager.googleapis.com", # Used to store secrets

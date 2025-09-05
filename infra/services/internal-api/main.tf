@@ -9,6 +9,7 @@ module "service_account" {
     "${var.project_id}=>roles/firebase.sdkAdminServiceAgent", // Needed to access Firebase Admin SDK
     "${var.project_id}=>roles/iam.serviceAccountUser", // Needed to attach the service account to the Cloud Run service
     "${var.project_id}=>roles/logging.logWriter", // Needed to write logs to Cloud Logging
+    "${var.project_id}=>roles/secretmanager.secretAccessor", // Needed to access secrets from Secret Manager
   ]
   display_name  = "Internal API Cloud Run"
   description   = "Cloud Run service for the Internal API"
@@ -26,6 +27,20 @@ module "cloud_run" {
     {
       name = "APP_ENV"
       value = var.env
+    },
+    {
+      name = "MOCK_API_PROJECT_SECRET"
+      value_source = {
+        secret = "mock-api-project-secret"
+        version = "latest"
+      }
+    },
+    {
+      name = "ENCRYPTION_KEY"
+      value_source = {
+        secret = "encryption-key"
+        version = "latest"
+      }
     }
   ]
   depends_on = [module.service_account]

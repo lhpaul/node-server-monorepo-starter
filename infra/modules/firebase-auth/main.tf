@@ -1,5 +1,6 @@
 # Enables required APIs.
 resource "google_project_service" "default" {
+  provider = google-beta.no_user_project_override
   project  = var.project_id
   for_each = toset([
     "cloudresourcemanager.googleapis.com",

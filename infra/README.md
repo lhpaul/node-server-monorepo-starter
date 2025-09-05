@@ -7,6 +7,16 @@ TODO: add description
 - Install Terraform
 - Install gcloud CLI and authenticate
 
+## [Optional] Create Service Account For Terraform
+
+Create the service account with Editor, Project IAM Admin and Service Usage Consumer roles. Recommended name for the service account: infra-management
+
+Impersonate service account:
+
+```bash
+gcloud auth application-default login --impersonate-service-account <service-account-email>
+```
+
 ## First Run
 
 - Change variables
@@ -76,7 +86,38 @@ import {
 }
 ```
 
+### Service Disabled
+
+#### Example error
+
+```bash
+Error: Error when reading or editing IdentityPlatformConfig "projects/node-starter-project-dev/config": googleapi: Error 403: Your application is authenticating by using local Application Default Credentials. The identitytoolkit.googleapis.com API requires a quota project, which is not set by default. To learn how to set your quota project, see https://cloud.google.com/docs/authentication/adc-troubleshooting/user-creds .
+│ Details:
+│ [
+│   {
+│     "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+│     "domain": "googleapis.com",
+│     "metadata": {
+│       "consumer": "projects/764086051850",
+│       "service": "identitytoolkit.googleapis.com"
+│     },
+│     "reason": "SERVICE_DISABLED"
+│   },
+│   {
+│     "@type": "type.googleapis.com/google.rpc.LocalizedMessage",
+│     "locale": "en-US",
+│     "message": "Your application is authenticating by using local Application Default Credentials. The identitytoolkit.googleapis.com API requires a quota project, which is not set by default. To learn how to set your quota project, see https://cloud.google.com/docs/authentication/adc-troubleshooting/user-creds ."
+│   }
+│ ]
+```
+
+#### Solution
+
+Do step from [Create Service Account For Terraform](#[Optional] Create Service Account For Terraform)
+
 ### Permission Denied
+
+#### Solution
 
 ```bash
 gcloud config unset auth/impersonate_service_account
