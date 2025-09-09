@@ -31,14 +31,14 @@ module "cloud_run" {
     {
       name = "MOCK_API_PROJECT_SECRET"
       value_source = {
-        secret = "mock-api-project-secret"
+        secret = "MOCK_API_PROJECT_SECRET"
         version = "latest"
       }
     },
     {
       name = "ENCRYPTION_KEY"
       value_source = {
-        secret = "encryption-key"
+        secret = "ENCRYPTION_KEY"
         version = "latest"
       }
     }

@@ -51,7 +51,9 @@ describe(onMessagePublishedWrapper.name, () => {
   it('should process valid message successfully', async () => {
     (validate as jest.Mock).mockResolvedValueOnce([]);
     
-    const wrapper = onMessagePublishedWrapper(MessageClass, mockTopic, mockHandler);
+    const wrapper = onMessagePublishedWrapper(MessageClass, mockHandler, {
+      topic: mockTopic,
+    });
     await wrapper(mockEvent);
 
     expect(mockLogger.info).toHaveBeenCalledWith(
@@ -76,7 +78,8 @@ describe(onMessagePublishedWrapper.name, () => {
       constructor(data: { value: string }) {
         this.value = data.value;
       }
-    }, mockTopic, mockHandler, {
+    }, mockHandler, {
+      topic: mockTopic,
       maskMessageFields: ['value'],
     });
     await wrapper(mockEvent);
@@ -99,7 +102,9 @@ describe(onMessagePublishedWrapper.name, () => {
       constructor(data: { value: string }) {
         this.value = data.value;
       }
-    }, mockTopic, mockHandler);
+    }, mockHandler, {
+      topic: mockTopic,
+    });
     await wrapper(mockEvent);
     expect(printError).toHaveBeenCalledWith(validationErrors);
     expect(mockLogger.warn).toHaveBeenCalledWith(
@@ -121,7 +126,9 @@ describe(onMessagePublishedWrapper.name, () => {
       constructor(data: { value: string }) {
         this.value = data.value;
       }
-    }, mockTopic, mockHandler);
+    }, mockHandler, {
+      topic: mockTopic,
+    });
     await expect(wrapper(mockEvent)).rejects.toThrow('Test error');
     expect(printError).toHaveBeenCalledWith(error);
     expect(mockLogger.error).toHaveBeenCalledWith(
