@@ -218,7 +218,6 @@ export class CompaniesService extends DomainModelService<Company, CompanyDocumen
         if (financialInstitutionDoc) {
           const financialInstitution = new FinancialInstitution(financialInstitutionDoc);
           let credentials: any = null;
-          console.log('includeCredentials', includeCredentials);
           if (includeCredentials) {
             const decryptedCredentialsString = decryptText(relation.encryptedCredentials);
             credentials = JSON.parse(decryptedCredentialsString);
