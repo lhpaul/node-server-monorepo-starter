@@ -1,3 +1,6 @@
+import moment from 'moment';
+
+import { ExecutionLogger } from '../../../../definitions';
 import { SubscriptionsRepository } from '../../../../repositories';
 import { SubscriptionsService } from '../subscriptions.service';
 
@@ -5,21 +8,27 @@ jest.mock('../../../../repositories');
 
 
 describe(SubscriptionsService.name, () => {
-  let mockSubscriptionsRepository: jest.Mocked<SubscriptionsRepository>;
+  let service: SubscriptionsService;
+  const mockSubscriptionsRepository = {
+    getDocumentsList: jest.fn(),
+  } as unknown as SubscriptionsRepository;
+  const mockLogger = {
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+    debug: jest.fn(),
+    trace: jest.fn(),
+    fatal: jest.fn(),
+    silent: jest.fn(),
+  } as unknown as ExecutionLogger;
 
   beforeEach(() => {
     jest.clearAllMocks();
-
-    mockSubscriptionsRepository = {
-      // Add mock methods as needed
-    } as unknown as jest.Mocked<SubscriptionsRepository>;
-
     (SubscriptionsRepository.getInstance as jest.Mock).mockReturnValue(mockSubscriptionsRepository);
-
     (SubscriptionsService as any).instance = undefined;
   });
 
-  describe('getInstance', () => {
+  describe(SubscriptionsService.getInstance.name, () => {
     it('should create a new instance if one does not exist', () => {
       const service = SubscriptionsService.getInstance();
       
@@ -33,6 +42,79 @@ describe(SubscriptionsService.name, () => {
       
       expect(firstInstance).toBe(secondInstance);
       expect(SubscriptionsRepository.getInstance).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe(SubscriptionsService.prototype.getAboutToExpireSubscriptions.name, () => {
+    beforeEach(() => {
+      service = SubscriptionsService.getInstance();
+    });
+    it('should return the subscriptions that are about to expire', async () => {
+      const subscriptionsMocks = [
+        {
+          endsAt: new Date(),
+        },
+        {
+          endsAt: new Date(),
+        },
+      ];
+      (mockSubscriptionsRepository.getDocumentsList as jest.Mock).mockResolvedValueOnce(subscriptionsMocks);
+      const subscriptions = await service.getAboutToExpireSubscriptions(1, mockLogger);
+      const now = moment();
+      const from = now.add(1, 'days').startOf('day').toDate();
+      const to = now.add(1, 'days').endOf('day').toDate();
+      expect(mockSubscriptionsRepository.getDocumentsList).toHaveBeenCalledWith({
+        endsAt: [{ operator: '>=', value: from }, { operator: '<=', value: to }],
+      }, mockLogger);
+      expect(subscriptions).toEqual(subscriptionsMocks);
+    });
+  });
+  describe(SubscriptionsService.prototype.getActiveSubscriptions.name, () => {
+    beforeEach(() => {
+      service = SubscriptionsService.getInstance();
+    });
+
+    it('should return active subscriptions with endsAt greater than or equal to current date', async () => {
+      const subscriptionsMocks = [
+        {
+          id: '1',
+          endsAt: new Date('2024-12-31'),
+        },
+        {
+          id: '2',
+          endsAt: new Date('2025-01-15'),
+        },
+      ];
+      (mockSubscriptionsRepository.getDocumentsList as jest.Mock).mockResolvedValueOnce(subscriptionsMocks);
+      
+      const subscriptions = await service.getActiveSubscriptions(mockLogger);
+      
+      expect(mockSubscriptionsRepository.getDocumentsList).toHaveBeenCalledWith({
+        endsAt: [{ operator: '>=', value: expect.any(Date) }],
+      }, mockLogger);
+      expect(subscriptions).toEqual(subscriptionsMocks);
+    });
+
+    it('should return empty array when no active subscriptions exist', async () => {
+      (mockSubscriptionsRepository.getDocumentsList as jest.Mock).mockResolvedValueOnce([]);
+      
+      const subscriptions = await service.getActiveSubscriptions(mockLogger);
+      
+      expect(mockSubscriptionsRepository.getDocumentsList).toHaveBeenCalledWith({
+        endsAt: [{ operator: '>=', value: expect.any(Date) }],
+      }, mockLogger);
+      expect(subscriptions).toEqual([]);
+    });
+
+    it('should pass the logger to the repository method', async () => {
+      (mockSubscriptionsRepository.getDocumentsList as jest.Mock).mockResolvedValueOnce([]);
+      
+      await service.getActiveSubscriptions(mockLogger);
+      
+      expect(mockSubscriptionsRepository.getDocumentsList).toHaveBeenCalledWith(
+        expect.any(Object),
+        mockLogger
+      );
     });
   });
 }); 

@@ -2,6 +2,7 @@
 import { ExecutionLogger } from '../../../../definitions';
 import { CompaniesRepository, CompanyFinancialInstitutionRelationsRepository, FinancialInstitutionsRepository } from '../../../../repositories';
 import { decryptText, encryptText } from '../../../../utils/encryption';
+import { SubscriptionsService } from '../../../services/subscriptions/subscriptions.service';
 
 // Local imports (alphabetical)
 import {
@@ -33,11 +34,13 @@ import { CompaniesService } from '../companies.service';
 
 jest.mock('../../../../repositories');
 jest.mock('../../../../utils/encryption');
+jest.mock('../../../services/subscriptions/subscriptions.service');
 
 describe(CompaniesService.name, () => {
   let mockCompaniesRepository: jest.Mocked<CompaniesRepository>;
   let mockCompanyFinancialInstitutionRelationsRepository: jest.Mocked<CompanyFinancialInstitutionRelationsRepository>;
   let mockFinancialInstitutionsRepository: jest.Mocked<FinancialInstitutionsRepository>;
+  let mockSubscriptionsService: jest.Mocked<SubscriptionsService>;
   let mockLogger: jest.Mocked<ExecutionLogger>;
   let companiesService: CompaniesService;
 
@@ -62,6 +65,10 @@ describe(CompaniesService.name, () => {
       getDocument: jest.fn(),
     } as unknown as jest.Mocked<FinancialInstitutionsRepository>;
 
+    mockSubscriptionsService = {
+      getResourcesList: jest.fn(),
+    } as unknown as jest.Mocked<SubscriptionsService>;
+
     // Create mock logger
     mockLogger = {
       startStep: jest.fn(),
@@ -72,6 +79,7 @@ describe(CompaniesService.name, () => {
     (CompaniesRepository.getInstance as jest.Mock).mockReturnValue(mockCompaniesRepository);
     (CompanyFinancialInstitutionRelationsRepository.getInstance as jest.Mock).mockReturnValue(mockCompanyFinancialInstitutionRelationsRepository);
     (FinancialInstitutionsRepository.getInstance as jest.Mock).mockReturnValue(mockFinancialInstitutionsRepository);
+    (SubscriptionsService.getInstance as jest.Mock).mockReturnValue(mockSubscriptionsService);
 
     // Mock the encryptText function
     (encryptText as jest.Mock).mockReturnValue('encrypted-credentials');
@@ -784,154 +792,493 @@ describe(CompaniesService.name, () => {
       expect(mockLogger.startStep).not.toHaveBeenCalledWith(LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_FINANCIAL_INSTITUTIONS, logGroup);
       expect(mockLogger.endStep).not.toHaveBeenCalledWith(LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_FINANCIAL_INSTITUTIONS);
     });
-
-    it('should return all financial institutions related to the company', async () => {
-      // Arrange
-      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue(mockRelations);
-      mockFinancialInstitutionsRepository.getDocument
-        .mockResolvedValueOnce(mockFinancialInstitution1)
-        .mockResolvedValueOnce(mockFinancialInstitution2)
-        .mockResolvedValueOnce(mockFinancialInstitution3);
-
-      // Act
-      const result = await companiesService.listFinancialInstitutions(mockCompanyId, mockLogger);
-
-      // Assert
-      expect(result).toHaveLength(3);
-      expect(result[0]).toMatchObject({
-        id: 'relation-1',
-        companyId: mockCompanyId,
-        credentials: { username: 'testuser', password: 'testpass' },
-        createdAt: mockRelations[0].createdAt,
-        updatedAt: mockRelations[0].updatedAt,
-        financialInstitution: {
-          id: 'fi-1',
-          name: 'Bank of America',
-        },
+    describe('when includeCredentials is option is false', () => {
+      const options: { includeCredentials: boolean } = { includeCredentials: false };
+      it('should return all financial institutions related to the company', async () => {
+        // Arrange
+        mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue(mockRelations);
+        mockFinancialInstitutionsRepository.getDocument
+          .mockResolvedValueOnce(mockFinancialInstitution1)
+          .mockResolvedValueOnce(mockFinancialInstitution2)
+          .mockResolvedValueOnce(mockFinancialInstitution3);
+  
+        // Act
+        const result = await companiesService.listFinancialInstitutions(mockCompanyId, mockLogger, options);
+  
+        // Assert
+        expect(result).toHaveLength(3);
+        expect(result[0]).toMatchObject({
+          id: 'relation-1',
+          companyId: mockCompanyId,
+          credentials: null,
+          createdAt: mockRelations[0].createdAt,
+          updatedAt: mockRelations[0].updatedAt,
+          financialInstitution: {
+            id: 'fi-1',
+            name: 'Bank of America',
+          },
+        });
+        expect(result[1]).toMatchObject({
+          id: 'relation-2',
+          companyId: mockCompanyId,
+          credentials: null,
+          createdAt: mockRelations[1].createdAt,
+          updatedAt: mockRelations[1].updatedAt,
+          financialInstitution: {
+            id: 'fi-2',
+            name: 'Chase Bank',
+          },
+        });
+        expect(result[2]).toMatchObject({
+          id: 'relation-3',
+          companyId: mockCompanyId,
+          credentials: null,
+          createdAt: mockRelations[2].createdAt,
+          updatedAt: mockRelations[2].updatedAt,
+          financialInstitution: {
+            id: 'fi-3',
+            name: 'Wells Fargo',
+          },
+        });
+  
+        expect(mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList).toHaveBeenCalledWith({
+          companyId: [{ value: mockCompanyId, operator: '==' }],
+        }, mockLogger);
+  
+        expect(mockFinancialInstitutionsRepository.getDocument).toHaveBeenCalledWith('fi-1', mockLogger);
+        expect(mockFinancialInstitutionsRepository.getDocument).toHaveBeenCalledWith('fi-2', mockLogger);
+        expect(mockFinancialInstitutionsRepository.getDocument).toHaveBeenCalledWith('fi-3', mockLogger);
+        expect(mockFinancialInstitutionsRepository.getDocument).toHaveBeenCalledTimes(3);
+  
+        expect(mockLogger.startStep).toHaveBeenCalledWith(LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_RELATIONS, logGroup);
+        expect(mockLogger.endStep).toHaveBeenCalledWith(LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_RELATIONS);
+        expect(mockLogger.startStep).toHaveBeenCalledWith(LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_FINANCIAL_INSTITUTIONS, logGroup);
+        expect(mockLogger.endStep).toHaveBeenCalledWith(LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_FINANCIAL_INSTITUTIONS);
       });
-      expect(result[1]).toMatchObject({
-        id: 'relation-2',
-        companyId: mockCompanyId,
-        credentials: { username: 'testuser', password: 'testpass' },
-        createdAt: mockRelations[1].createdAt,
-        updatedAt: mockRelations[1].updatedAt,
-        financialInstitution: {
-          id: 'fi-2',
-          name: 'Chase Bank',
-        },
+  
+      it('should handle missing financial institutions gracefully', async () => {
+        // Arrange
+        mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue(mockRelations);
+        mockFinancialInstitutionsRepository.getDocument
+          .mockResolvedValueOnce(mockFinancialInstitution1)
+          .mockResolvedValueOnce(null) // Missing financial institution
+          .mockResolvedValueOnce(mockFinancialInstitution3);
+  
+        // Act
+        const result = await companiesService.listFinancialInstitutions(mockCompanyId, mockLogger, options);
+  
+        // Assert
+        expect(result).toHaveLength(2);
+        expect(result[0]).toMatchObject({
+          id: 'relation-1',
+          companyId: mockCompanyId,
+          credentials: null,
+          createdAt: mockRelations[0].createdAt,
+          updatedAt: mockRelations[0].updatedAt,
+          financialInstitution: {
+            id: 'fi-1',
+            name: 'Bank of America',
+          },
+        });
+        expect(result[1]).toMatchObject({
+          id: 'relation-3',
+          companyId: mockCompanyId,
+          credentials: null,
+          createdAt: mockRelations[2].createdAt,
+          updatedAt: mockRelations[2].updatedAt,
+          financialInstitution: {
+            id: 'fi-3',
+            name: 'Wells Fargo',
+          },
+        });
+  
+        expect(mockFinancialInstitutionsRepository.getDocument).toHaveBeenCalledWith('fi-1', mockLogger);
+        expect(mockFinancialInstitutionsRepository.getDocument).toHaveBeenCalledWith('fi-2', mockLogger);
+        expect(mockFinancialInstitutionsRepository.getDocument).toHaveBeenCalledWith('fi-3', mockLogger);
+        expect(mockFinancialInstitutionsRepository.getDocument).toHaveBeenCalledTimes(3);
       });
-      expect(result[2]).toMatchObject({
-        id: 'relation-3',
-        companyId: mockCompanyId,
-        credentials: { username: 'testuser', password: 'testpass' },
-        createdAt: mockRelations[2].createdAt,
-        updatedAt: mockRelations[2].updatedAt,
-        financialInstitution: {
-          id: 'fi-3',
-          name: 'Wells Fargo',
-        },
+  
+      it('should handle single financial institution relation', async () => {
+        // Arrange
+        const singleRelation = [mockRelations[0]];
+        mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue(singleRelation);
+        mockFinancialInstitutionsRepository.getDocument.mockResolvedValueOnce(mockFinancialInstitution1);
+  
+        // Act
+        const result = await companiesService.listFinancialInstitutions(mockCompanyId, mockLogger, options);
+  
+        // Assert
+        expect(result).toHaveLength(1);
+        expect(result[0]).toMatchObject({
+          id: 'relation-1',
+          companyId: mockCompanyId,
+          credentials: null,
+          createdAt: mockRelations[0].createdAt,
+          updatedAt: mockRelations[0].updatedAt,
+          financialInstitution: {
+            id: 'fi-1',
+            name: 'Bank of America',
+          },
+        });
+  
+        expect(mockFinancialInstitutionsRepository.getDocument).toHaveBeenCalledWith('fi-1', mockLogger);
+        expect(mockFinancialInstitutionsRepository.getDocument).toHaveBeenCalledTimes(1);
       });
-
-      expect(mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList).toHaveBeenCalledWith({
-        companyId: [{ value: mockCompanyId, operator: '==' }],
-      }, mockLogger);
-
-      expect(mockFinancialInstitutionsRepository.getDocument).toHaveBeenCalledWith('fi-1', mockLogger);
-      expect(mockFinancialInstitutionsRepository.getDocument).toHaveBeenCalledWith('fi-2', mockLogger);
-      expect(mockFinancialInstitutionsRepository.getDocument).toHaveBeenCalledWith('fi-3', mockLogger);
-      expect(mockFinancialInstitutionsRepository.getDocument).toHaveBeenCalledTimes(3);
-
-      expect(mockLogger.startStep).toHaveBeenCalledWith(LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_RELATIONS, logGroup);
-      expect(mockLogger.endStep).toHaveBeenCalledWith(LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_RELATIONS);
-      expect(mockLogger.startStep).toHaveBeenCalledWith(LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_FINANCIAL_INSTITUTIONS, logGroup);
-      expect(mockLogger.endStep).toHaveBeenCalledWith(LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_FINANCIAL_INSTITUTIONS);
+  
+      it('should call logger methods in the correct order', async () => {
+        // Arrange
+        mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue(mockRelations);
+        mockFinancialInstitutionsRepository.getDocument
+          .mockResolvedValueOnce(mockFinancialInstitution1)
+          .mockResolvedValueOnce(mockFinancialInstitution2)
+          .mockResolvedValueOnce(mockFinancialInstitution3);
+  
+        // Act
+        await companiesService.listFinancialInstitutions(mockCompanyId, mockLogger, options);
+  
+        // Assert
+        expect(mockLogger.startStep).toHaveBeenNthCalledWith(1, LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_RELATIONS, logGroup);
+        expect(mockLogger.endStep).toHaveBeenNthCalledWith(1, LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_RELATIONS);
+        expect(mockLogger.startStep).toHaveBeenNthCalledWith(2, LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_FINANCIAL_INSTITUTIONS, logGroup);
+        expect(mockLogger.startStep).toHaveBeenNthCalledWith(3, `${LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_FINANCIAL_INSTITUTIONS}-${mockRelations[0].financialInstitutionId}`, logGroup);
+        expect(mockLogger.startStep).toHaveBeenNthCalledWith(4, `${LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_FINANCIAL_INSTITUTIONS}-${mockRelations[1].financialInstitutionId}`, logGroup);
+        expect(mockLogger.startStep).toHaveBeenNthCalledWith(5, `${LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_FINANCIAL_INSTITUTIONS}-${mockRelations[2].financialInstitutionId}`, logGroup);
+        expect(mockLogger.endStep).toHaveBeenNthCalledWith(2, `${LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_FINANCIAL_INSTITUTIONS}-${mockRelations[0].financialInstitutionId}`);
+        expect(mockLogger.endStep).toHaveBeenNthCalledWith(3, `${LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_FINANCIAL_INSTITUTIONS}-${mockRelations[1].financialInstitutionId}`);
+        expect(mockLogger.endStep).toHaveBeenNthCalledWith(4, `${LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_FINANCIAL_INSTITUTIONS}-${mockRelations[2].financialInstitutionId}`);
+        expect(mockLogger.endStep).toHaveBeenNthCalledWith(5, LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_FINANCIAL_INSTITUTIONS);
+      });
+    
     });
-
-    it('should handle missing financial institutions gracefully', async () => {
-      // Arrange
-      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue(mockRelations);
-      mockFinancialInstitutionsRepository.getDocument
-        .mockResolvedValueOnce(mockFinancialInstitution1)
-        .mockResolvedValueOnce(null) // Missing financial institution
-        .mockResolvedValueOnce(mockFinancialInstitution3);
-
-      // Act
-      const result = await companiesService.listFinancialInstitutions(mockCompanyId, mockLogger);
-
-      // Assert
-      expect(result).toHaveLength(2);
-      expect(result[0]).toMatchObject({
-        id: 'relation-1',
-        companyId: mockCompanyId,
-        credentials: { username: 'testuser', password: 'testpass' },
-        createdAt: mockRelations[0].createdAt,
-        updatedAt: mockRelations[0].updatedAt,
-        financialInstitution: {
-          id: 'fi-1',
-          name: 'Bank of America',
-        },
+    describe('when includeCredentials is option is true', () => {
+      const options: { includeCredentials: boolean } = { includeCredentials: true };
+      it('should return all financial institutions related to the company', async () => {
+        // Arrange
+        mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue(mockRelations);
+        mockFinancialInstitutionsRepository.getDocument
+          .mockResolvedValueOnce(mockFinancialInstitution1)
+          .mockResolvedValueOnce(mockFinancialInstitution2)
+          .mockResolvedValueOnce(mockFinancialInstitution3);
+  
+        // Act
+        const result = await companiesService.listFinancialInstitutions(mockCompanyId, mockLogger, options);
+  
+        // Assert
+        expect(result).toHaveLength(3);
+        expect(result[0]).toMatchObject({
+          id: 'relation-1',
+          companyId: mockCompanyId,
+          credentials: { username: 'testuser', password: 'testpass' },
+          createdAt: mockRelations[0].createdAt,
+          updatedAt: mockRelations[0].updatedAt,
+          financialInstitution: {
+            id: 'fi-1',
+            name: 'Bank of America',
+          },
+        });
+        expect(result[1]).toMatchObject({
+          id: 'relation-2',
+          companyId: mockCompanyId,
+          credentials: { username: 'testuser', password: 'testpass' },
+          createdAt: mockRelations[1].createdAt,
+          updatedAt: mockRelations[1].updatedAt,
+          financialInstitution: {
+            id: 'fi-2',
+            name: 'Chase Bank',
+          },
+        });
+        expect(result[2]).toMatchObject({
+          id: 'relation-3',
+          companyId: mockCompanyId,
+          credentials: { username: 'testuser', password: 'testpass' },
+          createdAt: mockRelations[2].createdAt,
+          updatedAt: mockRelations[2].updatedAt,
+          financialInstitution: {
+            id: 'fi-3',
+            name: 'Wells Fargo',
+          },
+        });
+  
+        expect(mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList).toHaveBeenCalledWith({
+          companyId: [{ value: mockCompanyId, operator: '==' }],
+        }, mockLogger);
+  
+        expect(mockFinancialInstitutionsRepository.getDocument).toHaveBeenCalledWith('fi-1', mockLogger);
+        expect(mockFinancialInstitutionsRepository.getDocument).toHaveBeenCalledWith('fi-2', mockLogger);
+        expect(mockFinancialInstitutionsRepository.getDocument).toHaveBeenCalledWith('fi-3', mockLogger);
+        expect(mockFinancialInstitutionsRepository.getDocument).toHaveBeenCalledTimes(3);
+  
+        expect(mockLogger.startStep).toHaveBeenCalledWith(LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_RELATIONS, logGroup);
+        expect(mockLogger.endStep).toHaveBeenCalledWith(LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_RELATIONS);
+        expect(mockLogger.startStep).toHaveBeenCalledWith(LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_FINANCIAL_INSTITUTIONS, logGroup);
+        expect(mockLogger.endStep).toHaveBeenCalledWith(LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_FINANCIAL_INSTITUTIONS);
       });
-      expect(result[1]).toMatchObject({
-        id: 'relation-3',
-        companyId: mockCompanyId,
-        credentials: { username: 'testuser', password: 'testpass' },
-        createdAt: mockRelations[2].createdAt,
-        updatedAt: mockRelations[2].updatedAt,
-        financialInstitution: {
-          id: 'fi-3',
-          name: 'Wells Fargo',
-        },
+      it('should handle missing financial institutions gracefully', async () => {
+        // Arrange
+        mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue(mockRelations);
+        mockFinancialInstitutionsRepository.getDocument
+          .mockResolvedValueOnce(mockFinancialInstitution1)
+          .mockResolvedValueOnce(null) // Missing financial institution
+          .mockResolvedValueOnce(mockFinancialInstitution3);
+  
+        // Act
+        const result = await companiesService.listFinancialInstitutions(mockCompanyId, mockLogger, options);
+  
+        // Assert
+        expect(result).toHaveLength(2);
+        expect(result[0]).toMatchObject({
+          id: 'relation-1',
+          companyId: mockCompanyId,
+          credentials: { username: 'testuser', password: 'testpass' },
+          createdAt: mockRelations[0].createdAt,
+          updatedAt: mockRelations[0].updatedAt,
+          financialInstitution: {
+            id: 'fi-1',
+            name: 'Bank of America',
+          },
+        });
+        expect(result[1]).toMatchObject({
+          id: 'relation-3',
+          companyId: mockCompanyId,
+          credentials: { username: 'testuser', password: 'testpass' },
+          createdAt: mockRelations[2].createdAt,
+          updatedAt: mockRelations[2].updatedAt,
+          financialInstitution: {
+            id: 'fi-3',
+            name: 'Wells Fargo',
+          },
+        });
+  
+        expect(mockFinancialInstitutionsRepository.getDocument).toHaveBeenCalledWith('fi-1', mockLogger);
+        expect(mockFinancialInstitutionsRepository.getDocument).toHaveBeenCalledWith('fi-2', mockLogger);
+        expect(mockFinancialInstitutionsRepository.getDocument).toHaveBeenCalledWith('fi-3', mockLogger);
+        expect(mockFinancialInstitutionsRepository.getDocument).toHaveBeenCalledTimes(3);
       });
-
-      expect(mockFinancialInstitutionsRepository.getDocument).toHaveBeenCalledWith('fi-1', mockLogger);
-      expect(mockFinancialInstitutionsRepository.getDocument).toHaveBeenCalledWith('fi-2', mockLogger);
-      expect(mockFinancialInstitutionsRepository.getDocument).toHaveBeenCalledWith('fi-3', mockLogger);
-      expect(mockFinancialInstitutionsRepository.getDocument).toHaveBeenCalledTimes(3);
-    });
-
-    it('should handle single financial institution relation', async () => {
-      // Arrange
-      const singleRelation = [mockRelations[0]];
-      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue(singleRelation);
-      mockFinancialInstitutionsRepository.getDocument.mockResolvedValueOnce(mockFinancialInstitution1);
-
-      // Act
-      const result = await companiesService.listFinancialInstitutions(mockCompanyId, mockLogger);
-
-      // Assert
-      expect(result).toHaveLength(1);
-      expect(result[0]).toMatchObject({
-        id: 'relation-1',
-        companyId: mockCompanyId,
-        credentials: { username: 'testuser', password: 'testpass' },
-        createdAt: mockRelations[0].createdAt,
-        updatedAt: mockRelations[0].updatedAt,
-        financialInstitution: {
-          id: 'fi-1',
-          name: 'Bank of America',
-        },
+      it('should handle single financial institution relation', async () => {
+        // Arrange
+        const singleRelation = [mockRelations[0]];
+        mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue(singleRelation);
+        mockFinancialInstitutionsRepository.getDocument.mockResolvedValueOnce(mockFinancialInstitution1);
+  
+        // Act
+        const result = await companiesService.listFinancialInstitutions(mockCompanyId, mockLogger, options);
+  
+        // Assert
+        expect(result).toHaveLength(1);
+        expect(result[0]).toMatchObject({
+          id: 'relation-1',
+          companyId: mockCompanyId,
+          credentials: { username: 'testuser', password: 'testpass' },
+          createdAt: mockRelations[0].createdAt,
+          updatedAt: mockRelations[0].updatedAt,
+          financialInstitution: {
+            id: 'fi-1',
+            name: 'Bank of America',
+          },
+        });
+  
+        expect(mockFinancialInstitutionsRepository.getDocument).toHaveBeenCalledWith('fi-1', mockLogger);
+        expect(mockFinancialInstitutionsRepository.getDocument).toHaveBeenCalledTimes(1);
       });
-
-      expect(mockFinancialInstitutionsRepository.getDocument).toHaveBeenCalledWith('fi-1', mockLogger);
-      expect(mockFinancialInstitutionsRepository.getDocument).toHaveBeenCalledTimes(1);
-    });
-
-    it('should call logger methods in the correct order', async () => {
-      // Arrange
-      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue(mockRelations);
-      mockFinancialInstitutionsRepository.getDocument
-        .mockResolvedValueOnce(mockFinancialInstitution1)
-        .mockResolvedValueOnce(mockFinancialInstitution2)
-        .mockResolvedValueOnce(mockFinancialInstitution3);
-
-      // Act
-      await companiesService.listFinancialInstitutions(mockCompanyId, mockLogger);
-
-      // Assert
-      expect(mockLogger.startStep).toHaveBeenNthCalledWith(1, LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_RELATIONS, logGroup);
-      expect(mockLogger.endStep).toHaveBeenNthCalledWith(1, LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_RELATIONS);
-      expect(mockLogger.startStep).toHaveBeenNthCalledWith(2, LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_FINANCIAL_INSTITUTIONS, logGroup);
-      expect(mockLogger.endStep).toHaveBeenNthCalledWith(2, LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_FINANCIAL_INSTITUTIONS);
+      it('should call logger methods in the correct order', async () => {
+        // Arrange
+        mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue(mockRelations);
+        mockFinancialInstitutionsRepository.getDocument
+          .mockResolvedValueOnce(mockFinancialInstitution1)
+          .mockResolvedValueOnce(mockFinancialInstitution2)
+          .mockResolvedValueOnce(mockFinancialInstitution3);
+  
+        // Act
+        await companiesService.listFinancialInstitutions(mockCompanyId, mockLogger, options);
+  
+        // Assert
+        expect(mockLogger.startStep).toHaveBeenNthCalledWith(1, LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_RELATIONS, logGroup);
+        expect(mockLogger.endStep).toHaveBeenNthCalledWith(1, LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_RELATIONS);
+        expect(mockLogger.startStep).toHaveBeenNthCalledWith(2, LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_FINANCIAL_INSTITUTIONS, logGroup);
+        expect(mockLogger.startStep).toHaveBeenNthCalledWith(3, `${LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_FINANCIAL_INSTITUTIONS}-${mockRelations[0].financialInstitutionId}`, logGroup);
+        expect(mockLogger.startStep).toHaveBeenNthCalledWith(4, `${LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_FINANCIAL_INSTITUTIONS}-${mockRelations[1].financialInstitutionId}`, logGroup);
+        expect(mockLogger.startStep).toHaveBeenNthCalledWith(5, `${LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_FINANCIAL_INSTITUTIONS}-${mockRelations[2].financialInstitutionId}`, logGroup);
+        expect(mockLogger.endStep).toHaveBeenNthCalledWith(2, `${LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_FINANCIAL_INSTITUTIONS}-${mockRelations[0].financialInstitutionId}`);
+        expect(mockLogger.endStep).toHaveBeenNthCalledWith(3, `${LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_FINANCIAL_INSTITUTIONS}-${mockRelations[1].financialInstitutionId}`);
+        expect(mockLogger.endStep).toHaveBeenNthCalledWith(4, `${LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_FINANCIAL_INSTITUTIONS}-${mockRelations[2].financialInstitutionId}`);
+        expect(mockLogger.endStep).toHaveBeenNthCalledWith(5, LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_FINANCIAL_INSTITUTIONS);
+      });
+      it('should handle empty decrypted credentials string', async () => {
+        // Arrange
+        const singleRelation = [mockRelations[0]];
+        mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue(singleRelation);
+        mockFinancialInstitutionsRepository.getDocument.mockResolvedValueOnce(mockFinancialInstitution1);
+  
+        (decryptText as jest.Mock).mockReturnValue('');
+  
+        // Act & Assert
+        await expect(companiesService.listFinancialInstitutions(mockCompanyId, mockLogger, options))
+          .rejects
+          .toThrow('Unexpected end of JSON input');
+  
+        // Verify that endStep was still called for the GET_FINANCIAL_INSTITUTIONS step
+        expect(mockLogger.endStep).toHaveBeenCalledWith(LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_FINANCIAL_INSTITUTIONS);
+      });
+      it('should handle different credential formats correctly', async () => {
+        // Arrange
+        const relationsWithDifferentCredentials = [
+          {
+            id: 'relation-1',
+            companyId: mockCompanyId,
+            financialInstitutionId: 'fi-1',
+            encryptedCredentials: 'encrypted-object',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+          {
+            id: 'relation-2',
+            companyId: mockCompanyId,
+            financialInstitutionId: 'fi-2',
+            encryptedCredentials: 'encrypted-array',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+          {
+            id: 'relation-3',
+            companyId: mockCompanyId,
+            financialInstitutionId: 'fi-3',
+            encryptedCredentials: 'encrypted-primitive',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        ];
+  
+        mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue(relationsWithDifferentCredentials);
+        mockFinancialInstitutionsRepository.getDocument
+          .mockResolvedValueOnce(mockFinancialInstitution1)
+          .mockResolvedValueOnce(mockFinancialInstitution2)
+          .mockResolvedValueOnce(mockFinancialInstitution3);
+  
+        (decryptText as jest.Mock).mockImplementation((encryptedCredentials) => {
+          switch (encryptedCredentials) {
+            case 'encrypted-object':
+              return '{"username":"user1","password":"pass1"}';
+            case 'encrypted-array':
+              return '["item1","item2","item3"]';
+            case 'encrypted-primitive':
+              return '"simple-string"';
+            default:
+              return '{}';
+          }
+        });
+  
+        // Act
+        const result = await companiesService.listFinancialInstitutions(mockCompanyId, mockLogger, options);
+  
+        // Assert
+        expect(result).toHaveLength(3);
+        expect(result[0].credentials).toEqual({ username: 'user1', password: 'pass1' });
+        expect(result[1].credentials).toEqual(['item1', 'item2', 'item3']);
+        expect(result[2].credentials).toBe('simple-string');
+      });
+      it('should handle complex nested credential objects', async () => {
+        // Arrange
+        const singleRelation = [mockRelations[0]];
+        mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue(singleRelation);
+        mockFinancialInstitutionsRepository.getDocument.mockResolvedValueOnce(mockFinancialInstitution1);
+  
+        const complexCredentials = {
+          authentication: {
+            username: 'complex-user',
+            password: 'complex-pass',
+            twoFactor: {
+              enabled: true,
+              secret: 'secret-key',
+            },
+          },
+          api: {
+            key: 'api-key-123',
+            version: 'v2',
+            endpoints: ['/auth', '/data', '/sync'],
+          },
+          settings: {
+            timeout: 30000,
+            retries: 3,
+            ssl: true,
+          },
+        };
+  
+        (decryptText as jest.Mock).mockReturnValue(JSON.stringify(complexCredentials));
+  
+        // Act
+        const result = await companiesService.listFinancialInstitutions(mockCompanyId, mockLogger, options);
+  
+        // Assert
+        expect(result).toHaveLength(1);
+        expect(result[0].credentials).toEqual(complexCredentials);
+        expect(result[0].credentials.authentication.twoFactor.enabled).toBe(true);
+        expect(result[0].credentials.api.endpoints).toContain('/auth');
+        expect(result[0].credentials.settings.timeout).toBe(30000);
+      });
+      it('should handle credentials with special characters and unicode', async () => {
+        // Arrange
+        const singleRelation = [mockRelations[0]];
+        mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue(singleRelation);
+        mockFinancialInstitutionsRepository.getDocument.mockResolvedValueOnce(mockFinancialInstitution1);
+  
+        const specialCredentials = {
+          username: 'user@domain.com',
+          password: 'p@ssw0rd!@#$%^&*()',
+          apiKey: 'key-with-unicode-🚀-🎉-🔥',
+          notes: 'Special chars: !@#$%^&*()_+-=[]{}|;:,.<>?',
+        };
+  
+        (decryptText as jest.Mock).mockReturnValue(JSON.stringify(specialCredentials));
+  
+        // Act
+        const result = await companiesService.listFinancialInstitutions(mockCompanyId, mockLogger, options);
+  
+        // Assert
+        expect(result).toHaveLength(1);
+        expect(result[0].credentials).toEqual(specialCredentials);
+        expect(result[0].credentials.username).toBe('user@domain.com');
+        expect(result[0].credentials.apiKey).toBe('key-with-unicode-🚀-🎉-🔥');
+        expect(result[0].credentials.notes).toBe('Special chars: !@#$%^&*()_+-=[]{}|;:,.<>?');
+      });
+      it('should verify exact object structure of returned items', async () => {
+        // Arrange
+        const singleRelation = [mockRelations[0]];
+        mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue(singleRelation);
+        mockFinancialInstitutionsRepository.getDocument.mockResolvedValueOnce(mockFinancialInstitution1);
+  
+        // Act
+        const result = await companiesService.listFinancialInstitutions(mockCompanyId, mockLogger, options);
+  
+        // Assert
+        expect(result).toHaveLength(1);
+        const item = result[0];
+        
+        // Verify all required properties exist
+        expect(item).toHaveProperty('id');
+        expect(item).toHaveProperty('companyId');
+        expect(item).toHaveProperty('credentials');
+        expect(item).toHaveProperty('createdAt');
+        expect(item).toHaveProperty('updatedAt');
+        expect(item).toHaveProperty('financialInstitution');
+        expect(item.financialInstitution).toHaveProperty('id');
+        expect(item.financialInstitution).toHaveProperty('name');
+  
+        // Verify property types
+        expect(typeof item.id).toBe('string');
+        expect(typeof item.companyId).toBe('string');
+        expect(typeof item.credentials).toBe('object');
+        expect(item.createdAt).toBeInstanceOf(Date);
+        expect(item.updatedAt).toBeInstanceOf(Date);
+        expect(typeof item.financialInstitution.id).toBe('string');
+        expect(typeof item.financialInstitution.name).toBe('string');
+  
+        // Verify exact values
+        expect(item.id).toBe('relation-1');
+        expect(item.companyId).toBe(mockCompanyId);
+        expect(item.credentials).toEqual({ username: 'testuser', password: 'testpass' });
+        expect(item.financialInstitution.id).toBe('fi-1');
+        expect(item.financialInstitution.name).toBe('Bank of America');
+      });
     });
 
     it('should ensure logger.endStep is called even if getDocumentsList throws an error', async () => {
@@ -1005,184 +1352,7 @@ describe(CompaniesService.name, () => {
       expect(mockFinancialInstitutionsRepository.getDocument).toHaveBeenCalledTimes(3);
     });
 
-    it('should handle empty decrypted credentials string', async () => {
-      // Arrange
-      const singleRelation = [mockRelations[0]];
-      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue(singleRelation);
-      mockFinancialInstitutionsRepository.getDocument.mockResolvedValueOnce(mockFinancialInstitution1);
-
-      (decryptText as jest.Mock).mockReturnValue('');
-
-      // Act & Assert
-      await expect(companiesService.listFinancialInstitutions(mockCompanyId, mockLogger))
-        .rejects
-        .toThrow('Unexpected end of JSON input');
-
-      // Verify that endStep was still called for the GET_FINANCIAL_INSTITUTIONS step
-      expect(mockLogger.endStep).toHaveBeenCalledWith(LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_FINANCIAL_INSTITUTIONS);
-    });
-    it('should handle different credential formats correctly', async () => {
-      // Arrange
-      const relationsWithDifferentCredentials = [
-        {
-          id: 'relation-1',
-          companyId: mockCompanyId,
-          financialInstitutionId: 'fi-1',
-          encryptedCredentials: 'encrypted-object',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          id: 'relation-2',
-          companyId: mockCompanyId,
-          financialInstitutionId: 'fi-2',
-          encryptedCredentials: 'encrypted-array',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          id: 'relation-3',
-          companyId: mockCompanyId,
-          financialInstitutionId: 'fi-3',
-          encryptedCredentials: 'encrypted-primitive',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      ];
-
-      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue(relationsWithDifferentCredentials);
-      mockFinancialInstitutionsRepository.getDocument
-        .mockResolvedValueOnce(mockFinancialInstitution1)
-        .mockResolvedValueOnce(mockFinancialInstitution2)
-        .mockResolvedValueOnce(mockFinancialInstitution3);
-
-      (decryptText as jest.Mock).mockImplementation((encryptedCredentials) => {
-        switch (encryptedCredentials) {
-          case 'encrypted-object':
-            return '{"username":"user1","password":"pass1"}';
-          case 'encrypted-array':
-            return '["item1","item2","item3"]';
-          case 'encrypted-primitive':
-            return '"simple-string"';
-          default:
-            return '{}';
-        }
-      });
-
-      // Act
-      const result = await companiesService.listFinancialInstitutions(mockCompanyId, mockLogger);
-
-      // Assert
-      expect(result).toHaveLength(3);
-      expect(result[0].credentials).toEqual({ username: 'user1', password: 'pass1' });
-      expect(result[1].credentials).toEqual(['item1', 'item2', 'item3']);
-      expect(result[2].credentials).toBe('simple-string');
-    });
-    it('should handle complex nested credential objects', async () => {
-      // Arrange
-      const singleRelation = [mockRelations[0]];
-      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue(singleRelation);
-      mockFinancialInstitutionsRepository.getDocument.mockResolvedValueOnce(mockFinancialInstitution1);
-
-      const complexCredentials = {
-        authentication: {
-          username: 'complex-user',
-          password: 'complex-pass',
-          twoFactor: {
-            enabled: true,
-            secret: 'secret-key',
-          },
-        },
-        api: {
-          key: 'api-key-123',
-          version: 'v2',
-          endpoints: ['/auth', '/data', '/sync'],
-        },
-        settings: {
-          timeout: 30000,
-          retries: 3,
-          ssl: true,
-        },
-      };
-
-      (decryptText as jest.Mock).mockReturnValue(JSON.stringify(complexCredentials));
-
-      // Act
-      const result = await companiesService.listFinancialInstitutions(mockCompanyId, mockLogger);
-
-      // Assert
-      expect(result).toHaveLength(1);
-      expect(result[0].credentials).toEqual(complexCredentials);
-      expect(result[0].credentials.authentication.twoFactor.enabled).toBe(true);
-      expect(result[0].credentials.api.endpoints).toContain('/auth');
-      expect(result[0].credentials.settings.timeout).toBe(30000);
-    });
-
-    it('should handle credentials with special characters and unicode', async () => {
-      // Arrange
-      const singleRelation = [mockRelations[0]];
-      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue(singleRelation);
-      mockFinancialInstitutionsRepository.getDocument.mockResolvedValueOnce(mockFinancialInstitution1);
-
-      const specialCredentials = {
-        username: 'user@domain.com',
-        password: 'p@ssw0rd!@#$%^&*()',
-        apiKey: 'key-with-unicode-🚀-🎉-🔥',
-        notes: 'Special chars: !@#$%^&*()_+-=[]{}|;:,.<>?',
-      };
-
-      (decryptText as jest.Mock).mockReturnValue(JSON.stringify(specialCredentials));
-
-      // Act
-      const result = await companiesService.listFinancialInstitutions(mockCompanyId, mockLogger);
-
-      // Assert
-      expect(result).toHaveLength(1);
-      expect(result[0].credentials).toEqual(specialCredentials);
-      expect(result[0].credentials.username).toBe('user@domain.com');
-      expect(result[0].credentials.apiKey).toBe('key-with-unicode-🚀-🎉-🔥');
-      expect(result[0].credentials.notes).toBe('Special chars: !@#$%^&*()_+-=[]{}|;:,.<>?');
-    });
-
-    it('should verify exact object structure of returned items', async () => {
-      // Arrange
-      const singleRelation = [mockRelations[0]];
-      mockCompanyFinancialInstitutionRelationsRepository.getDocumentsList.mockResolvedValue(singleRelation);
-      mockFinancialInstitutionsRepository.getDocument.mockResolvedValueOnce(mockFinancialInstitution1);
-
-      // Act
-      const result = await companiesService.listFinancialInstitutions(mockCompanyId, mockLogger);
-
-      // Assert
-      expect(result).toHaveLength(1);
-      const item = result[0];
-      
-      // Verify all required properties exist
-      expect(item).toHaveProperty('id');
-      expect(item).toHaveProperty('companyId');
-      expect(item).toHaveProperty('credentials');
-      expect(item).toHaveProperty('createdAt');
-      expect(item).toHaveProperty('updatedAt');
-      expect(item).toHaveProperty('financialInstitution');
-      expect(item.financialInstitution).toHaveProperty('id');
-      expect(item.financialInstitution).toHaveProperty('name');
-
-      // Verify property types
-      expect(typeof item.id).toBe('string');
-      expect(typeof item.companyId).toBe('string');
-      expect(typeof item.credentials).toBe('object');
-      expect(item.createdAt).toBeInstanceOf(Date);
-      expect(item.updatedAt).toBeInstanceOf(Date);
-      expect(typeof item.financialInstitution.id).toBe('string');
-      expect(typeof item.financialInstitution.name).toBe('string');
-
-      // Verify exact values
-      expect(item.id).toBe('relation-1');
-      expect(item.companyId).toBe(mockCompanyId);
-      expect(item.credentials).toEqual({ username: 'testuser', password: 'testpass' });
-      expect(item.financialInstitution.id).toBe('fi-1');
-      expect(item.financialInstitution.name).toBe('Bank of America');
-    });
+    
 
     it('should handle large number of relations efficiently', async () => {
       // Arrange
@@ -1261,32 +1431,175 @@ describe(CompaniesService.name, () => {
       (decryptText as jest.Mock).mockReturnValue(mockDecryptedCredentialsString);
     });
 
-    it('should return company financial institution relation with decrypted credentials', async () => {
-      // Arrange
-      mockCompanyFinancialInstitutionRelationsRepository.getDocument.mockResolvedValue(mockRelation);
-      mockFinancialInstitutionsRepository.getDocument.mockResolvedValue(mockFinancialInstitution);
-      
-      // Act
-      const result = await companiesService.getFinancialInstitution(mockCompanyId, mockInput, mockLogger);
-
-      // Assert
-      expect(result).toEqual({
-        id: mockRelationId,
-        companyId: mockCompanyId,
-        credentials: mockCredentials,
-        createdAt: mockRelation.createdAt,
-        updatedAt: mockRelation.updatedAt,
-        financialInstitution: {
-          id: mockFinancialInstitutionId,
-          name: mockFinancialInstitution.name,
-        },
+    describe('when includeCredentials is option is false', () => {
+      const options: { includeCredentials: boolean } = { includeCredentials: false };
+      it('should return company financial institution relation with null credentials', async () => {
+        // Arrange
+        mockCompanyFinancialInstitutionRelationsRepository.getDocument.mockResolvedValue(mockRelation);
+        mockFinancialInstitutionsRepository.getDocument.mockResolvedValue(mockFinancialInstitution);
+        
+        // Act
+        const result = await companiesService.getFinancialInstitution(mockCompanyId, mockInput, mockLogger, options);
+  
+        // Assert
+        expect(result).toEqual({
+          id: mockRelationId,
+          companyId: mockCompanyId,
+          credentials: null,
+          createdAt: mockRelation.createdAt,
+          updatedAt: mockRelation.updatedAt,
+          financialInstitution: {
+            id: mockFinancialInstitutionId,
+            name: mockFinancialInstitution.name,
+          },
+        });
+  
+        expect(mockCompanyFinancialInstitutionRelationsRepository.getDocument).toHaveBeenCalledWith(mockRelationId, mockLogger);
+        expect(mockFinancialInstitutionsRepository.getDocument).toHaveBeenCalledWith(mockFinancialInstitutionId, mockLogger);
+        expect(decryptText).not.toHaveBeenCalled();
       });
-
-      expect(mockCompanyFinancialInstitutionRelationsRepository.getDocument).toHaveBeenCalledWith(mockRelationId, mockLogger);
-      expect(mockFinancialInstitutionsRepository.getDocument).toHaveBeenCalledWith(mockFinancialInstitutionId, mockLogger);
-      expect(decryptText).toHaveBeenCalledWith(mockEncryptedCredentials);
     });
-
+    describe('when includeCredentials is option is true', () => {
+      const options: { includeCredentials: boolean } = { includeCredentials: true };
+      it('should return company financial institution relation with decrypted credentials', async () => {
+        // Arrange
+        mockCompanyFinancialInstitutionRelationsRepository.getDocument.mockResolvedValue(mockRelation);
+        mockFinancialInstitutionsRepository.getDocument.mockResolvedValue(mockFinancialInstitution);
+        
+        // Act
+        const result = await companiesService.getFinancialInstitution(mockCompanyId, mockInput, mockLogger, options);
+  
+        // Assert
+        expect(result).toEqual({
+          id: mockRelationId,
+          companyId: mockCompanyId,
+          credentials: mockCredentials,
+          createdAt: mockRelation.createdAt,
+          updatedAt: mockRelation.updatedAt,
+          financialInstitution: {
+            id: mockFinancialInstitutionId,
+            name: mockFinancialInstitution.name,
+          },
+        });
+  
+        expect(mockCompanyFinancialInstitutionRelationsRepository.getDocument).toHaveBeenCalledWith(mockRelationId, mockLogger);
+        expect(mockFinancialInstitutionsRepository.getDocument).toHaveBeenCalledWith(mockFinancialInstitutionId, mockLogger);
+        expect(decryptText).toHaveBeenCalledWith(mockEncryptedCredentials);
+      });
+      it('should handle complex nested credential objects', async () => {
+        // Arrange
+        const complexCredentials = {
+          authentication: {
+            username: 'complex-user',
+            password: 'complex-pass',
+            twoFactor: {
+              enabled: true,
+              secret: 'secret-key',
+            },
+          },
+          api: {
+            key: 'api-key-123',
+            version: 'v2',
+            endpoints: ['/auth', '/data', '/sync'],
+          },
+          settings: {
+            timeout: 30000,
+            retries: 3,
+            ssl: true,
+          },
+        };
+  
+        (decryptText as jest.Mock).mockReturnValue(JSON.stringify(complexCredentials));
+        mockCompanyFinancialInstitutionRelationsRepository.getDocument.mockResolvedValue(mockRelation);
+        mockFinancialInstitutionsRepository.getDocument.mockResolvedValue(mockFinancialInstitution);
+  
+        // Act
+        const result = await companiesService.getFinancialInstitution(mockCompanyId, mockInput, mockLogger, options);
+  
+        // Assert
+        expect(result).toMatchObject({
+          id: mockRelationId,
+          companyId: mockCompanyId,
+          credentials: complexCredentials,
+          financialInstitution: {
+            id: mockFinancialInstitutionId,
+            name: mockFinancialInstitution.name,
+          },
+        });
+        expect(result?.credentials.authentication.twoFactor.enabled).toBe(true);
+        expect(result?.credentials.api.endpoints).toContain('/auth');
+        expect(result?.credentials.settings.timeout).toBe(30000);
+      });
+  
+      it('should handle credentials with special characters and unicode', async () => {
+        // Arrange
+        const specialCredentials = {
+          username: 'user@domain.com',
+          password: 'p@ssw0rd!@#$%^&*()',
+          apiKey: 'key-with-unicode-🚀-🎉-🔥',
+          notes: 'Special chars: !@#$%^&*()_+-=[]{}|;:,.<>?',
+        };
+  
+        (decryptText as jest.Mock).mockReturnValue(JSON.stringify(specialCredentials));
+        mockCompanyFinancialInstitutionRelationsRepository.getDocument.mockResolvedValue(mockRelation);
+        mockFinancialInstitutionsRepository.getDocument.mockResolvedValue(mockFinancialInstitution);
+  
+        // Act
+        const result = await companiesService.getFinancialInstitution(mockCompanyId, mockInput, mockLogger, options);
+  
+        // Assert
+        expect(result).toMatchObject({
+          id: mockRelationId,
+          companyId: mockCompanyId,
+          credentials: specialCredentials,
+          financialInstitution: {
+            id: mockFinancialInstitutionId,
+            name: mockFinancialInstitution.name,
+          },
+        });
+        expect(result?.credentials.username).toBe('user@domain.com');
+        expect(result?.credentials.apiKey).toBe('key-with-unicode-🚀-🎉-🔥');
+        expect(result?.credentials.notes).toBe('Special chars: !@#$%^&*()_+-=[]{}|;:,.<>?');
+      });
+  
+      it('should verify exact object structure of returned item', async () => {
+        // Arrange
+        mockCompanyFinancialInstitutionRelationsRepository.getDocument.mockResolvedValue(mockRelation);
+        mockFinancialInstitutionsRepository.getDocument.mockResolvedValue(mockFinancialInstitution);
+  
+        // Act
+        const result = await companiesService.getFinancialInstitution(mockCompanyId, mockInput, mockLogger, options);
+  
+        // Assert
+        expect(result).not.toBeNull();
+        
+        // Verify all required properties exist
+        expect(result).toHaveProperty('id');
+        expect(result).toHaveProperty('companyId');
+        expect(result).toHaveProperty('credentials');
+        expect(result).toHaveProperty('createdAt');
+        expect(result).toHaveProperty('updatedAt');
+        expect(result).toHaveProperty('financialInstitution');
+        expect(result?.financialInstitution).toHaveProperty('id');
+        expect(result?.financialInstitution).toHaveProperty('name');
+  
+        // Verify property types
+        expect(typeof result?.id).toBe('string');
+        expect(typeof result?.companyId).toBe('string');
+        expect(typeof result?.credentials).toBe('object');
+        expect(result?.createdAt).toBeInstanceOf(Date);
+        expect(result?.updatedAt).toBeInstanceOf(Date);
+        expect(typeof result?.financialInstitution.id).toBe('string');
+        expect(typeof result?.financialInstitution.name).toBe('string');
+  
+        // Verify exact values
+        expect(result?.id).toBe(mockRelationId);
+        expect(result?.companyId).toBe(mockCompanyId);
+        expect(result?.credentials).toEqual(mockCredentials);
+        expect(result?.financialInstitution.id).toBe(mockFinancialInstitutionId);
+        expect(result?.financialInstitution.name).toBe('Bank of America');
+      });
+    });
     it('should return null when relation is not found', async () => {
       // Arrange
       mockCompanyFinancialInstitutionRelationsRepository.getDocument.mockResolvedValue(null);
@@ -1366,118 +1679,286 @@ describe(CompaniesService.name, () => {
       // Verify that endStep was still called for the GET_FINANCIAL_INSTITUTION step
       expect(mockLogger.endStep).toHaveBeenCalledWith(GET_FINANCIAL_INSTITUTION_RELATION_STEPS.GET_FINANCIAL_INSTITUTION);
     });
-    it('should handle complex nested credential objects', async () => {
-      // Arrange
-      const complexCredentials = {
-        authentication: {
-          username: 'complex-user',
-          password: 'complex-pass',
-          twoFactor: {
-            enabled: true,
-            secret: 'secret-key',
-          },
-        },
-        api: {
-          key: 'api-key-123',
-          version: 'v2',
-          endpoints: ['/auth', '/data', '/sync'],
-        },
-        settings: {
-          timeout: 30000,
-          retries: 3,
-          ssl: true,
-        },
-      };
+  });
 
-      (decryptText as jest.Mock).mockReturnValue(JSON.stringify(complexCredentials));
-      mockCompanyFinancialInstitutionRelationsRepository.getDocument.mockResolvedValue(mockRelation);
-      mockFinancialInstitutionsRepository.getDocument.mockResolvedValue(mockFinancialInstitution);
+  describe(CompaniesService.prototype.getActiveSubscriptions.name, () => {
+    const mockCompanyId = 'company-123';
+    const mockNow = new Date('2023-06-15T10:00:00Z');
 
-      // Act
-      const result = await companiesService.getFinancialInstitution(mockCompanyId, mockInput, mockLogger);
-
-      // Assert
-      expect(result).toMatchObject({
-        id: mockRelationId,
-        companyId: mockCompanyId,
-        credentials: complexCredentials,
-        financialInstitution: {
-          id: mockFinancialInstitutionId,
-          name: mockFinancialInstitution.name,
-        },
+    beforeEach(() => {
+      // Mock Date constructor to return a consistent time for testing
+      const OriginalDate = global.Date;
+      jest.spyOn(global, 'Date').mockImplementation((dateString?: string | number | Date) => {
+        if (dateString !== undefined) {
+          return new OriginalDate(dateString);
+        }
+        return mockNow;
       });
-      expect(result?.credentials.authentication.twoFactor.enabled).toBe(true);
-      expect(result?.credentials.api.endpoints).toContain('/auth');
-      expect(result?.credentials.settings.timeout).toBe(30000);
     });
 
-    it('should handle credentials with special characters and unicode', async () => {
-      // Arrange
-      const specialCredentials = {
-        username: 'user@domain.com',
-        password: 'p@ssw0rd!@#$%^&*()',
-        apiKey: 'key-with-unicode-🚀-🎉-🔥',
-        notes: 'Special chars: !@#$%^&*()_+-=[]{}|;:,.<>?',
-      };
-
-      (decryptText as jest.Mock).mockReturnValue(JSON.stringify(specialCredentials));
-      mockCompanyFinancialInstitutionRelationsRepository.getDocument.mockResolvedValue(mockRelation);
-      mockFinancialInstitutionsRepository.getDocument.mockResolvedValue(mockFinancialInstitution);
-
-      // Act
-      const result = await companiesService.getFinancialInstitution(mockCompanyId, mockInput, mockLogger);
-
-      // Assert
-      expect(result).toMatchObject({
-        id: mockRelationId,
-        companyId: mockCompanyId,
-        credentials: specialCredentials,
-        financialInstitution: {
-          id: mockFinancialInstitutionId,
-          name: mockFinancialInstitution.name,
-        },
-      });
-      expect(result?.credentials.username).toBe('user@domain.com');
-      expect(result?.credentials.apiKey).toBe('key-with-unicode-🚀-🎉-🔥');
-      expect(result?.credentials.notes).toBe('Special chars: !@#$%^&*()_+-=[]{}|;:,.<>?');
+    afterEach(() => {
+      jest.restoreAllMocks();
     });
 
-    it('should verify exact object structure of returned item', async () => {
+    it('should return active subscriptions for a company', async () => {
       // Arrange
-      mockCompanyFinancialInstitutionRelationsRepository.getDocument.mockResolvedValue(mockRelation);
-      mockFinancialInstitutionsRepository.getDocument.mockResolvedValue(mockFinancialInstitution);
+      const mockActiveSubscriptions = [
+        {
+          id: 'subscription-1',
+          companyId: mockCompanyId,
+          planId: 'plan-1',
+          startsAt: new Date('2023-06-01T00:00:00Z'),
+          endsAt: new Date('2023-07-01T00:00:00Z'),
+          status: 'active',
+          createdAt: new Date('2023-06-01T00:00:00Z'),
+          updatedAt: new Date('2023-06-01T00:00:00Z'),
+        },
+        {
+          id: 'subscription-2',
+          companyId: mockCompanyId,
+          planId: 'plan-2',
+          startsAt: new Date('2023-06-10T00:00:00Z'),
+          endsAt: new Date('2023-08-01T00:00:00Z'),
+          status: 'active',
+          createdAt: new Date('2023-06-10T00:00:00Z'),
+          updatedAt: new Date('2023-06-10T00:00:00Z'),
+        },
+      ];
+
+      mockSubscriptionsService.getResourcesList.mockResolvedValue(mockActiveSubscriptions as any);
 
       // Act
-      const result = await companiesService.getFinancialInstitution(mockCompanyId, mockInput, mockLogger);
+      const result = await companiesService.getActiveSubscriptions(mockCompanyId, mockLogger);
 
       // Assert
-      expect(result).not.toBeNull();
-      
-      // Verify all required properties exist
-      expect(result).toHaveProperty('id');
-      expect(result).toHaveProperty('companyId');
-      expect(result).toHaveProperty('credentials');
-      expect(result).toHaveProperty('createdAt');
-      expect(result).toHaveProperty('updatedAt');
-      expect(result).toHaveProperty('financialInstitution');
-      expect(result?.financialInstitution).toHaveProperty('id');
-      expect(result?.financialInstitution).toHaveProperty('name');
+      expect(result).toEqual(mockActiveSubscriptions);
+      expect(mockSubscriptionsService.getResourcesList).toHaveBeenCalledWith({
+        companyId: [{ operator: '==', value: mockCompanyId }],
+        startsAt: [{ operator: '<=', value: mockNow }],
+        endsAt: [{ operator: '>=', value: mockNow }],
+      }, mockLogger);
+      expect(SubscriptionsService.getInstance).toHaveBeenCalledTimes(1);
+    });
 
-      // Verify property types
-      expect(typeof result?.id).toBe('string');
-      expect(typeof result?.companyId).toBe('string');
-      expect(typeof result?.credentials).toBe('object');
-      expect(result?.createdAt).toBeInstanceOf(Date);
-      expect(result?.updatedAt).toBeInstanceOf(Date);
-      expect(typeof result?.financialInstitution.id).toBe('string');
-      expect(typeof result?.financialInstitution.name).toBe('string');
+    it('should return empty array when no active subscriptions exist', async () => {
+      // Arrange
+      mockSubscriptionsService.getResourcesList.mockResolvedValue([]);
 
-      // Verify exact values
-      expect(result?.id).toBe(mockRelationId);
-      expect(result?.companyId).toBe(mockCompanyId);
-      expect(result?.credentials).toEqual(mockCredentials);
-      expect(result?.financialInstitution.id).toBe(mockFinancialInstitutionId);
-      expect(result?.financialInstitution.name).toBe('Bank of America');
+      // Act
+      const result = await companiesService.getActiveSubscriptions(mockCompanyId, mockLogger);
+
+      // Assert
+      expect(result).toEqual([]);
+      expect(mockSubscriptionsService.getResourcesList).toHaveBeenCalledWith({
+        companyId: [{ operator: '==', value: mockCompanyId }],
+        startsAt: [{ operator: '<=', value: mockNow }],
+        endsAt: [{ operator: '>=', value: mockNow }],
+      }, mockLogger);
+    });
+
+    it('should handle subscriptions that start in the future', async () => {
+      // Arrange
+      const mockFutureSubscriptions = [
+        {
+          id: 'subscription-future',
+          companyId: mockCompanyId,
+          planId: 'plan-future',
+          startsAt: new Date('2023-07-01T00:00:00Z'), // Future start date
+          endsAt: new Date('2023-08-01T00:00:00Z'),
+          status: 'active',
+          createdAt: new Date('2023-06-01T00:00:00Z'),
+          updatedAt: new Date('2023-06-01T00:00:00Z'),
+        },
+      ];
+
+      mockSubscriptionsService.getResourcesList.mockResolvedValue(mockFutureSubscriptions as any);
+
+      // Act
+      const result = await companiesService.getActiveSubscriptions(mockCompanyId, mockLogger);
+
+      // Assert
+      expect(result).toEqual(mockFutureSubscriptions);
+      expect(mockSubscriptionsService.getResourcesList).toHaveBeenCalledWith({
+        companyId: [{ operator: '==', value: mockCompanyId }],
+        startsAt: [{ operator: '<=', value: mockNow }],
+        endsAt: [{ operator: '>=', value: mockNow }],
+      }, mockLogger);
+    });
+
+    it('should handle subscriptions that end in the past', async () => {
+      // Arrange
+      const mockExpiredSubscriptions = [
+        {
+          id: 'subscription-expired',
+          companyId: mockCompanyId,
+          planId: 'plan-expired',
+          startsAt: new Date('2023-05-01T00:00:00Z'),
+          endsAt: new Date('2023-06-01T00:00:00Z'), // Past end date
+          status: 'expired',
+          createdAt: new Date('2023-05-01T00:00:00Z'),
+          updatedAt: new Date('2023-05-01T00:00:00Z'),
+        },
+      ];
+
+      mockSubscriptionsService.getResourcesList.mockResolvedValue(mockExpiredSubscriptions as any);
+
+      // Act
+      const result = await companiesService.getActiveSubscriptions(mockCompanyId, mockLogger);
+
+      // Assert
+      expect(result).toEqual(mockExpiredSubscriptions);
+      expect(mockSubscriptionsService.getResourcesList).toHaveBeenCalledWith({
+        companyId: [{ operator: '==', value: mockCompanyId }],
+        startsAt: [{ operator: '<=', value: mockNow }],
+        endsAt: [{ operator: '>=', value: mockNow }],
+      }, mockLogger);
+    });
+
+    it('should handle subscriptions that start and end on the current date', async () => {
+      // Arrange
+      const mockSameDaySubscriptions = [
+        {
+          id: 'subscription-same-day',
+          companyId: mockCompanyId,
+          planId: 'plan-same-day',
+          startsAt: new Date('2023-06-15T00:00:00Z'), // Same day start
+          endsAt: new Date('2023-06-15T23:59:59Z'), // Same day end
+          status: 'active',
+          createdAt: new Date('2023-06-15T00:00:00Z'),
+          updatedAt: new Date('2023-06-15T00:00:00Z'),
+        },
+      ];
+
+      mockSubscriptionsService.getResourcesList.mockResolvedValue(mockSameDaySubscriptions as any);
+
+      // Act
+      const result = await companiesService.getActiveSubscriptions(mockCompanyId, mockLogger);
+
+      // Assert
+      expect(result).toEqual(mockSameDaySubscriptions);
+      expect(mockSubscriptionsService.getResourcesList).toHaveBeenCalledWith({
+        companyId: [{ operator: '==', value: mockCompanyId }],
+        startsAt: [{ operator: '<=', value: mockNow }],
+        endsAt: [{ operator: '>=', value: mockNow }],
+      }, mockLogger);
+    });
+
+    it('should propagate errors from SubscriptionsService', async () => {
+      // Arrange
+      const repositoryError = new Error('Database connection failed');
+      mockSubscriptionsService.getResourcesList.mockRejectedValue(repositoryError);
+
+      // Act & Assert
+      await expect(companiesService.getActiveSubscriptions(mockCompanyId, mockLogger))
+        .rejects
+        .toThrow('Database connection failed');
+
+      expect(mockSubscriptionsService.getResourcesList).toHaveBeenCalledWith({
+        companyId: [{ operator: '==', value: mockCompanyId }],
+        startsAt: [{ operator: '<=', value: mockNow }],
+        endsAt: [{ operator: '>=', value: mockNow }],
+      }, mockLogger);
+    });
+
+    it('should handle different company IDs correctly', async () => {
+      // Arrange
+      const differentCompanyId = 'company-456';
+      const mockSubscriptions = [
+        {
+          id: 'subscription-different',
+          companyId: differentCompanyId,
+          planId: 'plan-different',
+          startsAt: new Date('2023-06-01T00:00:00Z'),
+          endsAt: new Date('2023-07-01T00:00:00Z'),
+          status: 'active',
+          createdAt: new Date('2023-06-01T00:00:00Z'),
+          updatedAt: new Date('2023-06-01T00:00:00Z'),
+        },
+      ];
+
+      mockSubscriptionsService.getResourcesList.mockResolvedValue(mockSubscriptions as any);
+
+      // Act
+      const result = await companiesService.getActiveSubscriptions(differentCompanyId, mockLogger);
+
+      // Assert
+      expect(result).toEqual(mockSubscriptions);
+      expect(mockSubscriptionsService.getResourcesList).toHaveBeenCalledWith({
+        companyId: [{ operator: '==', value: differentCompanyId }],
+        startsAt: [{ operator: '<=', value: mockNow }],
+        endsAt: [{ operator: '>=', value: mockNow }],
+      }, mockLogger);
+    });
+
+    it('should use current date for filtering active subscriptions', async () => {
+      // Arrange
+      const specificTime = new Date('2023-12-25T15:30:45Z');
+      const OriginalDate = global.Date;
+      jest.spyOn(global, 'Date').mockImplementation((dateString?: string | number | Date) => {
+        if (dateString !== undefined) {
+          return new OriginalDate(dateString);
+        }
+        return specificTime;
+      });
+
+      mockSubscriptionsService.getResourcesList.mockResolvedValue([]);
+
+      // Act
+      await companiesService.getActiveSubscriptions(mockCompanyId, mockLogger);
+
+      // Assert
+      expect(mockSubscriptionsService.getResourcesList).toHaveBeenCalledWith({
+        companyId: [{ operator: '==', value: mockCompanyId }],
+        startsAt: [{ operator: '<=', value: specificTime }],
+        endsAt: [{ operator: '>=', value: specificTime }],
+      }, mockLogger);
+    });
+
+    it('should handle large number of active subscriptions', async () => {
+      // Arrange
+      const largeNumberOfSubscriptions = Array.from({ length: 100 }, (_, index) => ({
+        id: `subscription-${index + 1}`,
+        companyId: mockCompanyId,
+        planId: `plan-${index + 1}`,
+        startsAt: new Date('2023-06-01T00:00:00Z'),
+        endsAt: new Date('2023-07-01T00:00:00Z'),
+        status: 'active',
+        createdAt: new Date('2023-06-01T00:00:00Z'),
+        updatedAt: new Date('2023-06-01T00:00:00Z'),
+      }));
+
+      mockSubscriptionsService.getResourcesList.mockResolvedValue(largeNumberOfSubscriptions as any);
+
+      // Act
+      const result = await companiesService.getActiveSubscriptions(mockCompanyId, mockLogger);
+
+      // Assert
+      expect(result).toHaveLength(100);
+      expect(result[0].id).toBe('subscription-1');
+      expect(result[99].id).toBe('subscription-100');
+      expect(mockSubscriptionsService.getResourcesList).toHaveBeenCalledWith({
+        companyId: [{ operator: '==', value: mockCompanyId }],
+        startsAt: [{ operator: '<=', value: mockNow }],
+        endsAt: [{ operator: '>=', value: mockNow }],
+      }, mockLogger);
+    });
+
+    it('should verify exact query structure passed to SubscriptionsService', async () => {
+      // Arrange
+      mockSubscriptionsService.getResourcesList.mockResolvedValue([]);
+
+      // Act
+      await companiesService.getActiveSubscriptions(mockCompanyId, mockLogger);
+
+      // Assert
+      const expectedQuery = {
+        companyId: [{ operator: '==', value: mockCompanyId }],
+        startsAt: [{ operator: '<=', value: mockNow }],
+        endsAt: [{ operator: '>=', value: mockNow }],
+      };
+
+      expect(mockSubscriptionsService.getResourcesList).toHaveBeenCalledWith(expectedQuery, mockLogger);
+      expect(mockSubscriptionsService.getResourcesList).toHaveBeenCalledTimes(1);
     });
   });
 });
