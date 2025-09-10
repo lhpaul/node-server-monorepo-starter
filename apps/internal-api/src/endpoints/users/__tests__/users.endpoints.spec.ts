@@ -19,6 +19,12 @@ describe('usersEndpointsBuilder', () => {
   let mockServer: Partial<FastifyInstance>;
   let mockCreateEndpoint: jest.MockedFunction<typeof createEndpoint>;
 
+  const endpointOptions = {
+    maskOptions: {
+      responsePayloadFields: ['email'],
+    }
+  };
+
   beforeEach(() => {
     mockCreateEndpoint = createEndpoint as jest.MockedFunction<typeof createEndpoint>;
     mockCreateEndpoint.mockReturnValue({} as RouteOptions);
@@ -59,6 +65,7 @@ describe('usersEndpointsBuilder', () => {
           }),
         },
       }),
+      endpointOptions
     );
   });
 
@@ -74,6 +81,7 @@ describe('usersEndpointsBuilder', () => {
           params: USER_ENDPOINTS_PARAMS_JSON_SCHEMA,
         },
       }),
+      endpointOptions
     );
   });
 
@@ -89,7 +97,11 @@ describe('usersEndpointsBuilder', () => {
           body: UPDATE_USER_BODY_JSON_SCHEMA,
           params: USER_ENDPOINTS_PARAMS_JSON_SCHEMA,
         },
-      }),
+      }), {
+        maskOptions: {
+          requestPayloadFields: ['email'],
+        }
+      }
     );
   });
 
@@ -106,6 +118,7 @@ describe('usersEndpointsBuilder', () => {
     expect(mockCreateEndpoint).toHaveBeenCalledWith(
       mockServer,
       expect.any(Object),
+      endpointOptions
     );
   });
 });
