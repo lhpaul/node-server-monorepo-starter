@@ -1,4 +1,5 @@
 // Internal modules (farthest path first, then alphabetical)
+import { ENV_VARIABLES_KEYS, SECRETS } from '../../../../constants';
 import { ExecutionLogger } from '../../../../definitions';
 import { apiRequest, getEnvironmentVariable, getSecret } from '../../../../utils';
 
@@ -9,8 +10,6 @@ import {
   GET_TRANSACTIONS_ERROR,
   GET_TRANSACTIONS_ERROR_MESSAGE,
   MOCK_API_HOST,
-  MOCK_API_PROJECT_SECRET_KEY,
-  MOCK_TRANSACTIONS_ENDPOINT_ENV_VARIABLE_KEY,
   STEPS,
 } from '../financial-institution.service.constants';
 import { GetTransactionsInput } from '../financial-institution.service.interfaces';
@@ -146,8 +145,8 @@ describe(FinancialInstitutionService.name, () => {
       expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS, logGroup);
       expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.GET_TRANSACTIONS);
 
-      expect(getSecret).toHaveBeenCalledWith(MOCK_API_PROJECT_SECRET_KEY);
-      expect(getEnvironmentVariable).toHaveBeenCalledWith(MOCK_TRANSACTIONS_ENDPOINT_ENV_VARIABLE_KEY);
+      expect(getSecret).toHaveBeenCalledWith(SECRETS.MOCK_API_PROJECT_SECRET);
+      expect(getEnvironmentVariable).toHaveBeenCalledWith(ENV_VARIABLES_KEYS.MOCK_TRANSACTIONS_ENDPOINT);
 
       expect(apiRequest).toHaveBeenCalledWith(
         {

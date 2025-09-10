@@ -1,5 +1,7 @@
+// External dependencies (alphabetical, @ first)
 import moment from 'moment';
 
+// Internal modules (farthest path first, then alphabetical)
 import { ExecutionLogger } from '../../../definitions';
 import { Subscription } from '../../../domain/entities';
 import {
@@ -34,6 +36,12 @@ export class SubscriptionsService extends DomainModelService<Subscription, Subsc
     const to = now.add(daysToExpire, 'days').endOf('day').toDate();
     return this.repository.getDocumentsList({
       endsAt: [{ operator: '>=', value: from }, { operator: '<=', value: to }],
+    }, logger);
+  }
+
+  public async getActiveSubscriptions(logger: ExecutionLogger): Promise<Subscription[]> {
+    return this.repository.getDocumentsList({
+      endsAt: [{ operator: '>=', value: new Date() }],
     }, logger);
   }
 } 

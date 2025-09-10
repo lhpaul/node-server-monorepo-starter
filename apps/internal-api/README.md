@@ -142,6 +142,68 @@ Secrets are accessed in the application as regular environment variables. The `g
 
 ### Adding a New Secret
 
+#### For Local Development
+
+##### Step 1: Define the Secret Constant
+
+First, add your new secret to the `SECRETS` constant in the shared package:
+
+```typescript
+// packages/shared/src/constants/secrets.constants.ts
+export const SECRETS = {
+  // ... existing secrets
+  DATABASE_PASSWORD: 'DATABASE_PASSWORD',
+} as const;
+```
+
+##### Step 2: Create Environment Files
+
+Create a `.env.example` file in the public-api directory (if it doesn't exist) and add your secret:
+
+```bash
+# apps/public-api/.env.example
+# ... existing secrets and environment variables
+DATABASE_PASSWORD= # Add your new secret here (leave value blank for documentation)
+```
+
+Then create your local `.env` file with actual values:
+
+```bash
+# apps/public-api/.env
+# ... existing secrets and environment variables
+# Add your actual secret value here
+DATABASE_PASSWORD=my-secure-db-password
+```
+
+##### Step 3: Update Environment Schema
+
+Update the `FASTIFY_ENV_SCHEMA` in the server constants to validate the new secret:
+
+```typescript
+// apps/public-api/src/constants/server.constants.ts
+import { ENV_VARIABLES_KEYS, SECRETS } from '@repo/shared/constants';
+
+export const FASTIFY_ENV_SCHEMA = {
+  // ... existing properties
+  [SECRETS.DATABASE_PASSWORD]: { type: 'string' },
+  // ... existing required fields
+  SECRETS.DATABASE_PASSWORD,
+} as const;
+```
+
+##### Step 4: Use the Secret in Your Code
+
+Access your secret using the `getSecret` utility function:
+
+```typescript
+import { getSecret } from '@repo/shared';
+import { SECRETS } from '@repo/shared/constants';
+
+const dbPassword = getSecret(SECRETS.DATABASE_PASSWORD);
+// Use dbPassword in your database connection
+
+#### For Deployment
+
 To add a new secret that will be available as an environment variable in your deployed service:
 
 1. **Ensure you're working with the correct Google Cloud project:**

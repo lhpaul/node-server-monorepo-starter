@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 export const ENV_VARIABLES_UTILS_CONSTANTS: Record<string, Record<string, string>> = {
   FIREBASE_DATABASE_URL: {
     DEV: 'https://node-starter-project-dev.firebaseio.com',
@@ -16,4 +17,6 @@ export const ENV_VARIABLES_UTILS_CONSTANTS: Record<string, Record<string, string
   },
 };
 
+=======
+>>>>>>> Stashed changes
 export const APP_ENV_NOT_SET_ERROR_MESSAGE = 'APP_ENV is not set';
