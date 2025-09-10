@@ -201,6 +201,7 @@ import { SECRETS } from '@repo/shared/constants';
 
 const dbPassword = getSecret(SECRETS.DATABASE_PASSWORD);
 // Use dbPassword in your database connection
+```
 
 #### For Deployment
 
