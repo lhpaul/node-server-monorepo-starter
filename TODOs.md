@@ -22,5 +22,4 @@ Global:
 
 Google:
 
-- Make Cloud Functions access secrets
 - Rethink repositories inside functions
