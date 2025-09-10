@@ -1,4 +1,5 @@
 // Internal modules (farthest path first, then alphabetical)
+import { ENV_VARIABLES_KEYS, SECRETS } from '../../../constants';
 import { ExecutionLogger } from '../../../definitions';
 import { apiRequest, getEnvironmentVariable, getSecret } from '../../../utils';
 
@@ -7,8 +8,6 @@ import {
   GET_TRANSACTIONS_ERROR,
   GET_TRANSACTIONS_ERROR_MESSAGE,
   MOCK_API_HOST,
-  MOCK_API_PROJECT_SECRET_KEY,
-  MOCK_TRANSACTIONS_ENDPOINT_ENV_VARIABLE_KEY,
   STEPS,
 } from './financial-institution.service.constants';
 import {
@@ -46,8 +45,8 @@ export class FinancialInstitutionService {
     const logGroup = `${FinancialInstitutionService.name}.${this.getTransactions.name}`;
     logger.startStep(STEPS.GET_TRANSACTIONS, logGroup);
 
-    const transactionsEndpoint = getEnvironmentVariable(MOCK_TRANSACTIONS_ENDPOINT_ENV_VARIABLE_KEY);
-    const projectSecret = getSecret(MOCK_API_PROJECT_SECRET_KEY);
+    const transactionsEndpoint = getEnvironmentVariable(ENV_VARIABLES_KEYS.MOCK_TRANSACTIONS_ENDPOINT);
+    const projectSecret = getSecret(SECRETS.MOCK_API_PROJECT_SECRET);
     const result = await apiRequest<FinancialInstitutionTransaction[]>({
       method: 'GET',
       url: `https://${projectSecret}.${MOCK_API_HOST}/${transactionsEndpoint}?sortBy=createdAt&order=desc`,

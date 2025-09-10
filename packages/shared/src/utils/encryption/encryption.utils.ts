@@ -1,8 +1,9 @@
 import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from 'crypto';
+
+import { SECRETS } from '../../constants';
 import { getSecret } from '../secrets';
 import {
   ALGORITHM,
-  ENCRYPTION_KEY_SECRET_LABEL,
   ERRORS_MESSAGES,
   KEY_LENGTH,
   SALT_LENGTH,
@@ -17,7 +18,7 @@ import {
  */
 export function encryptText(text: string, encryptionKey?: string): string {
   try {
-    const password = encryptionKey || getSecret(ENCRYPTION_KEY_SECRET_LABEL);
+    const password = encryptionKey || getSecret(SECRETS.ENCRYPTION_KEY);
     const salt = randomBytes(SALT_LENGTH);
     const key = scryptSync(password, salt, KEY_LENGTH);
     const iv = randomBytes(16);
@@ -42,7 +43,7 @@ export function encryptText(text: string, encryptionKey?: string): string {
  */
 export function decryptText(encryptedText: string, encryptionKey?: string): string {
   try {
-    const password = encryptionKey || getSecret(ENCRYPTION_KEY_SECRET_LABEL);
+    const password = encryptionKey || getSecret(SECRETS.ENCRYPTION_KEY);
     const combined = Buffer.from(encryptedText, 'base64').toString('utf8');
     const [saltHex, ivHex, encrypted] = combined.split(':');
     

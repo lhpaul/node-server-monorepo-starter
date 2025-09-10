@@ -36,4 +36,10 @@ export class SubscriptionsService extends DomainModelService<Subscription, Subsc
       endsAt: [{ operator: '>=', value: from }, { operator: '<=', value: to }],
     }, logger);
   }
+
+  public async getActiveSubscriptions(logger: ExecutionLogger): Promise<Subscription[]> {
+    return this.repository.getDocumentsList({
+      endsAt: [{ operator: '>=', value: new Date() }],
+    }, logger);
+  }
 } 

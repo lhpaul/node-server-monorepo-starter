@@ -8,6 +8,7 @@ import {
   setServerHooks,
   setServerProcessErrorHandlers,
 } from '@repo/fastify';
+import { ENV_VARIABLES_KEYS } from '@repo/shared/constants';
 import { getEnvironmentVariable } from '@repo/shared/utils';
 import fastify, { FastifyInstance } from 'fastify';
 import * as admin from 'firebase-admin';
@@ -16,7 +17,6 @@ import packageJson from '../package.json';
 
 import {
   COR_CONFIG,
-  ENVIRONMENT_VARIABLES_KEYS,
   ERROR_MESSAGES,
   FASTIFY_ENV_CONFIG,
   SERVER_START_VALUES,
@@ -42,8 +42,8 @@ export const init = async function (): Promise<FastifyInstance> {
   server.register(helmet, { global: true });
 
   // Initialize Firebase Admin SDK
-  const firebaseProjectId = getEnvironmentVariable(ENVIRONMENT_VARIABLES_KEYS.FIREBASE_PROJECT_ID);
-  const firebaseDatabaseUrl = getEnvironmentVariable(ENVIRONMENT_VARIABLES_KEYS.FIREBASE_DATABASE_URL);
+  const firebaseProjectId = getEnvironmentVariable(ENV_VARIABLES_KEYS.FIREBASE_PROJECT_ID);
+  const firebaseDatabaseUrl = getEnvironmentVariable(ENV_VARIABLES_KEYS.FIREBASE_DATABASE_URL);
   if (!firebaseProjectId || !firebaseDatabaseUrl) {
     throw new Error(ERROR_MESSAGES.FIREBASE_PROJECT_ID_OR_DATABASE_URL_NOT_SET);
   }

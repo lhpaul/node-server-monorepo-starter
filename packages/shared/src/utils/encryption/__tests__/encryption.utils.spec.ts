@@ -1,8 +1,9 @@
 // Internal modules (farthest path first, then alphabetical)
+import { SECRETS } from '../../../constants';
 import { getSecret } from '../../secrets';
 
 // Local imports (alphabetical)
-import { ENCRYPTION_KEY_SECRET_LABEL, ERRORS_MESSAGES } from '../encryption.utils.constants';
+import { ERRORS_MESSAGES } from '../encryption.utils.constants';
 import { encryptText, decryptText } from '../encryption.utils';
 
 // Mock the secrets module
@@ -38,7 +39,7 @@ describe('Encryption Utils', () => {
       expect(typeof encrypted).toBe('string');
       expect(encrypted.length).toBeGreaterThan(0);
       expect(encrypted).not.toBe(testText);
-      expect(mockGetSecret).toHaveBeenCalledWith(ENCRYPTION_KEY_SECRET_LABEL);
+      expect(mockGetSecret).toHaveBeenCalledWith(SECRETS.ENCRYPTION_KEY);
     });
 
     it('should encrypt text with special characters', () => {
@@ -114,7 +115,7 @@ describe('Encryption Utils', () => {
       const decrypted = decryptText(encrypted);
       
       expect(decrypted).toBe(testText);
-      expect(mockGetSecret).toHaveBeenCalledWith(ENCRYPTION_KEY_SECRET_LABEL);
+      expect(mockGetSecret).toHaveBeenCalledWith(SECRETS.ENCRYPTION_KEY);
     });
 
     it('should decrypt text with special characters', () => {
