@@ -10,6 +10,8 @@ import {
   setServerHooks,
   setServerProcessErrorHandlers,
 } from '@repo/fastify';
+import { SECRETS } from '@repo/shared/constants';
+import { getSecret } from '@repo/shared/utils';
 import fastify, { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 
 import packageJson from '../package.json';
@@ -40,7 +42,7 @@ export const init = async function (): Promise<FastifyInstance> {
 
   // Enable JWT authentication
   await server.register(fastifyJwt, {
-    secret: server.config.JWT_SECRET,
+    secret: getSecret(SECRETS.JWT_SECRET),
     ...JWT_OPTIONS,
   });
 

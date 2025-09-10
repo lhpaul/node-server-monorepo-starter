@@ -191,10 +191,13 @@ export class CompaniesService extends DomainModelService<Company, CompanyDocumen
    */
   public async listFinancialInstitutions(
     companyId: string,
-    logger: ExecutionLogger
+    logger: ExecutionLogger,
+    options: {
+      includeCredentials?: boolean;
+    } = {}
   ): Promise<CompanyFinancialInstitution[]> {
     const logGroup = `${this.constructor.name}.${this.listFinancialInstitutions.name}`;
-
+    const { includeCredentials = false } = options;
     logger.startStep(LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_RELATIONS, logGroup);
     const relations = await CompanyFinancialInstitutionRelationsRepository.getInstance().getDocumentsList({
       companyId: [{ value: companyId, operator: '==' }],
@@ -206,15 +209,19 @@ export class CompaniesService extends DomainModelService<Company, CompanyDocumen
 
     logger.startStep(LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_FINANCIAL_INSTITUTIONS, logGroup);
     const companyFinancialInstitutions: CompanyFinancialInstitution[] = [];
-
     try {
       for (const relation of relations) {
-        const financialInstitutionDoc = await FinancialInstitutionsRepository.getInstance().getDocument(relation.financialInstitutionId, logger);
+        logger.startStep(`${LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_FINANCIAL_INSTITUTIONS}-${relation.financialInstitutionId}`, logGroup);
+        const financialInstitutionDoc = await FinancialInstitutionsRepository.getInstance().getDocument(relation.financialInstitutionId, logger)
+        .finally(() => logger.endStep(`${LIST_FINANCIAL_INSTITUTIONS_STEPS.GET_FINANCIAL_INSTITUTIONS}-${relation.financialInstitutionId}`));
         if (financialInstitutionDoc) {
           const financialInstitution = new FinancialInstitution(financialInstitutionDoc);
-          const decryptedCredentialsString = decryptText(relation.encryptedCredentials);
-          const credentials = JSON.parse(decryptedCredentialsString);
-
+          let credentials: any = null;
+          console.log('includeCredentials', includeCredentials);
+          if (includeCredentials) {
+            const decryptedCredentialsString = decryptText(relation.encryptedCredentials);
+            credentials = JSON.parse(decryptedCredentialsString);
+          }
           companyFinancialInstitutions.push({
             id: relation.id,
             companyId: relation.companyId,
@@ -246,10 +253,13 @@ export class CompaniesService extends DomainModelService<Company, CompanyDocumen
   public async getFinancialInstitution(
     companyId: string,
     input: GetFinancialInstitutionRelationInput,
-    logger: ExecutionLogger
+    logger: ExecutionLogger,
+    options: {
+      includeCredentials?: boolean;
+    } = {}
   ): Promise<CompanyFinancialInstitution | null> {
     const logGroup = `${this.constructor.name}.${this.getFinancialInstitution.name}`;
-
+    const { includeCredentials = false } = options;
     logger.startStep(GET_FINANCIAL_INSTITUTION_RELATION_STEPS.GET_RELATION, logGroup);
     const relation = await CompanyFinancialInstitutionRelationsRepository.getInstance().getDocument(input.financialInstitutionRelationId, logger)
     .finally(() => logger.endStep(GET_FINANCIAL_INSTITUTION_RELATION_STEPS.GET_RELATION));
@@ -266,8 +276,11 @@ export class CompaniesService extends DomainModelService<Company, CompanyDocumen
       throw new Error(GET_FINANCIAL_INSTITUTION_RELATION_ERRORS_MESSAGES.FINANCIAL_INSTITUTION_NOT_FOUND);
     }
 
-    const decryptedCredentialsString = decryptText(relation.encryptedCredentials);
-    const credentials = JSON.parse(decryptedCredentialsString);
+    let credentials: any = null;
+    if (includeCredentials) {
+      const decryptedCredentialsString = decryptText(relation.encryptedCredentials);
+      credentials = JSON.parse(decryptedCredentialsString);
+    }
 
     return {
       id: relation.id,

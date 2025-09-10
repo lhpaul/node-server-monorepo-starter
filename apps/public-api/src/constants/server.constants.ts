@@ -1,16 +1,22 @@
+import { ENV_VARIABLES_KEYS, SECRETS } from '@repo/shared/constants';
+
 export const COR_CONFIG = {
   origin: ['*'],
+};
+
+export const ERROR_MESSAGES = {
+  FIREBASE_PROJECT_ID_OR_DATABASE_URL_NOT_SET: 'Firebase project ID or database URL is not set',
 };
 
 export const FASTIFY_ENV_SCHEMA = {
   type: 'object',
   properties: {
-    APP_ENV: { type: 'string' },
-    ENCRYPTION_KEY: { type: 'string' },
-    JWT_SECRET: { type: 'string' },
-    MOCK_API_PROJECT_SECRET: { type: 'string' },
+    [ENV_VARIABLES_KEYS.APP_ENV]: { type: 'string' },
+    [SECRETS.ENCRYPTION_KEY]: { type: 'string' },
+    [SECRETS.JWT_SECRET]: { type: 'string' },
+    [SECRETS.MOCK_API_PROJECT_SECRET]: { type: 'string' },
   },
-  required: ['APP_ENV', 'ENCRYPTION_KEY', 'JWT_SECRET', 'MOCK_API_PROJECT_SECRET'],
+  required: [ENV_VARIABLES_KEYS.APP_ENV, SECRETS.ENCRYPTION_KEY, SECRETS.JWT_SECRET, SECRETS.MOCK_API_PROJECT_SECRET],
 } as const;
 export const FASTIFY_ENV_CONFIG = {
   dotenv: true,

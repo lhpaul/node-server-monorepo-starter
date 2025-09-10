@@ -1,3 +1,5 @@
+import { ENV_VARIABLES_KEYS, SECRETS } from '@repo/shared/constants';
+
 import packageJson from '../../package.json';
 
 export const COR_CONFIG = {
@@ -7,11 +9,11 @@ export const COR_CONFIG = {
 export const FASTIFY_ENV_SCHEMA = {
   type: 'object',
   properties: {
-    APP_ENV: { type: 'string' },
-    ENCRYPTION_KEY: { type: 'string' },
-    MOCK_API_PROJECT_SECRET: { type: 'string' },
+    [ENV_VARIABLES_KEYS.APP_ENV]: { type: 'string' },
+    [SECRETS.ENCRYPTION_KEY]: { type: 'string' },
+    [SECRETS.MOCK_API_PROJECT_SECRET]: { type: 'string' },
   },
-  required: ['APP_ENV', 'ENCRYPTION_KEY', 'MOCK_API_PROJECT_SECRET'],
+  required: [ENV_VARIABLES_KEYS.APP_ENV, SECRETS.ENCRYPTION_KEY, SECRETS.MOCK_API_PROJECT_SECRET],
 } as const;
 export const FASTIFY_ENV_CONFIG = {
   dotenv: true,
