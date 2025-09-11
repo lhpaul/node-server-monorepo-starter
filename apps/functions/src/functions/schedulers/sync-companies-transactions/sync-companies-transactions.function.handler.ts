@@ -12,9 +12,8 @@ export async function syncCompaniesTransactionsHandler(logger: FunctionLogger) {
   const activeSubscriptions = await SubscriptionsService.getInstance().getActiveSubscriptions(logger)
   .finally(() => logger.endStep(STEPS.GET_ACTIVE_SUBSCRIPTIONS));
   logger.startStep(STEPS.PUBLISH_SYNC_COMPANIES_TRANSACTIONS_MESSAGES, logGroup);
-  const now = moment();
-  const fromDate = now.subtract(1, 'week').format('YYYY-MM-DD');
-  const toDate = now.format('YYYY-MM-DD');
+  const fromDate = moment().subtract(1, 'week').format('YYYY-MM-DD');
+  const toDate = moment().format('YYYY-MM-DD');
   for (const subscription of activeSubscriptions) {
     const logId = `${STEPS.PUBLISH_SYNC_COMPANIES_TRANSACTIONS_MESSAGES}-${subscription.id}`;
     logger.startStep(logId, logGroup);
