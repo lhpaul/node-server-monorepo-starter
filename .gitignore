@@ -39,3 +39,9 @@ yarn-error.log*
 
 # Isolate folder used for deployment
 apps/**/isolate/
+
+# gemini-cli settings
+.gemini/
+
+# GitHub App credentials
+gha-creds-*.json
