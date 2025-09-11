@@ -53,16 +53,5 @@ jobs:
       gcp_project_id: ${{ vars.GCP_PROJECT_ID_PROD }}
       gcp_wif: ${{ vars.GCP_WIF_PROD }}
       gcp_service_account_email: ${{ vars.GCP_INFRA_SA_EMAIL_PROD }}
-  run-for-production:
-    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'pull_request' && github.base_ref == 'main')
-    uses: ./.github/workflows/deploy-infra.yml
-    environment: production
-    permissions:
-      id-token: 'write'
-    with:
-      environment_directory: infra/environments/production
-      gcp_project_id: ${{ vars.GCP_PROJECT_ID_PROD }}
-      gcp_wif: ${{ vars.GCP_WIF_PROD }}
-      gcp_service_account_email: ${{ vars.GCP_INFRA_SA_EMAIL_PROD }}
       should_apply: ${{ github.event_name == 'push' }}
       approve_required: true
