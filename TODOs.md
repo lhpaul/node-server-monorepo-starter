@@ -22,5 +22,5 @@ Global:
 
 Google:
 
-- Add CI/CD for cloud functions deployment
+- CI/CD for cloud functions deployment
 - Rethink repositories inside functions
