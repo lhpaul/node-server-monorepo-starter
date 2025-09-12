@@ -21,7 +21,7 @@ on:
       gcp_service_account_email:
         description: 'The Google Cloud service account email'
         type: string
-        required: true 
+        required: true
 jobs:
   deploy:
     runs-on: ubuntu-latest

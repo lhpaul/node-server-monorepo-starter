@@ -13,7 +13,8 @@ export async function syncCompanyTransactionsHandler(
   const financialInstitutions = await CompaniesService.getInstance().listFinancialInstitutions(companyId, logger)
   .finally(() => logger.endStep(STEPS.GET_COMPANIES_FINANCIAL_INSTITUTIONS));
   logger.startStep(STEPS.SYNC_FINANCIAL_INSTITUTION_TRANSACTIONS, logGroup);
-  for (const financialInstitution of financialInstitutions) {
+
+  await Promise.all(financialInstitutions.map(async (financialInstitution) => {
     const logId = `${STEPS.SYNC_FINANCIAL_INSTITUTION_TRANSACTIONS}-${financialInstitution.financialInstitution.id}`;
     logger.startStep(logId, logGroup);
     await TransactionsService.getInstance().syncWithFinancialInstitution({
@@ -22,6 +23,5 @@ export async function syncCompanyTransactionsHandler(
       fromDate,
       toDate,
     }, logger).finally(() => logger.endStep(logId));
-  }
-  logger.endStep(STEPS.SYNC_FINANCIAL_INSTITUTION_TRANSACTIONS);
+  })).finally(() => logger.endStep(STEPS.SYNC_FINANCIAL_INSTITUTION_TRANSACTIONS));
 }

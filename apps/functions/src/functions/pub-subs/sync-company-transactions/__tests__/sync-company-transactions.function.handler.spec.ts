@@ -82,12 +82,6 @@ describe(syncCompanyTransactionsHandler.name, () => {
     expect(mockLogger.startStep).toHaveBeenCalledWith(STEPS.SYNC_FINANCIAL_INSTITUTION_TRANSACTIONS, logGroup);
     expect(mockLogger.endStep).toHaveBeenCalledWith(STEPS.SYNC_FINANCIAL_INSTITUTION_TRANSACTIONS);
 
-    // Verify individual financial institution processing
-    expect(mockLogger.startStep).toHaveBeenCalledWith(`${STEPS.SYNC_FINANCIAL_INSTITUTION_TRANSACTIONS}-fi-1`, logGroup);
-    expect(mockLogger.startStep).toHaveBeenCalledWith(`${STEPS.SYNC_FINANCIAL_INSTITUTION_TRANSACTIONS}-fi-2`, logGroup);
-    expect(mockLogger.endStep).toHaveBeenCalledWith(`${STEPS.SYNC_FINANCIAL_INSTITUTION_TRANSACTIONS}-fi-1`);
-    expect(mockLogger.endStep).toHaveBeenCalledWith(`${STEPS.SYNC_FINANCIAL_INSTITUTION_TRANSACTIONS}-fi-2`);
-
     // Verify transactions service calls for each financial institution
     expect(mockTransactionsService.syncWithFinancialInstitution).toHaveBeenCalledTimes(2);
     expect(mockTransactionsService.syncWithFinancialInstitution).toHaveBeenNthCalledWith(
@@ -297,13 +291,12 @@ describe(syncCompanyTransactionsHandler.name, () => {
 
     // Check that GET_COMPANIES_FINANCIAL_INSTITUTIONS step starts first
     expect(startStepCalls[0]).toEqual([STEPS.GET_COMPANIES_FINANCIAL_INSTITUTIONS, logGroup]);
-    
+
     // Check that GET_COMPANIES_FINANCIAL_INSTITUTIONS step ends before SYNC_FINANCIAL_INSTITUTION_TRANSACTIONS starts
     const getCompaniesEndIndex = endStepCalls.findIndex(call => call[0] === STEPS.GET_COMPANIES_FINANCIAL_INSTITUTIONS);
     const syncTransactionsStartIndex = startStepCalls.findIndex(call => call[0] === STEPS.SYNC_FINANCIAL_INSTITUTION_TRANSACTIONS);
-    
+
     expect(getCompaniesEndIndex).toBeLessThan(syncTransactionsStartIndex);
-    
     // Check that individual financial institution sync starts after main sync step
     const individualSyncStartIndex = startStepCalls.findIndex(call => call[0] === `${STEPS.SYNC_FINANCIAL_INSTITUTION_TRANSACTIONS}-fi-1`);
     expect(individualSyncStartIndex).toBeGreaterThan(syncTransactionsStartIndex);

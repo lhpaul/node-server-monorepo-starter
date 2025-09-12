@@ -33,7 +33,7 @@ export let server: FastifyInstance;
 export const init = async function (): Promise<FastifyInstance> {
   server = fastify({
     logger: getStructuredLoggingConfig(),
-    disableRequestLogging: true, // Avoid automatic logs from fastify
+    disableRequestLogging: true, // Avoid automatic logs from fastify, see https://fastify.dev/docs/latest/Reference/Server/#disablerequestlogging
   });
 
   // Load environment variables so they can be accessed through the server and the request instance
@@ -76,7 +76,6 @@ export const init = async function (): Promise<FastifyInstance> {
         capabilities: {
           resources: {}, // Enable resources
         },
-        
       });
       const resources = getMcpResources(server.log);
       resources.forEach((resource) => {

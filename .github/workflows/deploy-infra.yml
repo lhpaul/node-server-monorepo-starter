@@ -11,17 +11,14 @@ on:
         description: "GCP Project ID"
         type: string
         required: true
-        default: "node-starter-project-dev"
       gcp_wif:
         description: "GCP Workload Identity Provider"
         type: string
         required: true
-        default: "node-starter-project-dev"
       gcp_service_account_email:
         description: "GCP Service Account Email"
         type: string
         required: true
-        default: "node-starter-project-dev"
       should_apply:
         description: "If it should apply the changes"
         type: boolean
@@ -68,7 +65,11 @@ jobs:
     - name: Terraform Apply
       if: ${{ inputs.should_apply && !inputs.approve_required }}
       run: terraform apply -auto-approve tfplan
+      env:
+        TF_VAR_billing_account_id: ${{ secrets.GCP_BILLING_ACCOUNT_ID }}
 
     - name: Terraform Apply with Approval
       if: ${{ inputs.should_apply && inputs.approve_required }}
       run: terraform apply tfplan
+      env:
+        TF_VAR_billing_account_id: ${{ secrets.GCP_BILLING_ACCOUNT_ID }}

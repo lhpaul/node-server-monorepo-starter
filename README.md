@@ -121,6 +121,7 @@ pnpm install
 
 ## Development
 
+TODO: Add needed steps related with CI/CD
 Each application can be run independently. Use the following commands from the root:
 
 - **Internal API:**
@@ -213,7 +214,7 @@ Before starting development, review the [Project Conventions](./contexts/) in th
 
 ## CI/CD
 
-- Setup github environment variables and secrets
+- Setup github environment variables and secrets TODO: specify which ones
 - [Github Configuring OpenID Connect in Google Cloud Platform](https://docs.github.com/en/actions/how-tos/security-for-github-actions/security-hardening-your-deployments/configuring-openid-connect-in-google-cloud-platform)
 
 ## Troubleshooting

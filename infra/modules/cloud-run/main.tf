@@ -22,10 +22,6 @@ resource "google_cloud_run_v2_service" "default" {
   location = var.region
   ingress = var.allow_public_access ? "INGRESS_TRAFFIC_ALL" : "INGRESS_TRAFFIC_INTERNAL_ONLY"
 
-  # This attributes are added when deploying the service using the gcloud CLI. Had to add them in order to avoid constant terraform state updates.
-  # client = "gcloud"
-  # client_version = "527.0.0"
-  
   traffic {
     type = "TRAFFIC_TARGET_ALLOCATION_TYPE_LATEST"
     percent = 100
