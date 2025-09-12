@@ -13,7 +13,8 @@
     "wayou.vscode-todo-highlight",
     "davidanson.vscode-markdownlint",
     "hashicorp.terraform",
-    "github.vscode-github-actions"
+    "github.vscode-github-actions",
+    "shardulm94.trailing-spaces"
   ],
   "cSpell.words": [
     "firestore",
