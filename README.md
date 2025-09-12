@@ -121,6 +121,7 @@ pnpm install
 
 ## Development
 
+TODO: Add needed steps related with CI/CD
 Each application can be run independently. Use the following commands from the root:
 
 - **Internal API:**
@@ -209,6 +210,13 @@ pnpm run test
 
 Before starting development, review the [Project Conventions](./contexts/) in the `/contexts` folder. Following these guidelines ensures consistency and smoother code reviews.
 
+## IaC
+
+## CI/CD
+
+- Setup github environment variables and secrets TODO: specify which ones
+- [Github Configuring OpenID Connect in Google Cloud Platform](https://docs.github.com/en/actions/how-tos/security-for-github-actions/security-hardening-your-deployments/configuring-openid-connect-in-google-cloud-platform)
+
 ## Troubleshooting
 
 Each application has its own README file in its directory where you can find detailed information about the application, including troubleshooting guides for common problems.
@@ -238,6 +246,7 @@ For application-specific troubleshooting, refer to:
    - [Configuration Options](https://turborepo.com/docs/reference/configuration)
    - [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
 - [Firebase](https://firebase.google.com/)
+- [Google Cloud Pricing Calculator](https://cloud.google.com/products/calculator)
 
 ## Contributing
 

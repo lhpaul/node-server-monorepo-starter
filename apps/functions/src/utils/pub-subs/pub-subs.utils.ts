@@ -14,10 +14,10 @@ import { LOG_GROUP, LOGS, STEPS } from './pub-subs.utils.constants';
  * @param options - options for the Pub/Sub handler
  * @typeParam T - Type representing `Message.data`'s JSON format
  */
-export function onMessagePublishedWrapper<T extends object>(classType: new (value: any) => T, topic: string, handler: HandlerFunction<T>, options?: PubSubOptions): CloudFunction<CloudEvent<MessagePublishedData<T>>> {
+export function onMessagePublishedWrapper<T extends object>(classType: new (value: any) => T, handler: HandlerFunction<T>, options: PubSubOptions): CloudFunction<CloudEvent<MessagePublishedData<T>>> {
   const logGroup = `${LOG_GROUP}.${onMessagePublishedWrapper.name}`;
   return onMessagePublished(
-    topic,
+    options,
     async (event) => {
       const logger = new FunctionLogger();
       try {

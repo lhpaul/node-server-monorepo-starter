@@ -1,5 +1,4 @@
 // Internal modules (farthest path first, then alphabetical)
-import { Company, FinancialInstitution, Subscription, SubscriptionsService } from '../..';
 import { ExecutionLogger } from '../../../definitions';
 import {
   CompaniesRepository,
@@ -12,6 +11,8 @@ import {
 } from '../../../repositories';
 import { DomainModelService } from '../../../utils/services';
 import { decryptText, encryptText } from '../../../utils/encryption';
+import { Company, FinancialInstitution, Subscription } from '../../entities';
+import { SubscriptionsService } from '../subscriptions';
 
 // Local imports (alphabetical)
 import {
@@ -111,7 +112,7 @@ export class CompaniesService extends DomainModelService<Company, CompanyDocumen
    */
   public async getActiveSubscriptions(companyId: string, logger: ExecutionLogger): Promise<Subscription[]> {
     const now = new Date();
-    return SubscriptionsService.getInstance().getResourcesList({
+    return SubscriptionsService.getInstance().getResourcesList({ // TODO: refactor in order to use a specific method of the service
       companyId: [{ operator: '==', value: companyId }],
       startsAt: [{ operator: '<=', value: now }],
       endsAt: [{ operator: '>=', value: now }],

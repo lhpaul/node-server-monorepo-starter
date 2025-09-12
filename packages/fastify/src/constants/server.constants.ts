@@ -1,5 +1,4 @@
 import { FastifyReply } from 'fastify';
-import pino from 'pino';
 
 export const API_KEY_HEADER = 'x-api-key';
 
@@ -8,12 +7,6 @@ export const AUTHENTICATE_DECORATOR_NAME = 'authenticate';
 export const AUTHENTICATE_ERROR_CODES = {
   401: 'unauthorized',
   400: 'bad-request',
-};
-export const SERVER_LOGGER_CONFIG: pino.LoggerOptions = {
-  messageKey: 'message',
-  timestamp() {
-    return `,"timestamp":"${new Date(Date.now()).toISOString()}"`;
-  },
 };
 
 export const RESOURCE_NOT_FOUND_ERROR = {

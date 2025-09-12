@@ -1,0 +1,48 @@
+# This workflow is used to deploy the internal API to the development, staging, and production environments.
+
+name: Internal API Deployment
+
+on:
+  push:
+    branches: [develop, main]
+    paths:
+      - 'apps/internal-api/**'
+      - 'packages/fastify/**'
+      - 'packages/shared/**'
+  release:
+    types: [created]
+
+jobs:
+  deploy-dev:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    uses: ./.github/workflows/deploy-cloud-run.yml
+    permissions:
+      id-token: 'write'
+    with:
+      service: internal-api
+      env: DEV
+      gcp_project_id: ${{ vars.GCP_PROJECT_ID_DEV }}
+      gcp_wif: ${{ vars.GCP_WIF_DEV }}
+      gcp_service_account_email: ${{ vars.GCP_CLOUD_RUN_DEPLOYMENT_SA_EMAIL_DEV }}
+  deploy-stg:
+    if: github.event_name == 'release'
+    uses: ./.github/workflows/deploy-cloud-run.yml
+    permissions:
+      id-token: 'write'
+    with:
+      service: internal-api
+      env: STG
+      gcp_project_id: ${{ vars.GCP_PROJECT_ID_STG }}
+      gcp_wif: ${{ vars.GCP_WIF_STG }}
+      gcp_service_account_email: ${{ vars.GCP_CLOUD_RUN_DEPLOYMENT_SA_EMAIL_STG }}
+  deploy-prod:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/deploy-cloud-run.yml
+    permissions:
+      id-token: 'write'
+    with:
+      service: internal-api
+      env: PROD
+      gcp_project_id: ${{ vars.GCP_PROJECT_ID_PROD }}
+      gcp_wif: ${{ vars.GCP_WIF_PROD }}
+      gcp_service_account_email: ${{ vars.GCP_CLOUD_RUN_DEPLOYMENT_SA_EMAIL_PROD }}

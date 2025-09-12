@@ -42,11 +42,14 @@ importers:
         specifier: 13.4.0
         version: 13.4.0(encoding@0.1.13)
       firebase-functions:
-        specifier: 6.3.2
-        version: 6.3.2(firebase-admin@13.4.0(encoding@0.1.13))
+        specifier: 6.4.0
+        version: 6.4.0(firebase-admin@13.4.0(encoding@0.1.13))
       lodash:
         specifier: 4.17.21
         version: 4.17.21
+      moment:
+        specifier: 2.30.1
+        version: 2.30.1
     devDependencies:
       '@eslint/js':
         specifier: ^9.28.0
@@ -83,7 +86,7 @@ importers:
         version: 2.31.0(@typescript-eslint/parser@8.40.0(eslint@9.33.0)(typescript@5.8.2))(eslint@9.33.0)
       firebase-functions-test:
         specifier: ^3.4.1
-        version: 3.4.1(firebase-admin@13.4.0(encoding@0.1.13))(firebase-functions@6.3.2(firebase-admin@13.4.0(encoding@0.1.13)))(jest@29.7.0(@types/node@22.15.18)(ts-node@10.9.2(@types/node@22.15.18)(typescript@5.8.2)))
+        version: 3.4.1(firebase-admin@13.4.0(encoding@0.1.13))(firebase-functions@6.4.0(firebase-admin@13.4.0(encoding@0.1.13)))(jest@29.7.0(@types/node@22.15.18)(ts-node@10.9.2(@types/node@22.15.18)(typescript@5.8.2)))
       jest:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@22.15.18)(ts-node@10.9.2(@types/node@22.15.18)(typescript@5.8.2))
@@ -2893,6 +2896,13 @@ packages:
 
   firebase-functions@6.3.2:
     resolution: {integrity: sha512-FC3A1/nhqt1ZzxRnj5HZLScQaozAcFSD/vSR8khqSoFNOfxuXgwJS6ZABTB7+v+iMD5z6Mmxw6OfqITUBuI7OQ==}
+    engines: {node: '>=14.10.0'}
+    hasBin: true
+    peerDependencies:
+      firebase-admin: ^11.10.0 || ^12.0.0 || ^13.0.0
+
+  firebase-functions@6.4.0:
+    resolution: {integrity: sha512-Q/LGhJrmJEhT0dbV60J4hCkVSeOM6/r7xJS/ccmkXzTWMjo+UPAYX9zlQmGlEjotstZ0U9GtQSJSgbB2Z+TJDg==}
     engines: {node: '>=14.10.0'}
     hasBin: true
     peerDependencies:
@@ -9147,16 +9157,27 @@ snapshots:
       - encoding
       - supports-color
 
-  firebase-functions-test@3.4.1(firebase-admin@13.4.0(encoding@0.1.13))(firebase-functions@6.3.2(firebase-admin@13.4.0(encoding@0.1.13)))(jest@29.7.0(@types/node@22.15.18)(ts-node@10.9.2(@types/node@22.15.18)(typescript@5.8.2))):
+  firebase-functions-test@3.4.1(firebase-admin@13.4.0(encoding@0.1.13))(firebase-functions@6.4.0(firebase-admin@13.4.0(encoding@0.1.13)))(jest@29.7.0(@types/node@22.15.18)(ts-node@10.9.2(@types/node@22.15.18)(typescript@5.8.2))):
     dependencies:
       '@types/lodash': 4.17.18
       firebase-admin: 13.4.0(encoding@0.1.13)
-      firebase-functions: 6.3.2(firebase-admin@13.4.0(encoding@0.1.13))
+      firebase-functions: 6.4.0(firebase-admin@13.4.0(encoding@0.1.13))
       jest: 29.7.0(@types/node@22.15.18)(ts-node@10.9.2(@types/node@22.15.18)(typescript@5.8.2))
       lodash: 4.17.21
       ts-deepmerge: 2.0.7
 
   firebase-functions@6.3.2(firebase-admin@13.4.0(encoding@0.1.13)):
+    dependencies:
+      '@types/cors': 2.8.19
+      '@types/express': 4.17.23
+      cors: 2.8.5
+      express: 4.21.2
+      firebase-admin: 13.4.0(encoding@0.1.13)
+      protobufjs: 7.5.4
+    transitivePeerDependencies:
+      - supports-color
+
+  firebase-functions@6.4.0(firebase-admin@13.4.0(encoding@0.1.13)):
     dependencies:
       '@types/cors': 2.8.19
       '@types/express': 4.17.23

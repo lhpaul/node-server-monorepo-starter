@@ -1,0 +1,64 @@
+name: Deploy to Cloud Run
+on:
+  workflow_call:
+    inputs:
+      service:
+        description: 'The service to deploy'
+        type: string
+        required: true
+      env:
+        description: 'The environment to deploy'
+        type: string
+        required: true
+      gcp_project_id:
+        description: 'The Google Cloud project ID'
+        type: string
+        required: true
+      gcp_wif:
+        description: 'The Google Cloud Workload Identity Federation'
+        type: string
+        required: true
+      gcp_service_account_email:
+        description: 'The Google Cloud service account email'
+        type: string
+        required: true
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: 'write'
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Echo service
+        run: echo "${{ inputs.service }}"
+
+      - name: Build
+        run: pnpm run build:${{ inputs.service }}
+
+      - name: Isolate
+        run: pnpm run isolate:${{ inputs.service }}
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: ${{ inputs.gcp_project_id }}
+          workload_identity_provider: ${{ inputs.gcp_wif }}
+          service_account: ${{ inputs.gcp_service_account_email }}
+
+      - name: Deploy
+        run: pnpm run deploy:${{ inputs.service }} -- --set-env-vars APP_ENV=${{ inputs.env }}

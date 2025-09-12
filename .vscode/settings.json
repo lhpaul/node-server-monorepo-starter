@@ -11,7 +11,9 @@
     "firsttris.vscode-jest-runner",
     "esbenp.prettier-vscode",
     "wayou.vscode-todo-highlight",
-    "davidanson.vscode-markdownlint"
+    "davidanson.vscode-markdownlint",
+    "hashicorp.terraform",
+    "github.vscode-github-actions"
   ],
   "cSpell.words": [
     "firestore",

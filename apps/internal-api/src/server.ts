@@ -6,7 +6,7 @@ import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/
 import {
   AUTHENTICATE_DECORATOR_NAME,
   AUTHENTICATE_ERROR_CODES,
-  SERVER_LOGGER_CONFIG,
+  getStructuredLoggingConfig,
   setServerErrorHandlers,
   setServerHooks,
   setServerProcessErrorHandlers,
@@ -25,14 +25,15 @@ import {
   SERVER_START_VALUES,
 } from './constants/server.constants';
 import { routesBuilder } from './routes';
-import { getMcpResources } from './utils/mcp/mcp.utils';
 import { authenticateApiKey } from './utils/auth/auth.utils';
+import { getMcpResources } from './utils/mcp/mcp.utils';
 
 export let server: FastifyInstance;
 
 export const init = async function (): Promise<FastifyInstance> {
   server = fastify({
-    logger: SERVER_LOGGER_CONFIG,
+    logger: getStructuredLoggingConfig(),
+    disableRequestLogging: true, // Avoid automatic logs from fastify, see https://fastify.dev/docs/latest/Reference/Server/#disablerequestlogging
   });
 
   // Load environment variables so they can be accessed through the server and the request instance
@@ -75,7 +76,6 @@ export const init = async function (): Promise<FastifyInstance> {
         capabilities: {
           resources: {}, // Enable resources
         },
-        
       });
       const resources = getMcpResources(server.log);
       resources.forEach((resource) => {

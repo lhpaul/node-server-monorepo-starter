@@ -22,4 +22,6 @@ Global:
 
 Google:
 
+- Fix TODOs about deployment in root README
+- CI/CD for cloud functions deployment
 - Rethink repositories inside functions

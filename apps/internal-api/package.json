@@ -1,13 +1,18 @@
 {
   "name": "internal-api",
   "version": "0.0.1",
-  "main": "dist/index.js",
   "description": "Internal API. Made to be consumed with server to server authentication such as API keys or service accounts. Ideally all communication is done through a internal network.",
+  "engines": {
+    "node": "22"
+  },
+  "main": "./dist/index.js",
+  "files": ["dist"],
   "scripts": {
     "build": "tsc",
     "clean": "rimraf dist",
-    "deploy": "npx isolate && gcloud run deploy internal-api --source ./isolate",
+    "deploy": "gcloud run deploy internal-api --source ./isolate --region us-central1",
     "dev": "tsc --watch & nodemon dist | pino-pretty",
+    "isolate": "npx isolate",
     "start": "node dist/index.js",
     "test": "jest",
     "test:coverage": "jest --coverage",
@@ -37,8 +42,5 @@
     "ts-jest": "^29.3.2",
     "ts-node": "^10.9.2",
     "typescript": "5.8.2"
-  },
-  "engines": {
-    "node": "22"
   }
 }

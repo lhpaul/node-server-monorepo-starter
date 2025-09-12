@@ -1,8 +1,8 @@
 import * as admin from 'firebase-admin';
 
 import { transactionUpdateRequestOnWriteFunction, companyUpdateRequestOnWriteFunction, transactionCreateRequestOnWriteFunction } from './functions/firestore';
-import { notifySubscriptionAboutToExpireFunction } from './functions/pub-subs';
-import { checkForAboutToExpireSubscriptionsFunction } from './functions/schedulers';
+import { notifySubscriptionAboutToExpireFunction, syncCompanyTransactionsFunction } from './functions/pub-subs';
+import { checkForAboutToExpireSubscriptionsFunction, syncCompaniesTransactionsFunction } from './functions/schedulers';
 
 admin.initializeApp();
 
@@ -16,9 +16,11 @@ export const firestore = {
 // Pub/Subs
 export const pubSubs = {
   notifySubscriptionAboutToExpire: notifySubscriptionAboutToExpireFunction,
+  syncCompanyTransactions: syncCompanyTransactionsFunction,
 };
 
 // Schedulers
 export const schedulers = {
   checkForAboutToExpireSubscriptions: checkForAboutToExpireSubscriptionsFunction,
+  syncCompaniesTransactions: syncCompaniesTransactionsFunction,
 };

@@ -2,7 +2,7 @@ import cors from '@fastify/cors';
 import fastifyEnv from '@fastify/env';
 import helmet from '@fastify/helmet';
 import {
-  SERVER_LOGGER_CONFIG,
+  getStructuredLoggingConfig,
   setServerErrorHandlers,
   setServerFirebaseAuthenticationDecorator,
   setServerHooks,
@@ -27,7 +27,8 @@ export let server: FastifyInstance;
 
 export const init = async function (): Promise<FastifyInstance> {
   server = fastify({
-    logger: SERVER_LOGGER_CONFIG,
+    logger: getStructuredLoggingConfig(),
+    disableRequestLogging: true, // Avoid automatic logs from fastify, see https://fastify.dev/docs/latest/Reference/Server/#disablerequestlogging
   });
 
   // Load environment variables so they can be accessed through the server and the request instance

@@ -29,6 +29,10 @@
 			"path": "packages/shared"
 		},
 		{
+			"name": "Infra",
+			"path": "infra"
+		},
+		{
 			"name": "Root",
 			"path": "."
 		}

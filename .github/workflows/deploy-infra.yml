@@ -1,0 +1,75 @@
+name: Infrastructure Plan and Apply
+on:
+  workflow_call:
+    inputs:
+      environment_directory:
+        description: "The directory of the environment"
+        type: string
+        required: true
+        default: "infra/environments/develop"
+      gcp_project_id:
+        description: "GCP Project ID"
+        type: string
+        required: true
+      gcp_wif:
+        description: "GCP Workload Identity Provider"
+        type: string
+        required: true
+      gcp_service_account_email:
+        description: "GCP Service Account Email"
+        type: string
+        required: true
+      should_apply:
+        description: "If it should apply the changes"
+        type: boolean
+        required: false
+        default: false
+      approve_required:
+        description: "If it should require approval"
+        type: boolean
+        required: false
+        default: false
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: 'write'
+    defaults:
+      run:
+        working-directory: ${{ inputs.environment_directory }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Authenticate with Google Cloud
+      uses: google-github-actions/auth@v2
+      with:
+        project_id: ${{ inputs.gcp_project_id }}
+        workload_identity_provider: ${{ inputs.gcp_wif }}
+        service_account: ${{ inputs.gcp_service_account_email }}
+
+    - name: Set up Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: 1.6.6
+
+    - name: Terraform Init
+      run: terraform init
+
+    - name: Terraform Validate
+      run: terraform validate
+
+    - name: Terraform Plan
+      run: terraform plan -out=tfplan
+
+    - name: Terraform Apply
+      if: ${{ inputs.should_apply && !inputs.approve_required }}
+      run: terraform apply -auto-approve tfplan
+      env:
+        TF_VAR_billing_account_id: ${{ secrets.GCP_BILLING_ACCOUNT_ID }}
+
+    - name: Terraform Apply with Approval
+      if: ${{ inputs.should_apply && inputs.approve_required }}
+      run: terraform apply tfplan
+      env:
+        TF_VAR_billing_account_id: ${{ secrets.GCP_BILLING_ACCOUNT_ID }}

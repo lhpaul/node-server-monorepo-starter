@@ -19,7 +19,8 @@
       "predeploy": [
         "npm --prefix \"$RESOURCE_DIR\"/.. run lint",
         "npm --prefix \"$RESOURCE_DIR\"/.. run build",
-        "npx isolate"
+        "npx isolate",
+        "cp -r ./apps/functions/.env.* ./apps/functions/isolate"
       ]
     }
   ],

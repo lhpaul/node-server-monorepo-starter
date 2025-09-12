@@ -102,13 +102,13 @@ async function _onCreate<DocumentModel>(newDocumentSnap: FirebaseFirestore.Docum
       await handlerConfig.function({ context, documentData: { ...changeTimestampsToDate(result.documentData), id: compoundDocumentId }, logger });
     } catch (error) {
       if (error instanceof CheckIfEventHasBeenProcessedError && error.code === CheckIfEventHasBeenProcessedErrorCode.MAX_RETRIES_REACHED) {
-        logger.error({
+        logger.fatal({
           id: LOGS.ON_CREATE_MAX_RETRIES_REACHED.id,
         }, LOGS.ON_CREATE_MAX_RETRIES_REACHED.message(documentLabel, compoundDocumentId));
         await newDocumentSnap.ref.update({
           _onCreateMaxRetriesReached: true
         }).catch((updateError) => {
-          logger.error({
+          logger.fatal({
             id: LOGS.ON_CREATE_MAX_RETRIES_REACHED_UPDATE_ERROR.id,
             error: printError(updateError)
           }, LOGS.ON_CREATE_MAX_RETRIES_REACHED_UPDATE_ERROR.message(documentLabel, compoundDocumentId, updateError));
@@ -123,7 +123,7 @@ async function _onCreate<DocumentModel>(newDocumentSnap: FirebaseFirestore.Docum
       await newDocumentSnap.ref.update({
         _onCreateEventId: null
       }).catch((updateError) => {
-        logger.error({
+        logger.fatal({
           id: LOGS.ON_CREATE_UNKNOWN_ERROR_UPDATE_ERROR.id,
           error: printError(updateError)
         }, LOGS.ON_CREATE_UNKNOWN_ERROR_UPDATE_ERROR.message(documentLabel, compoundDocumentId, updateError));
@@ -174,7 +174,7 @@ async function _onUpdate<DocumentModel>(beforeDocumentSnap: FirebaseFirestore.Do
     const retryTimeout = handlerConfig.options?.retryTimeout || DEFAULT_ON_UPDATE_RETRY_TIMEOUT_IN_MS;
     const eventAgeMs = Date.now() - Date.parse(context.time);
     if (eventAgeMs > retryTimeout) {
-      logger.error({
+      logger.fatal({
         id: LOGS.ON_UPDATE_RETRY_TIMEOUT.id,
       }, LOGS.ON_UPDATE_RETRY_TIMEOUT.message(documentLabel, compoundDocumentId));
       return;

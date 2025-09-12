@@ -1,0 +1,57 @@
+# This workflow is used to validate and apply infrastructure changes.
+# In case of a pull request to the develop branch, it will go to the development environment directory make sure the plan is valid.
+# In case of a pull request to the main branch, it will go to the production environment directory make sure the plan is valid.
+# In case of a release, it will go to the staging environment directory make sure the plan is valid and apply the changes.
+# In case of a push to the develop branch, it will go to the development environment directory make sure the plan is valid and apply the changes.
+# In case of a push to the main branch, it will go to the production environment directory make sure the plan is valid and apply the changes.
+
+name: Infrastructure Checks
+
+on:
+  pull_request:
+    branches: [develop, main]
+    types: [opened, synchronize]
+    paths:
+      - 'infra/**'
+  push:
+    branches: [develop, main]
+    paths:
+      - 'infra/**'
+  release:
+    types: [created]
+
+jobs:
+  run-for-develop:
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/develop') || (github.event_name == 'pull_request' && github.base_ref == 'develop')
+    uses: ./.github/workflows/deploy-infra.yml
+    permissions:
+      id-token: 'write'
+    with:
+      environment_directory: infra/environments/develop
+      gcp_project_id: ${{ vars.GCP_PROJECT_ID_DEV }}
+      gcp_wif: ${{ vars.GCP_WIF_DEV }}
+      gcp_service_account_email: ${{ vars.GCP_INFRA_SA_EMAIL_DEV }}
+      should_apply: ${{ github.event_name == 'push' }}
+  run-for-staging:
+    if: github.event_name == 'release'
+    uses: ./.github/workflows/deploy-infra.yml
+    permissions:
+      id-token: 'write'
+    with:
+      environment_directory: infra/environments/staging
+      gcp_project_id: ${{ vars.GCP_PROJECT_ID_STG }}
+      gcp_wif: ${{ vars.GCP_WIF_STG }}
+      gcp_service_account_email: ${{ vars.GCP_INFRA_SA_EMAIL_STG }}
+      should_apply: true
+  run-for-production:
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'pull_request' && github.base_ref == 'main')
+    uses: ./.github/workflows/deploy-infra.yml
+    permissions:
+      id-token: 'write'
+    with:
+      environment_directory: infra/environments/production
+      gcp_project_id: ${{ vars.GCP_PROJECT_ID_PROD }}
+      gcp_wif: ${{ vars.GCP_WIF_PROD }}
+      gcp_service_account_email: ${{ vars.GCP_INFRA_SA_EMAIL_PROD }}
+      should_apply: ${{ github.event_name == 'push' }}
+      approve_required: true

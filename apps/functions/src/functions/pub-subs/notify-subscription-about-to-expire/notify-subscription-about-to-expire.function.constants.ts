@@ -6,3 +6,5 @@ export const LOGS = {
     logId: 'unknown-error',
   },
 };
+
+export const MAX_INSTANCES = 5; // Allow 5 instances to run in parallel to avoid rate limiting
