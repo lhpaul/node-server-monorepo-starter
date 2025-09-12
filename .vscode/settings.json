@@ -11,7 +11,8 @@
     "firsttris.vscode-jest-runner",
     "esbenp.prettier-vscode",
     "wayou.vscode-todo-highlight",
-    "davidanson.vscode-markdownlint"
+    "davidanson.vscode-markdownlint",
+    "shardulm94.trailing-spaces"
   ],
   "cSpell.words": [
     "firestore",
