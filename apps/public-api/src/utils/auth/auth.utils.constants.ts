@@ -5,27 +5,13 @@ export const DECODE_EMAIL_TOKEN_ERROR_MESSAGES = {
 export const GENERATE_USER_TOKEN_STEPS = {
   GENERATE_USER_TOKEN: 'generate-user-token',
 };
-
-export const GET_USER_PERMISSIONS_STEPS = {
-  GET_USER_COMPANY_RELATIONS: 'get-user-company-relations',
-  GET_SUBSCRIPTIONS: 'get-subscriptions',
-}
 export const LOG_GROUP_NAME = 'AuthUtils';
 
-export const PERMISSIONS_SUFFIXES = {
-  WRITE: 'write',
-  READ: 'read',
-}
-
-export const UPDATE_USER_PERMISSIONS_LOGS = {
-  GET_USER_PERMISSIONS: {
-    logId: 'get-user-permissions',
-    message: 'Getting user permissions',
-  },
-}
-
-
 export const UPDATE_USER_PERMISSIONS_STEPS = {
-  GET_USER_PERMISSIONS: 'get-user-permissions',
+  GET_USER: 'get-user',
   UPDATE_USER_PERMISSIONS: 'update-user-permissions',
+}
+
+export const UPDATE_USER_PERMISSIONS_ERROR_MESSAGES = {
+  USER_NOT_FOUND: (userId: string) => `User ${userId} not found`,
 }

@@ -81,7 +81,7 @@ These translate to the following deployable function names:
 If you encounter this error:
 
 ```bash
-Request to https://serviceusage.googleapis.com/v1/projects/node-starter-project-dev/services/cloudfunctions.googleapis.com had HTTP Error: 403, Permission denied to get service [cloudfunctions.googleapis.com]
+Request to https://serviceusage.googleapis.com/v1/projects/your-project-dev/services/cloudfunctions.googleapis.com had HTTP Error: 403, Permission denied to get service [cloudfunctions.googleapis.com]
 Help Token: ...
 ```
 

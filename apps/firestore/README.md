@@ -44,7 +44,7 @@ pnpm run deploy:firestore
 If you encounter an error like:
 
 ```bash
-Request to https://serviceusage.googleapis.com/v1/projects/node-starter-project-dev/services/cloudfunctions.googleapis.com had HTTP Error: 403, Permission denied to get service [cloudfunctions.googleapis.com]
+Request to https://serviceusage.googleapis.com/v1/projects/your-project-dev/services/cloudfunctions.googleapis.com had HTTP Error: 403, Permission denied to get service [cloudfunctions.googleapis.com]
 Help Token: AeNz4PjfzIUS4gQ1p-GMtnaKe4xK7_kxgrGna_n1kLZv_Ch6dMR5pgQRgJnQocnfuBg0gWg6ncldOaLIU6w4OGzin6RdL-GkA7MwiQAr95zls-wc
 ```
 

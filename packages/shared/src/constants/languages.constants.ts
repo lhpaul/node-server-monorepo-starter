@@ -26,4 +26,4 @@ export const COMMON_LANGUAGES = {
   he: 'עברית',
 };
 
-export type CommonLanguageCode = keyof typeof COMMON_LANGUAGES; 
+export type CommonLanguageCode = keyof typeof COMMON_LANGUAGES;

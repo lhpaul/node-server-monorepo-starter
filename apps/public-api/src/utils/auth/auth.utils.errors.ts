@@ -5,3 +5,9 @@ export enum DecodeEmailTokenErrorCode {
 }
 
 export class DecodeEmailTokenError extends KnownError<DecodeEmailTokenErrorCode> {}
+
+export enum UpdateUserPermissionsErrorCode {
+  USER_NOT_FOUND = 'user-not-found',
+}
+
+export class UpdateUserPermissionsError extends KnownError<UpdateUserPermissionsErrorCode> {}

@@ -8,14 +8,14 @@ terraform {
     }
   }
   backend "gcs" {
-    bucket = "node-starter-project-stg-terraform-remote-backend"
+    bucket = "<PROJECT_ID>-terraform-remote-backend"  # TODO: Replace with your actual bucket name
   }
 }
 
 # Configures the provider to use the resource block's specified project for quota checks.
 provider "google-beta" {
-  project = "node-starter-project-stg"
-  billing_project = "node-starter-project-stg"
+  project = "<PROJECT_ID>"  # TODO: Replace with your actual project ID
+  billing_project = "<PROJECT_ID>"  # TODO: Replace with your actual project ID
   user_project_override = true
 }
 
@@ -23,7 +23,7 @@ provider "google-beta" {
 # This provider should only be used during project creation and initializing services.
 provider "google-beta" {
   alias = "no_user_project_override"
-  project = "node-starter-project-stg"
-  billing_project = "node-starter-project-stg"
+  project = "<PROJECT_ID>"  # TODO: Replace with your actual project ID
+  billing_project = "<PROJECT_ID>"  # TODO: Replace with your actual project ID
   user_project_override = false
 }

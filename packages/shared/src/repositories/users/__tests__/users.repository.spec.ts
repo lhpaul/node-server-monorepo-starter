@@ -2,7 +2,7 @@ import { FirestoreCollectionRepository } from '../../../utils/repositories';
 import { COLLECTION_PATH } from '../users.repository.constants';
 import { UsersRepository } from '../users.repository';
 
-jest.mock('../../../utils/repositories');
+jest.mock('../../../utils/repositories/firestore-collection-repository.class');
 
 describe(UsersRepository.name, () => {
 

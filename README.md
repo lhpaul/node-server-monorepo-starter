@@ -1,6 +1,24 @@
 # Monorepo Starter - Google Cloud
 
-This repository provides a robust foundation for developing server-side applications with a well-structured domain architecture.
+[![Template](https://img.shields.io/badge/Template-Ready-green.svg)](https://github.com)
+[![Node.js](https://img.shields.io/badge/Node.js-22.x-green.svg)](https://nodejs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)](https://www.typescriptlang.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+This repository provides a robust foundation for developing server-side applications with a well-structured domain architecture. It includes minimal infrastructure and tooling setup - you'll add your own business logic.
+
+## 🚀 Using This Template
+
+This is a GitHub template repository. To create a new project from this template:
+
+1. Click the "Use this template" button on GitHub
+2. Create your new repository
+3. Follow the [Setup Guide](./SETUP.md) to configure your project
+4. Use the [Template Checklist](./.github/TEMPLATE_CHECKLIST.md) to track your progress
+
+> **Quick Start**: After cloning, see [SETUP.md](./SETUP.md) for detailed configuration instructions.
+
+> **Note**: This is a bare-bones starter with minimal examples. You'll need to implement your own domain models, services, and endpoints.
 
 ## Table of Contents
 
@@ -45,7 +63,17 @@ This implementation leverages:
 
 - **@repo/configs**: Shared ESLint, Jest, Prettier, and TypeScript configs.
 - **@repo/fastify**: Shared Fastify utilities and plugins.
-- **@repo/shared**: Shared business logic, domain models, services, interfaces, and utilities.
+- **@repo/shared**: Shared business logic, domain models, services, interfaces, and utilities (minimal examples included).
+
+### What's Included
+
+This template provides the infrastructure foundation:
+- Health check endpoints for both APIs
+- Basic example domain model and service structure
+- Example Cloud Function
+- Complete development tooling and build setup
+- Infrastructure as Code (Terraform) for Google Cloud
+- Authentication and authorization setup
 
 ### Development Tools
 
@@ -84,6 +112,8 @@ turbo.json                 # Turborepo config
 
 ## Getting Started
 
+> **Important**: This is a template repository. Before you begin, please follow the [Setup Guide](./SETUP.md) to configure your project with your own values.
+
 ### Prerequisites
 
 - Node.js **v22** ([nvm recommended](https://github.com/nvm-sh/nvm))
@@ -91,37 +121,19 @@ turbo.json                 # Turborepo config
 - [Turborepo CLI](https://turborepo.com/) (`pnpm install turbo --global`)
 - [Google Cloud CLI (gcloud)](https://cloud.google.com/sdk/docs/install)
 - [Firebase CLI](https://firebase.google.com/docs/cli)
-- Access to at least the development environment Google Cloud project
 
-### Setup & Authentication
+### Quick Setup
 
-1. **Install Google Cloud CLI:** [Guide](https://cloud.google.com/sdk/docs/install)
-2. **Authenticate with Google Cloud:**
-
-   ```bash
-   gcloud auth login
-   ```
-
-3. **Authenticate with Firebase:**
+1. **Follow the [Setup Guide](./SETUP.md)** for detailed configuration instructions
+2. **Use the [Template Checklist](./.github/TEMPLATE_CHECKLIST.md)** to track your progress
+3. **Install dependencies:**
 
    ```bash
-   firebase login
+   pnpm install
    ```
-
-4. **Configure Projects:**
-   - Add your Google Cloud project IDs to `.firebaserc`.
-
-### Installation
-
-Install all dependencies:
-
-```bash
-pnpm install
-```
 
 ## Development
 
-TODO: Add needed steps related with CI/CD
 Each application can be run independently. Use the following commands from the root:
 
 - **Internal API:**
@@ -262,4 +274,4 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## Contact
 
-For questions or feedback, contact [lhpaul11@gmail.com](mailto:lhpaul11@gmail.com).
+This template was created to help developers quickly set up robust server-side applications. For questions about using this template, please open an issue in the repository.

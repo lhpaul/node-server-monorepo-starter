@@ -1,4 +1,0 @@
-export const STEPS = {
-  DELETE_SUBSCRIPTION: 'DELETE_SUBSCRIPTION',
-};
- 

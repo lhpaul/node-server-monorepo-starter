@@ -1,6 +1,6 @@
 ---
 description: When writing typescript code
-globs: 
+globs:
 alwaysApply: false
 ---
 Make sure the generated code adheres to the following guidelines:

@@ -1,5 +1,6 @@
+/*
+  This file contains the secret's environment variable names.
+*/
 export const SECRETS = {
   ENCRYPTION_KEY: 'ENCRYPTION_KEY',
-  JWT_SECRET: 'JWT_SECRET',
-  MOCK_API_PROJECT_SECRET: 'MOCK_API_PROJECT_SECRET',
 };

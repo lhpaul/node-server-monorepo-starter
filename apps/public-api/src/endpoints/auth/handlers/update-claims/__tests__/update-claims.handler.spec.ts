@@ -1,5 +1,5 @@
 import { STATUS_CODES } from '@repo/fastify';
-import { User, UsersService } from '@repo/shared/domain';
+import { User, UserRole, UsersService } from '@repo/shared/domain';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { updatePermissionsToUser } from '../../../../../utils/auth';
@@ -133,6 +133,7 @@ describe(updateClaimsHandler.name, () => {
         const mockUser = new User({
           id: 'found-user-id',
           email: testEmail,
+          role: UserRole.ADMIN,
           createdAt: new Date(),
           updatedAt: new Date(),
         });

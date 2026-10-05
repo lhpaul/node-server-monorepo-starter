@@ -6,12 +6,12 @@ This document outlines the general conventions used in this repository. Adhering
 
 Use the following suffixes in filenames (before the extension, e.g., `users.service.ts`) to indicate the file's purpose:
 
+- `.class.ts`: Defines utility classes.
 - `.constants.ts`: Contains constant values. No logic should be included.
 - `.errors.ts`: Defines custom error classes with minimal logic.
 - `.interfaces.ts`: Holds TypeScript interfaces and type definitions. No logic should be included.
 - `.service.ts`: Implements classes that encapsulate core business logic or interact with data sources.
 - `.utils.ts`: Contains reusable utility functions, typically pure and stateless.
-- `.class.ts`: Defines utility classes.
 
 ## Masking Sensitive Information
 

@@ -12,7 +12,7 @@ describe(UsersService.name, () => {
 
     // Create a mock repository instance
     mockUsersRepository = {
-      // Add mock methods as needed
+      getInstance: jest.fn(),
     } as unknown as jest.Mocked<UsersRepository>;
 
     // Setup the mock to return our mock instance
@@ -38,4 +38,4 @@ describe(UsersService.name, () => {
       expect(UsersRepository.getInstance).toHaveBeenCalledTimes(1);
     });
   });
-}); 
+});

@@ -1,15 +1,17 @@
-import { FilterInput, FilterItem } from '../../../definitions';
+import { FilterInput, FilterItem  } from '../../../definitions/domain.interfaces';
+import { UserRole } from '../../entities/user.entity';
 
 export interface CreateUserInput {
   email: string;
-  password: string;
+  role: UserRole;
 }
 
 export interface UpdateUserInput {
   email?: string;
-  password?: string;
+  role?: UserRole;
 }
 
-export interface FilterUsersInput extends FilterInput {
+export interface FilterUserInput extends FilterInput  {
   email?: FilterItem<string>[];
-} 
+  role?: FilterItem<UserRole>[];
+}

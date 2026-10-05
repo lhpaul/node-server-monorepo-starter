@@ -1,1 +1,0 @@
-export const MAX_RETRIES = 0; // Transaction create requests can only be processed once since when they fail, they update their status to failed. 

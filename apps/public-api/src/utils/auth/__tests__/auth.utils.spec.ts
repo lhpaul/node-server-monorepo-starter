@@ -1,23 +1,16 @@
 import { ExecutionLogger } from '@repo/shared/definitions';
-import {
-  CompaniesService,
-  UserCompanyRelationsService,
-  UserCompanyRole,
-} from '@repo/shared/domain';
+import { UsersService, User, UserRole } from '@repo/shared/domain';
 import * as admin from 'firebase-admin';
 
-import { decodeEmailToken, generateUserToken, getUserPermissions, updatePermissionsToUser } from '../auth.utils';
-import { PERMISSIONS_BY_ROLE } from '../../../constants/permissions.constants';
+import { decodeEmailToken, generateUserToken, updatePermissionsToUser } from '../auth.utils';
 import { 
   DECODE_EMAIL_TOKEN_ERROR_MESSAGES,
   GENERATE_USER_TOKEN_STEPS,
-  GET_USER_PERMISSIONS_STEPS, 
-  LOG_GROUP_NAME, 
-  PERMISSIONS_SUFFIXES,
-  UPDATE_USER_PERMISSIONS_LOGS,
+  LOG_GROUP_NAME,
   UPDATE_USER_PERMISSIONS_STEPS,
+  UPDATE_USER_PERMISSIONS_ERROR_MESSAGES,
 } from '../auth.utils.constants';
-import { DecodeEmailTokenError, DecodeEmailTokenErrorCode } from '../auth.utils.errors';
+import { DecodeEmailTokenError, DecodeEmailTokenErrorCode, UpdateUserPermissionsError, UpdateUserPermissionsErrorCode } from '../auth.utils.errors';
 
 // Mock the shared domain services
 jest.mock('@repo/shared/domain');
@@ -245,7 +238,7 @@ describe(generateUserToken.name, () => {
   it('should generate token with correct claims structure', async () => {
     const userId = 'user-456';
     const expectedToken = 'another-custom-token';
-    
+
     mockCreateCustomToken.mockResolvedValue(expectedToken);
 
     await generateUserToken(userId, mockLogger);
@@ -260,14 +253,8 @@ describe(updatePermissionsToUser.name, () => {
   let mockAuth: jest.Mocked<admin.auth.Auth>;
   let mockSetCustomUserClaims: jest.Mock;
   let mockLogger: jest.Mocked<ExecutionLogger>;
-  let mockUserCompanyRelationsService: Partial<UserCompanyRelationsService>;
-  let mockCompaniesService: Partial<CompaniesService>;
-  let mockUserCompanyRelations: any[];
-  let mockCompanySubscriptions: any[][];
-
-  const userId = 'user-123';
-  const uid = 'firebase-uid-123';
-  const companyId1 = 'company-1';
+  let mockUsersService: jest.Mocked<UsersService>;
+  let mockGetResource: jest.Mock;
 
   beforeEach(() => {
     mockSetCustomUserClaims = jest.fn();
@@ -292,37 +279,13 @@ describe(updatePermissionsToUser.name, () => {
       silent: jest.fn(),
     } as unknown as jest.Mocked<ExecutionLogger>;
 
-    // Setup mock user company relations
-    mockUserCompanyRelations = [
-      {
-        id: 'relation-1',
-        companyId: companyId1,
-        userId: userId,
-        role: UserCompanyRole.ADMIN,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-    ];
-
-    // Setup mock company subscriptions
-    mockCompanySubscriptions = [
-      [{ id: 'subscription-1', status: 'active' }], // Company has active subscription
-    ];
-
-    // Setup mock services
-    mockUserCompanyRelationsService = {
-      getUserCompanyRelations: jest.fn().mockResolvedValue(mockUserCompanyRelations),
-    };
-
-    mockCompaniesService = {
-      getActiveSubscriptions: jest.fn().mockResolvedValue(mockCompanySubscriptions[0]),
-    };
-
-    // Mock service getInstance methods
-    (UserCompanyRelationsService.getInstance as jest.Mock).mockReturnValue(mockUserCompanyRelationsService);
-    (CompaniesService.getInstance as jest.Mock).mockReturnValue(mockCompaniesService);
-
-    mockSetCustomUserClaims.mockResolvedValue(undefined);
+    // Setup mock UsersService
+    mockGetResource = jest.fn();
+    mockUsersService = {
+      getResource: mockGetResource,
+    } as unknown as jest.Mocked<UsersService>;
+    
+    (UsersService.getInstance as jest.Mock).mockReturnValue(mockUsersService);
   });
 
   afterEach(() => {
@@ -330,414 +293,228 @@ describe(updatePermissionsToUser.name, () => {
   });
 
   it('should update user permissions successfully', async () => {
-    const input = { userId, uid };
-    const expectedPermissions = {
-      companies: {
-        [companyId1]: PERMISSIONS_BY_ROLE[UserCompanyRole.ADMIN],
-      },
-    };
+    const userId = 'user-123';
+    const uid = 'firebase-uid-456';
+    const userRole = UserRole.ADMIN;
+    
+    const mockUser = {
+      id: userId,
+      email: 'user@example.com',
+      role: userRole,
+      createdAt: new Date('2023-01-01'),
+      updatedAt: new Date('2023-01-01'),
+    } as User;
 
-    await updatePermissionsToUser(input, mockLogger);
+    mockGetResource.mockResolvedValue(mockUser);
+    mockSetCustomUserClaims.mockResolvedValue(undefined);
 
-    // Verify logger calls for getUserPermissions
+    await updatePermissionsToUser({ userId, uid }, mockLogger);
+
     expect(mockLogger.startStep).toHaveBeenCalledWith(
-      UPDATE_USER_PERMISSIONS_STEPS.GET_USER_PERMISSIONS,
+      UPDATE_USER_PERMISSIONS_STEPS.GET_USER,
       `${LOG_GROUP_NAME}.${updatePermissionsToUser.name}`
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(
-      UPDATE_USER_PERMISSIONS_STEPS.GET_USER_PERMISSIONS
-    );
-
-    // Verify permissions logging
-    expect(mockLogger.info).toHaveBeenCalledWith(
-      {
-        logId: UPDATE_USER_PERMISSIONS_LOGS.GET_USER_PERMISSIONS.logId,
-        permissions: expectedPermissions,
-      },
-      UPDATE_USER_PERMISSIONS_LOGS.GET_USER_PERMISSIONS.message
-    );
-
-    // Verify logger calls for setCustomUserClaims
+    expect(mockUsersService.getResource).toHaveBeenCalledWith(userId, mockLogger);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(UPDATE_USER_PERMISSIONS_STEPS.GET_USER);
+    
     expect(mockLogger.startStep).toHaveBeenCalledWith(
       UPDATE_USER_PERMISSIONS_STEPS.UPDATE_USER_PERMISSIONS,
       `${LOG_GROUP_NAME}.${updatePermissionsToUser.name}`
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(
-      UPDATE_USER_PERMISSIONS_STEPS.UPDATE_USER_PERMISSIONS
-    );
-
-    // Verify Firebase call
-    expect(mockAuth.setCustomUserClaims).toHaveBeenCalledWith(uid, expectedPermissions);
+    expect(mockAuth.setCustomUserClaims).toHaveBeenCalledWith(uid, {
+      role: userRole,
+    });
+    expect(mockLogger.endStep).toHaveBeenCalledWith(UPDATE_USER_PERMISSIONS_STEPS.UPDATE_USER_PERMISSIONS);
   });
 
-  it('should handle getUserPermissions errors', async () => {
-    const input = { userId, uid };
-    const error = new Error('getUserPermissions error');
+  it('should update user permissions with VIEWER role', async () => {
+    const userId = 'user-456';
+    const uid = 'firebase-uid-789';
+    const userRole = UserRole.VIEWER;
     
-    (mockUserCompanyRelationsService.getUserCompanyRelations as jest.Mock).mockRejectedValue(error);
+    const mockUser = {
+      id: userId,
+      email: 'viewer@example.com',
+      role: userRole,
+      createdAt: new Date('2023-01-01'),
+      updatedAt: new Date('2023-01-01'),
+    } as User;
 
-    await expect(updatePermissionsToUser(input, mockLogger)).rejects.toThrow('getUserPermissions error');
+    mockGetResource.mockResolvedValue(mockUser);
+    mockSetCustomUserClaims.mockResolvedValue(undefined);
+
+    await updatePermissionsToUser({ userId, uid }, mockLogger);
+
+    expect(mockAuth.setCustomUserClaims).toHaveBeenCalledWith(uid, {
+      role: userRole,
+    });
+  });
+
+  it('should throw UpdateUserPermissionsError when user is not found', async () => {
+    const userId = 'non-existent-user';
+    const uid = 'firebase-uid-123';
+    
+    mockGetResource.mockResolvedValue(null);
+
+    await expect(updatePermissionsToUser({ userId, uid }, mockLogger)).rejects.toThrow(UpdateUserPermissionsError);
+    await expect(updatePermissionsToUser({ userId, uid }, mockLogger)).rejects.toThrow(
+      UPDATE_USER_PERMISSIONS_ERROR_MESSAGES.USER_NOT_FOUND(userId)
+    );
 
     expect(mockLogger.startStep).toHaveBeenCalledWith(
-      UPDATE_USER_PERMISSIONS_STEPS.GET_USER_PERMISSIONS,
+      UPDATE_USER_PERMISSIONS_STEPS.GET_USER,
       `${LOG_GROUP_NAME}.${updatePermissionsToUser.name}`
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(
-      UPDATE_USER_PERMISSIONS_STEPS.GET_USER_PERMISSIONS
-    );
-    expect(mockLogger.info).not.toHaveBeenCalled();
+    expect(mockUsersService.getResource).toHaveBeenCalledWith(userId, mockLogger);
+    expect(mockLogger.endStep).toHaveBeenCalledWith(UPDATE_USER_PERMISSIONS_STEPS.GET_USER);
     expect(mockAuth.setCustomUserClaims).not.toHaveBeenCalled();
   });
 
-  it('should handle setCustomUserClaims errors', async () => {
-    const input = { userId, uid };
-    const error = new Error('setCustomUserClaims error');
+  it('should throw UpdateUserPermissionsError with correct error code when user is not found', async () => {
+    const userId = 'non-existent-user';
+    const uid = 'firebase-uid-123';
     
-    mockSetCustomUserClaims.mockRejectedValue(error);
+    mockGetResource.mockResolvedValue(null);
 
-    await expect(updatePermissionsToUser(input, mockLogger)).rejects.toThrow('setCustomUserClaims error');
+    await expect(updatePermissionsToUser({ userId, uid }, mockLogger)).rejects.toThrow(UpdateUserPermissionsError);
+    await expect(updatePermissionsToUser({ userId, uid }, mockLogger)).rejects.toMatchObject({
+      code: UpdateUserPermissionsErrorCode.USER_NOT_FOUND,
+    });
+  });
 
+  it('should handle Firebase setCustomUserClaims errors', async () => {
+    const userId = 'user-123';
+    const uid = 'firebase-uid-456';
+    const userRole = UserRole.ADMIN;
+    const firebaseError = new Error('Firebase setCustomUserClaims error');
+    
+    const mockUser = {
+      id: userId,
+      email: 'user@example.com',
+      role: userRole,
+      createdAt: new Date('2023-01-01'),
+      updatedAt: new Date('2023-01-01'),
+    } as User;
+
+    mockGetResource.mockResolvedValue(mockUser);
+    mockSetCustomUserClaims.mockRejectedValue(firebaseError);
+
+    await expect(updatePermissionsToUser({ userId, uid }, mockLogger)).rejects.toThrow('Firebase setCustomUserClaims error');
+
+    expect(mockLogger.startStep).toHaveBeenCalledWith(
+      UPDATE_USER_PERMISSIONS_STEPS.GET_USER,
+      `${LOG_GROUP_NAME}.${updatePermissionsToUser.name}`
+    );
+    expect(mockLogger.endStep).toHaveBeenCalledWith(UPDATE_USER_PERMISSIONS_STEPS.GET_USER);
     expect(mockLogger.startStep).toHaveBeenCalledWith(
       UPDATE_USER_PERMISSIONS_STEPS.UPDATE_USER_PERMISSIONS,
       `${LOG_GROUP_NAME}.${updatePermissionsToUser.name}`
     );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(
-      UPDATE_USER_PERMISSIONS_STEPS.UPDATE_USER_PERMISSIONS
-    );
     expect(mockAuth.setCustomUserClaims).toHaveBeenCalledWith(uid, {
-      companies: {
-        [companyId1]: PERMISSIONS_BY_ROLE[UserCompanyRole.ADMIN],
-      },
+      role: userRole,
     });
+    expect(mockLogger.endStep).not.toHaveBeenCalledWith(UPDATE_USER_PERMISSIONS_STEPS.UPDATE_USER_PERMISSIONS);
   });
 
-  it('should handle user with no company relations', async () => {
-    const input = { userId, uid };
-    mockUserCompanyRelations = [];
-    (mockUserCompanyRelationsService.getUserCompanyRelations as jest.Mock).mockResolvedValue(mockUserCompanyRelations);
-
-    await updatePermissionsToUser(input, mockLogger);
-
-    const expectedPermissions = { companies: {} };
-
-    expect(mockLogger.info).toHaveBeenCalledWith(
-      {
-        logId: UPDATE_USER_PERMISSIONS_LOGS.GET_USER_PERMISSIONS.logId,
-        permissions: expectedPermissions,
-      },
-      UPDATE_USER_PERMISSIONS_LOGS.GET_USER_PERMISSIONS.message
-    );
-
-    expect(mockAuth.setCustomUserClaims).toHaveBeenCalledWith(uid, expectedPermissions);
-  });
-
-  it('should handle user with company relations but no subscriptions', async () => {
-    const input = { userId, uid };
-    mockCompanySubscriptions = [[]]; // No subscriptions
-    (mockCompaniesService.getActiveSubscriptions as jest.Mock).mockResolvedValue(mockCompanySubscriptions[0]);
-
-    await updatePermissionsToUser(input, mockLogger);
-
-    // Get expected permissions for admin role with write permissions converted to read
-    const adminPermissions = PERMISSIONS_BY_ROLE[UserCompanyRole.ADMIN];
-    const expectedAdminPermissions = adminPermissions.map(permission =>
-      permission.replace(PERMISSIONS_SUFFIXES.WRITE, PERMISSIONS_SUFFIXES.READ)
-    );
-
-    const expectedPermissions = {
-      companies: {
-        [companyId1]: expectedAdminPermissions,
-      },
-    };
-
-    expect(mockAuth.setCustomUserClaims).toHaveBeenCalledWith(uid, expectedPermissions);
-  });
-
-  it('should ensure finally blocks are called even when errors occur', async () => {
-    const input = { userId, uid };
-    const error = new Error('getUserPermissions error');
+  it('should handle UsersService getResource errors', async () => {
+    const userId = 'user-123';
+    const uid = 'firebase-uid-456';
+    const serviceError = new Error('UsersService getResource error');
     
-    (mockUserCompanyRelationsService.getUserCompanyRelations as jest.Mock).mockRejectedValue(error);
+    mockGetResource.mockRejectedValue(serviceError);
 
-    await expect(updatePermissionsToUser(input, mockLogger)).rejects.toThrow('getUserPermissions error');
+    await expect(updatePermissionsToUser({ userId, uid }, mockLogger)).rejects.toThrow('UsersService getResource error');
 
-    // Verify that the finally block in getUserPermissions is called
-    expect(mockLogger.endStep).toHaveBeenCalledWith(
-      UPDATE_USER_PERMISSIONS_STEPS.GET_USER_PERMISSIONS
+    expect(mockLogger.startStep).toHaveBeenCalledWith(
+      UPDATE_USER_PERMISSIONS_STEPS.GET_USER,
+      `${LOG_GROUP_NAME}.${updatePermissionsToUser.name}`
     );
+    expect(mockUsersService.getResource).toHaveBeenCalledWith(userId, mockLogger);
+    expect(mockLogger.endStep).not.toHaveBeenCalledWith(UPDATE_USER_PERMISSIONS_STEPS.GET_USER);
+    expect(mockAuth.setCustomUserClaims).not.toHaveBeenCalled();
   });
 
-  it('should ensure finally blocks are called for setCustomUserClaims errors', async () => {
-    const input = { userId, uid };
-    const error = new Error('setCustomUserClaims error');
+  it('should call setCustomUserClaims with correct claims structure', async () => {
+    const userId = 'user-789';
+    const uid = 'firebase-uid-999';
+    const userRole = UserRole.ADMIN;
     
-    mockSetCustomUserClaims.mockRejectedValue(error);
+    const mockUser = {
+      id: userId,
+      email: 'admin@example.com',
+      role: userRole,
+      createdAt: new Date('2023-01-01'),
+      updatedAt: new Date('2023-01-01'),
+    } as User;
 
-    await expect(updatePermissionsToUser(input, mockLogger)).rejects.toThrow('setCustomUserClaims error');
+    mockGetResource.mockResolvedValue(mockUser);
+    mockSetCustomUserClaims.mockResolvedValue(undefined);
 
-    // Verify that the finally block in setCustomUserClaims is called
-    expect(mockLogger.endStep).toHaveBeenCalledWith(
-      UPDATE_USER_PERMISSIONS_STEPS.UPDATE_USER_PERMISSIONS
-    );
+    await updatePermissionsToUser({ userId, uid }, mockLogger);
+
+    expect(mockAuth.setCustomUserClaims).toHaveBeenCalledWith(uid, {
+      role: userRole,
+    });
   });
-});
 
-describe(getUserPermissions.name, () => {
-  let mockUserCompanyRelationsService: Partial<UserCompanyRelationsService>;
-  let mockCompaniesService: Partial<CompaniesService>;
-  let mockLogger: jest.Mocked<ExecutionLogger>;
-  let mockUserCompanyRelations: any[];
-  let mockCompanySubscriptions: any[][];
-
-  const userId = 'user-123';
-  const companyId1 = 'company-1';
-  const companyId2 = 'company-2';
-
-  beforeEach(() => {
-    // Setup mock logger
-    mockLogger = {
-      startStep: jest.fn(),
-      endStep: jest.fn(),
-      child: jest.fn(),
-      level: 'info',
-      fatal: jest.fn(),
-      error: jest.fn(),
-      warn: jest.fn(),
-      info: jest.fn(),
-      debug: jest.fn(),
-      trace: jest.fn(),
-      silent: jest.fn(),
-    } as unknown as jest.Mocked<ExecutionLogger>;
-
-    // Setup mock user company relations
-    mockUserCompanyRelations = [
-      {
-        id: 'relation-1',
-        companyId: companyId1,
-        userId: userId,
-        role: UserCompanyRole.ADMIN,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-      {
-        id: 'relation-2',
-        companyId: companyId2,
-        userId: userId,
-        role: UserCompanyRole.MEMBER,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
+  it('should handle different user roles correctly', async () => {
+    const testCases = [
+      { role: UserRole.ADMIN, expectedRole: UserRole.ADMIN },
+      { role: UserRole.VIEWER, expectedRole: UserRole.VIEWER },
     ];
 
-    // Setup mock company subscriptions
-    mockCompanySubscriptions = [
-      [{ id: 'subscription-1', status: 'active' }], // Company 1 has active subscription
-      [], // Company 2 has no subscription
-    ];
+    for (const testCase of testCases) {
+      const userId = `user-${testCase.role}`;
+      const uid = `firebase-uid-${testCase.role}`;
+      
+      const mockUser = {
+        id: userId,
+        email: `${testCase.role}@example.com`,
+        role: testCase.role,
+        createdAt: new Date('2023-01-01'),
+        updatedAt: new Date('2023-01-01'),
+      } as User;
 
-    // Setup mock services
-    mockUserCompanyRelationsService = {
-      getUserCompanyRelations: jest.fn().mockResolvedValue(mockUserCompanyRelations),
-    };
+      mockGetResource.mockResolvedValue(mockUser);
+      mockSetCustomUserClaims.mockResolvedValue(undefined);
 
-    mockCompaniesService = {
-      getActiveSubscriptions: jest.fn(),
-    };
+      await updatePermissionsToUser({ userId, uid }, mockLogger);
 
-    // Mock service getInstance methods
-    (UserCompanyRelationsService.getInstance as jest.Mock).mockReturnValue(mockUserCompanyRelationsService);
-    (CompaniesService.getInstance as jest.Mock).mockReturnValue(mockCompaniesService);
+      expect(mockAuth.setCustomUserClaims).toHaveBeenCalledWith(uid, {
+        role: testCase.expectedRole,
+      });
 
-    // Setup getActiveSubscriptions to return different results for each company
-    (mockCompaniesService.getActiveSubscriptions as jest.Mock)
-      .mockResolvedValueOnce(mockCompanySubscriptions[0]) // For company 1
-      .mockResolvedValueOnce(mockCompanySubscriptions[1]); // For company 2
+      jest.clearAllMocks();
+    }
   });
 
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
-  it('should get user permissions successfully with active subscriptions', async () => {
-    const result = await getUserPermissions(userId, mockLogger);
-
-    // Verify logger calls
-    expect(mockLogger.startStep).toHaveBeenCalledWith(
-      GET_USER_PERMISSIONS_STEPS.GET_USER_COMPANY_RELATIONS,
-      `${LOG_GROUP_NAME}.${getUserPermissions.name}`
-    );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(
-      GET_USER_PERMISSIONS_STEPS.GET_USER_COMPANY_RELATIONS
-    );
-    expect(mockLogger.startStep).toHaveBeenCalledWith(
-      GET_USER_PERMISSIONS_STEPS.GET_SUBSCRIPTIONS,
-      `${LOG_GROUP_NAME}.${getUserPermissions.name}`
-    );
-    expect(mockLogger.endStep).toHaveBeenCalledWith(
-      GET_USER_PERMISSIONS_STEPS.GET_SUBSCRIPTIONS
-    );
-
-    // Verify service calls
-    expect(mockUserCompanyRelationsService.getUserCompanyRelations).toHaveBeenCalledWith(userId, mockLogger);
-    expect(mockCompaniesService.getActiveSubscriptions).toHaveBeenCalledWith(companyId1, mockLogger);
-    expect(mockCompaniesService.getActiveSubscriptions).toHaveBeenCalledWith(companyId2, mockLogger);
-
-    // Verify result structure
-    expect(result).toEqual({
-      companies: {
-        [companyId1]: PERMISSIONS_BY_ROLE[UserCompanyRole.ADMIN], // Admin permissions unchanged (has subscription)
-        [companyId2]: PERMISSIONS_BY_ROLE[UserCompanyRole.MEMBER], // Member permissions unchanged (no write permissions to convert)
-      },
-    });
-  });
-
-  it('should convert write permissions to read permissions when company has no active subscriptions', async () => {
-    // Setup: Company 1 (ADMIN) has no subscriptions, Company 2 (MEMBER) has subscriptions
-    mockCompanySubscriptions = [
-      [], // Company 1 has no subscription
-      [{ id: 'subscription-2', status: 'active' }], // Company 2 has active subscription
-    ];
-
-    // Reset the mock to ensure proper setup
-    (mockCompaniesService.getActiveSubscriptions as jest.Mock).mockReset();
-    (mockCompaniesService.getActiveSubscriptions as jest.Mock)
-      .mockResolvedValueOnce(mockCompanySubscriptions[0]) // For company 1
-      .mockResolvedValueOnce(mockCompanySubscriptions[1]); // For company 2
-
-    const result = await getUserPermissions(userId, mockLogger);
-
-    // Get expected permissions for admin role
-    const adminPermissions = PERMISSIONS_BY_ROLE[UserCompanyRole.ADMIN];
-    const expectedAdminPermissions = adminPermissions.map(permission =>
-      permission.replace(PERMISSIONS_SUFFIXES.WRITE, PERMISSIONS_SUFFIXES.READ)
-    );
-
-    expect(result).toEqual({
-      companies: {
-        [companyId1]: expectedAdminPermissions, // Write permissions converted to read
-        [companyId2]: PERMISSIONS_BY_ROLE[UserCompanyRole.MEMBER], // Member permissions unchanged
-      },
-    });
-  });
-
-  it('should handle user with no company relations', async () => {
-    mockUserCompanyRelations = [];
-    (mockUserCompanyRelationsService.getUserCompanyRelations as jest.Mock).mockResolvedValue(mockUserCompanyRelations);
-
-    const result = await getUserPermissions(userId, mockLogger);
-
-    expect(result).toEqual({
-      companies: {},
-    });
-
-    expect(mockCompaniesService.getActiveSubscriptions).not.toHaveBeenCalled();
-  });
-
-  it('should handle user with single company relation', async () => {
-    mockUserCompanyRelations = [mockUserCompanyRelations[0]]; // Only admin relation
-    mockCompanySubscriptions = [[{ id: 'subscription-1', status: 'active' }]];
-
-    (mockUserCompanyRelationsService.getUserCompanyRelations as jest.Mock).mockResolvedValue(mockUserCompanyRelations);
-    (mockCompaniesService.getActiveSubscriptions as jest.Mock).mockResolvedValue(mockCompanySubscriptions[0]);
-
-    const result = await getUserPermissions(userId, mockLogger);
-
-    expect(result).toEqual({
-      companies: {
-        [companyId1]: PERMISSIONS_BY_ROLE[UserCompanyRole.ADMIN],
-      },
-    });
-
-    expect(mockCompaniesService.getActiveSubscriptions).toHaveBeenCalledTimes(1);
-    expect(mockCompaniesService.getActiveSubscriptions).toHaveBeenCalledWith(companyId1, mockLogger);
-  });
-
-  it('should handle service errors gracefully', async () => {
-    const error = new Error('Service error');
-    (mockUserCompanyRelationsService.getUserCompanyRelations as jest.Mock).mockRejectedValue(error);
-
-    await expect(getUserPermissions(userId, mockLogger)).rejects.toThrow('Service error');
-
-    expect(mockLogger.startStep).toHaveBeenCalledWith(
-      GET_USER_PERMISSIONS_STEPS.GET_USER_COMPANY_RELATIONS,
-      `${LOG_GROUP_NAME}.${getUserPermissions.name}`
-    );
-    expect(mockLogger.endStep).not.toHaveBeenCalled();
-  });
-
-  it('should handle subscription service errors gracefully', async () => {
-    const error = new Error('Subscription service error');
+  it('should log all steps in correct order', async () => {
+    const userId = 'user-123';
+    const uid = 'firebase-uid-456';
+    const userRole = UserRole.ADMIN;
     
-    // Reset the mock to ensure proper setup for error scenario
-    (mockCompaniesService.getActiveSubscriptions as jest.Mock).mockReset();
-    (mockCompaniesService.getActiveSubscriptions as jest.Mock).mockRejectedValue(error);
+    const mockUser = {
+      id: userId,
+      email: 'user@example.com',
+      role: userRole,
+      createdAt: new Date('2023-01-01'),
+      updatedAt: new Date('2023-01-01'),
+    } as User;
 
-    await expect(getUserPermissions(userId, mockLogger)).rejects.toThrow('Subscription service error');
+    mockGetResource.mockResolvedValue(mockUser);
+    mockSetCustomUserClaims.mockResolvedValue(undefined);
 
-    expect(mockLogger.startStep).toHaveBeenCalledWith(
-      GET_USER_PERMISSIONS_STEPS.GET_SUBSCRIPTIONS,
-      `${LOG_GROUP_NAME}.${getUserPermissions.name}`
+    await updatePermissionsToUser({ userId, uid }, mockLogger);
+
+    expect(mockLogger.startStep).toHaveBeenNthCalledWith(1,
+      UPDATE_USER_PERMISSIONS_STEPS.GET_USER,
+      `${LOG_GROUP_NAME}.${updatePermissionsToUser.name}`
     );
-    expect(mockLogger.endStep).not.toHaveBeenCalledWith(
-      GET_USER_PERMISSIONS_STEPS.GET_SUBSCRIPTIONS
+    expect(mockLogger.endStep).toHaveBeenNthCalledWith(1, UPDATE_USER_PERMISSIONS_STEPS.GET_USER);
+    expect(mockLogger.startStep).toHaveBeenNthCalledWith(2,
+      UPDATE_USER_PERMISSIONS_STEPS.UPDATE_USER_PERMISSIONS,
+      `${LOG_GROUP_NAME}.${updatePermissionsToUser.name}`
     );
-  });
-
-  it('should handle mixed subscription scenarios correctly', async () => {
-    // Setup: Multiple companies with different subscription states
-    mockUserCompanyRelations = [
-      {
-        id: 'relation-1',
-        companyId: 'company-admin-with-sub',
-        userId: userId,
-        role: UserCompanyRole.ADMIN,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-      {
-        id: 'relation-2',
-        companyId: 'company-admin-without-sub',
-        userId: userId,
-        role: UserCompanyRole.ADMIN,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-      {
-        id: 'relation-3',
-        companyId: 'company-member',
-        userId: userId,
-        role: UserCompanyRole.MEMBER,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-    ];
-
-    mockCompanySubscriptions = [
-      [{ id: 'subscription-1', status: 'active' }], // Admin with subscription
-      [], // Admin without subscription
-      [{ id: 'subscription-3', status: 'active' }], // Member with subscription
-    ];
-
-    (mockUserCompanyRelationsService.getUserCompanyRelations as jest.Mock).mockResolvedValue(mockUserCompanyRelations);
-    (mockCompaniesService.getActiveSubscriptions as jest.Mock)
-      .mockResolvedValueOnce(mockCompanySubscriptions[0])
-      .mockResolvedValueOnce(mockCompanySubscriptions[1])
-      .mockResolvedValueOnce(mockCompanySubscriptions[2]);
-
-    const result = await getUserPermissions(userId, mockLogger);
-
-    // Get expected permissions for admin role with write permissions converted to read
-    const adminPermissions = PERMISSIONS_BY_ROLE[UserCompanyRole.ADMIN];
-    const expectedAdminPermissionsWithoutSub = adminPermissions.map(permission =>
-      permission.replace(PERMISSIONS_SUFFIXES.WRITE, PERMISSIONS_SUFFIXES.READ)
-    );
-
-    expect(result).toEqual({
-      companies: {
-        'company-admin-with-sub': PERMISSIONS_BY_ROLE[UserCompanyRole.ADMIN], // Unchanged (has subscription)
-        'company-admin-without-sub': expectedAdminPermissionsWithoutSub, // Write permissions converted to read
-        'company-member': PERMISSIONS_BY_ROLE[UserCompanyRole.MEMBER], // Unchanged (no write permissions)
-      },
-    });
+    expect(mockLogger.endStep).toHaveBeenNthCalledWith(2, UPDATE_USER_PERMISSIONS_STEPS.UPDATE_USER_PERMISSIONS);
   });
 });

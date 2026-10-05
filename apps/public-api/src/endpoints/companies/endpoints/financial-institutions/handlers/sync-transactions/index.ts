@@ -1,1 +1,0 @@
-export { syncTransactionsHandler } from './sync-transactions.handler'; 

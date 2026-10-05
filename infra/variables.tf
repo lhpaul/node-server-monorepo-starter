@@ -6,7 +6,8 @@ variable "env" {
 variable "organization_id" {
   type = string
   description = "The ID of the organization"
-  default = "663153561274"
+  # TODO: Replace with your Google Cloud organization ID
+  default = "<ORGANIZATION_ID>"
 }
 
 variable "project_id" {
@@ -23,7 +24,8 @@ variable "region" {
 variable "billing_account_id" {
   description = "The billing account to use for the project"
   type        = string
-  default = "01DD4D-8D2323-4E9DA7"
+  # TODO: Replace with your Google Cloud billing account ID
+  default = "<BILLING_ACCOUNT_ID>"
 }
 
 variable "billing_budget_amount" {
@@ -145,4 +147,5 @@ variable "authorized_domains" {
 variable "github_repository" {
   type = string
   description = "The GitHub repository where the code is stored"
+  # TODO: Replace with your GitHub repository (e.g., "your-org/your-repo")
 }

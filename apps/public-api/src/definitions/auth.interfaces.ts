@@ -1,3 +1,4 @@
+import { UserRole } from '@repo/shared/domain';
 import { DecodedIdToken } from 'firebase-admin/auth';
 
 export interface AuthUser extends DecodedIdToken, UserPermissions {
@@ -5,7 +6,7 @@ export interface AuthUser extends DecodedIdToken, UserPermissions {
 }
 
 export interface UserPermissions {
-  companies?: { [companyId: string]: string[] };
+  role?: UserRole;
 }
 
 

@@ -1,1 +1,0 @@
-export { listTransactionCategoriesHandler } from './list/transaction-categories.list.handler'; 

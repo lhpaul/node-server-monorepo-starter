@@ -1,6 +1,7 @@
 {
   "name": "node-server-monorepo-starter",
   "version": "0.0.1",
+  "description": "A robust foundation for developing server-side applications with Google Cloud, featuring Firebase, Cloud Run, and Cloud Functions",
   "private": true,
   "scripts": {
     "build": "turbo run build",

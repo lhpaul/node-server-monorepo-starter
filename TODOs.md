@@ -1,27 +1,45 @@
 # TODOs
 
-This document is to keep track of the technical debt in this repository.
+This document is to keep track of technical debt and improvements for your project.
 
-Global:
+> **Note**: This is a template file with example TODOs. Replace these with your project-specific tasks.
 
-- Change "DomainModelService" to "EntityService"
-- Remove "getResourcesList" method from EntityService class.
-- Make TransactionManager and BatchManager
-- Add update validations when updating transaction's categoryId
-- Implement text search
-- Automatic openapi documentation
-- Functional tests
-- Add rules for method orders and private methods to be prefixed
-- Refactor unit tests rules and make the corresponding changes to the existing unit tests
-- Add rules to always ad jsdoc documentation (don't forget to include Throws)
-- Add explanation about repositories and value types
-- Check how to admin oauth clients and private keys
-- Apply cache to transactions category in public api
-- Be able to create documents with defined id
-- Add github action to check that conventions are being met. [Video](https://www.youtube.com/watch?v=ohjMGnEaBxk)
+## Template TODOs (Replace with your own)
 
-Google:
+### Development Implementation
 
-- Fix TODOs about deployment in root README
-- CI/CD for cloud functions deployment
-- Rethink repositories inside functions
+- [ ] Implement your domain models in `packages/shared/src/domain/entities/`
+- [ ] Build your business services in `packages/shared/src/domain/services/`
+- [ ] Create your API endpoints in the API applications
+- [ ] Implement your Cloud Functions for business logic
+- [ ] Set up your data repositories and access patterns
+- [ ] Implement authentication and authorization for your use case
+- [ ] Add your custom validation rules and business logic
+
+### Infrastructure & DevOps
+
+- [ ] Configure CI/CD pipelines for your deployment strategy
+- [ ] Set up proper backup and disaster recovery procedures
+- [ ] Configure monitoring and alerting for production
+- [ ] Review and customize Terraform configurations for your needs
+- [ ] Set up proper secret management for your organization
+
+### Code Quality & Standards
+
+- [ ] Review and customize coding conventions in `/conventions` folder
+- [ ] Set up automated code quality checks in CI/CD
+- [ ] Add integration tests for your specific use cases
+- [ ] Implement proper error handling and logging
+- [ ] Add API documentation (OpenAPI/Swagger)
+
+### Security & Compliance
+
+- [ ] Review and implement security best practices
+- [ ] Set up proper access controls and permissions
+- [ ] Implement data encryption at rest and in transit
+- [ ] Add security scanning to your CI/CD pipeline
+- [ ] Review compliance requirements for your industry
+
+---
+
+**Remember**: Delete this file or replace it with your own TODOs once you've completed the template setup.

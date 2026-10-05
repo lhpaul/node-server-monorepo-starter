@@ -1,5 +1,5 @@
 locals {
-  project_id = "node-starter-project-prod"
+  project_id = "<PROJECT_ID>"  # TODO: Replace with your actual project ID
 }
 
 module "main" {
@@ -15,9 +15,9 @@ module "main" {
     "localhost",
     "${local.project_id}.firebaseapp.com",
     "${local.project_id}.web.app",
-    "app.react-native-playground.lhpaul.cl"
+    "your-app.your-domain.com"  # TODO: Replace with your actual domain
   ]
-  android_app_package_id = "com.lhpaul.reactNativePlayground"
-  apple_app_bundle_id = "com.lhpaul.reactNativePlayground"
-  github_repository = "lhpaul/node-starter-project"
+  android_app_package_id = "com.yourcompany.yourapp"  # TODO: Replace with your actual package ID
+  apple_app_bundle_id = "com.yourcompany.yourapp"  # TODO: Replace with your actual bundle ID
+  github_repository = "your-org/your-repo"  # TODO: Replace with your actual GitHub repository
 }

@@ -1,28 +1,35 @@
 // Internal modules (farthest path first, then alphabetical)
-import { User } from '../..';
+import { User } from '../../entities';
 import {
-  UsersRepository,
-  UserDocument,
   CreateUserDocumentInput,
-  QueryUsersInput,
+  UserDocument,
+  UserQueryInput,
+  UsersRepository,
   UpdateUserDocumentInput,
 } from '../../../repositories';
 import { DomainModelService } from '../../../utils/services';
 
 // Local imports (alphabetical)
+import { UsersDocumentToEntityParser } from './users.service.classes';
 import {
   CreateUserInput,
   UpdateUserInput,
-  FilterUsersInput,
+  FilterUserInput,
 } from './users.service.interfaces';
 
-export class UsersService extends DomainModelService<User, UserDocument, CreateUserInput, CreateUserDocumentInput, UpdateUserInput, UpdateUserDocumentInput, FilterUsersInput, QueryUsersInput> {
-  private static instance: UsersService;
+/**
+ * Example service implementation - Replace with your actual business logic
+ *
+ * This is a minimal example showing the structure for domain services.
+ * Replace this with your actual business logic implementations.
+ */
 
+export class UsersService extends DomainModelService<User, UserDocument, CreateUserInput, CreateUserDocumentInput, UpdateUserInput, UpdateUserDocumentInput, FilterUserInput, UserQueryInput> implements UsersService {
+  private static instance: UsersService;
   public static getInstance(): UsersService {
     if (!this.instance) {
-      this.instance = new UsersService(UsersRepository.getInstance(), User);
+      this.instance = new UsersService(UsersRepository.getInstance(), UsersDocumentToEntityParser);
     }
     return this.instance;
   }
-} 
+}
